@@ -30,7 +30,6 @@ class AccountJournal(models.Model):
             )
             return
 
-        page = total_pages = 1
         if self.statement_import_api_last_success:
             from_dt = self.statement_import_api_last_success
             # rewind 1h, just in case
@@ -45,10 +44,11 @@ class AccountJournal(models.Model):
             "iban": self.bank_account_id.sanitized_acc_number,
             "status": ["completed"],
             "updated_at_from": from_dt_aware.isoformat(),
-            "page": page,
+            "page": 1,
         }
         url = BASE_URL + "transactions"
-        while page <= total_pages:
+        total_pages = 1  # default value for first pass
+        while params["page"] <= total_pages:
             try:
                 res = requests.get(
                     url,
@@ -99,7 +99,7 @@ class AccountJournal(models.Model):
                         [pivot["payment_ref"], trans["reference"]]
                     )
                 lines.append(pivot)
-            page += 1
+            params["page"] += 1
         result["lines"] = lines
 
     def _api_import_attachment_qonto(self, qonto_attach_identifier, result, speedy):
