@@ -6,6 +6,11 @@ import datetime
 import logging
 
 from odoo import Command, models
+from odoo.tools import float_compare
+
+from odoo.addons.account_statement_import_in_invoice.models.account_bank_statement_line import (
+    TAX_DECIMAL_DIGITS,
+)
 
 logger = logging.getLogger(__name__)
 TAXINT_MULTIPLIER = 10000
@@ -245,4 +250,19 @@ class AccountJournal(models.Model):
             pivot_line["in_invoice_vat_amount"] = abs(
                 pivot_line["in_invoice_vat_amount"]
             )
+        if (
+            pivot_line.get("in_invoice_vat_rate")
+            and float_compare(
+                pivot_line["in_invoice_vat_rate"],
+                0,
+                precision_digits=TAX_DECIMAL_DIGITS,
+            )
+            < 0
+        ):
+            result["logs"].append(
+                f"WARN Got a negative VAT rate "
+                f"({pivot_line['in_invoice_vat_rate']}) on pivot line {pivot_line}: "
+                f"VAT rate forced to 0"
+            )
+            pivot_line["in_invoice_vat_rate"] = 0
         return res
