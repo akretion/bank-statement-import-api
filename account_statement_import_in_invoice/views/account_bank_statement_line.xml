@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Copyright 2025 Akretion France (https://www.akretion.com/)
+  @author: Alexis de Lattre <alexis.delattre@akretion.com>
+  License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+-->
+<odoo>
+
+                <!-- kanban view -->
+                  <record id="bank_statement_line_reconcile_view" model="ir.ui.view">
+                          <field name="model">account.bank.statement.line</field>
+                          <field
+            name="inherit_id"
+            ref="account_reconcile_oca.bank_statement_line_reconcile_view"
+        />
+                          <field name="arch" type="xml">
+                                  <field name="is_reconciled" position="after">
+                                          <field
+                    name="in_invoice_expense_description"
+                />
+                                          <field name="in_invoice_expense_categ_id" />
+                                          <field name="in_invoice_account_id" />
+                                          <field name="in_invoice_vat_rate" />
+                                          <field name="in_invoice_tax_ids" />
+                                          <field name="in_invoice_vat_amount" />
+                                          <field name="attachment_ids" />
+                                  </field>
+                                  <xpath
+                expr="//templates//field[@name='payment_ref']/../.."
+                position="after"
+            >
+                                          <div
+                    class="row"
+                    name="in_invoice"
+                    t-if="record.in_invoice_expense_description.raw_value"
+                >
+                                            <div class="col-8">
+                                                    <div>💳 <field
+                                name="in_invoice_expense_description"
+                            /></div>
+                                                    <div>📂 <field
+                                name="in_invoice_expense_categ_id"
+                            /></div>
+                                                    <div>🗁  <field
+                                name="in_invoice_account_id"
+                            /></div>
+                                            </div>
+                                            <div
+                        class="col-4"
+                        style="text-align: right"
+                    >
+                                                <div
+                            t-if="record.in_invoice_tax_ids.raw_value.length > 0"
+                        ><field
+                                name="in_invoice_tax_ids"
+                                widget="many2many_tags"
+                            /></div>
+                                                <div
+                            t-if="record.in_invoice_tax_ids.raw_value.length === 0"
+                        ><span style="font-weight: bold">VAT</span> <field
+                                name="in_invoice_vat_rate"
+                            /> %</div>
+                                                <div><span
+                                style="font-weight: bold"
+                            >VAT</span> <field name="in_invoice_vat_amount" /></div>
+                                                <div
+                            t-if="record.attachment_ids.raw_value.length > 0"
+                        >📷 <t t-esc="record.attachment_ids.raw_value.length" /></div>
+                                                <div
+                            t-if="record.attachment_ids.raw_value.length === 0"
+                            class="badge text-bg-warning"
+                            style="font-weight: bold"
+                        >Missing 📷</div>
+                                            </div>
+                                        </div>
+                                  </xpath>
+                          </field>
+                  </record>
+
+                  <record id="bank_statement_line_form_add_view" model="ir.ui.view">
+                          <field name="model">account.bank.statement.line</field>
+                          <field
+            name="inherit_id"
+            ref="account_reconcile_oca.bank_statement_line_form_add_view"
+        />
+                          <field name="arch" type="xml">
+                                  <xpath expr="/form/group" position="inside">
+                                          <separator string="Vendor Bill" />
+                                          <group name="in_invoice_left">
+                                                  <field
+                        name="in_invoice_expense_categ_id"
+                    />
+                                                  <field name="in_invoice_card_id" />
+                                                  <field name="in_invoice_account_id" />
+                                                    <field
+                        name="in_invoice_analytic_distribution"
+                        widget="analytic_distribution"
+                        groups="analytic.group_analytic_accounting"
+                        options="{'account_field': 'in_invoice_account_id'}"
+                    />
+                                                  <field
+                        name="in_invoice_expense_description"
+                    />
+                                          </group>
+                                          <group name="in_invoice_right">
+                                                  <label for="in_invoice_vat_rate" />
+                                                  <div name="in_invoice_vat_rate">
+                                                          <field
+                            name="in_invoice_vat_rate"
+                            class="oe_inline"
+                        /> %
+                                                  </div>
+                                                  <field
+                        name="in_invoice_tax_ids"
+                        widget="many2many_tags"
+                    />
+                                                  <field name="in_invoice_vat_amount" />
+                                                  <field
+                        name="in_invoice_force_invoice_date"
+                    />
+                                                  <field
+                        name="in_invoice_receipt_lost"
+                        attrs="{'invisible': [('attachment_ids', '!=', [])]}"
+                    />
+                                                  <field
+                        name="attachment_ids"
+                        widget="many2many_binary"
+                        nolabel="1"
+                        string="Expense Evidences"
+                    />
+                                          </group>
+                                  </xpath>
+                          </field>
+                  </record>
+
+                  <record
+        id="bank_statement_line_form_reconcile_view"
+        model="ir.ui.view"
+    >
+                          <field name="model">account.bank.statement.line</field>
+                          <field
+            name="inherit_id"
+            ref="account_reconcile_oca.bank_statement_line_form_reconcile_view"
+        />
+                          <field name="arch" type="xml">
+                                  <page name="manual" position="before">
+                                          <page name="in_invoice" string="Vendor Bill">
+
+                                          <group name="in_invoice_group">
+                                            <group name="in_invoice_left">
+                                                  <field
+                                name="in_invoice_expense_categ_id"
+                            />
+                                                  <field name="in_invoice_card_id" />
+                                                  <field name="in_invoice_account_id" />
+                                                    <field
+                                name="in_invoice_analytic_distribution"
+                                widget="analytic_distribution"
+                                groups="analytic.group_analytic_accounting"
+                                options="{'account_field': 'in_invoice_account_id'}"
+                            />
+                                                  <field
+                                name="in_invoice_expense_description"
+                            />
+                                                  <field
+                                name="in_invoice_receipt_lost"
+                            />
+                                            </group>
+                                            <group name="in_invoice_right">
+                                                  <label for="in_invoice_vat_rate" />
+                                                  <div name="in_invoice_vat_rate">
+                                                          <field
+                                    name="in_invoice_vat_rate"
+                                    class="oe_inline"
+                                /> %
+                                                  </div>
+                                                  <field
+                                name="in_invoice_tax_ids"
+                                widget="many2many_tags"
+                            />
+                                                  <field name="in_invoice_vat_amount" />
+                                                  <field
+                                name="in_invoice_force_invoice_date"
+                            />
+
+                                                  <field
+                                name="in_invoice_show_button"
+                                invisible="1"
+                            />
+                                            </group>
+                                                  </group>
+                                          <group name="attachments">
+                                                  <field
+                            name="attachment_ids"
+                            widget="many2many_binary"
+                            nolabel="1"
+                            string="Expense Evidences"
+                        />
+                                                  </group>
+                                          </page>
+                                  </page>
+                                  <button
+                name="unreconcile_bank_line"
+                position="before"
+            >
+                                        <button
+                    name="in_invoice_create"
+                    string="Create Vendor Bill"
+                    type="object"
+                    colspan="2"
+                    class="btn btn-secondary"
+                    attrs="{'invisible': [('in_invoice_show_button', '=', False)]}"
+                />
+                                        <button
+                    name="in_invoice_create_disabled"
+                    string="Create Vendor Bill"
+                    type="object"
+                    colspan="2"
+                    class="btn btn-secondary disabled"
+                    attrs="{'invisible': [('in_invoice_show_button', '=', True)]}"
+                />
+                                  </button>
+                          </field>
+                  </record>
+
+                  <record id="account_bank_statement_line_form" model="ir.ui.view">
+                          <field name="model">account.bank.statement.line</field>
+                          <field
+            name="inherit_id"
+            ref="account_statement_base.account_bank_statement_line_form"
+        />
+                          <field name="arch" type="xml">
+                                <notebook position="inside">
+                                    <page name="in_invoice" string="Vendor Bills">
+                                        <group name="in_invoice">
+                                            <field name="in_invoice_expense_categ_id" />
+                                              <field name="in_invoice_card_id" />
+                                              <field name="in_invoice_account_id" />
+                                                    <field
+                            name="in_invoice_analytic_distribution"
+                            widget="analytic_distribution"
+                            groups="analytic.group_analytic_accounting"
+                            options="{'account_field': 'in_invoice_account_id'}"
+                        />
+                                              <field name="in_invoice_vat_rate" />
+                                              <field
+                            name="in_invoice_tax_ids"
+                            widget="many2many_tags"
+                        />
+                                              <field name="in_invoice_vat_amount" />
+                                              <field
+                            name="in_invoice_expense_description"
+                        />
+                                              <field
+                            name="in_invoice_force_invoice_date"
+                        />
+                                          </group>
+                                          <group
+                        name="in_invoice_attach"
+                        string="Expense Evidences"
+                    >
+                                              <field
+                            name="attachment_ids"
+                            widget="many2many_binary"
+                            nolabel="1"
+                            string="Expense Evidences"
+                        />
+                                          </group>
+                                      </page>
+                                  </notebook>
+                          </field>
+                  </record>
+
+                  <record id="account_bank_statement_line_tree" model="ir.ui.view">
+                          <field name="model">account.bank.statement.line</field>
+                          <field
+            name="inherit_id"
+            ref="account_statement_base.account_bank_statement_line_tree"
+        />
+    <field name="arch" type="xml">
+            <field name="partner_bank_id" position="after">
+                                              <field
+                    name="in_invoice_expense_categ_id"
+                    optional="hide"
+                />
+                                              <field
+                    name="in_invoice_card_id"
+                    optional="hide"
+                />
+                                              <field
+                    name="in_invoice_account_id"
+                    optional="hide"
+                />
+                                              <field
+                    name="in_invoice_analytic_distribution"
+                    widget="analytic_distribution"
+                    groups="analytic.group_analytic_accounting"
+                    optional="hide"
+                />
+                                              <field
+                    name="in_invoice_vat_rate"
+                    optional="hide"
+                />
+                                              <field
+                    name="in_invoice_tax_ids"
+                    widget="many2many_tags"
+                    optional="hide"
+                />
+                                              <field
+                    name="in_invoice_vat_amount"
+                    optional="hide"
+                />
+                                              <field
+                    name="in_invoice_expense_description"
+                    optional="hide"
+                />
+                                              <field
+                    name="in_invoice_force_invoice_date"
+                    optional="hide"
+                />
+
+            </field>
+    </field>
+    </record>
+
+          </odoo>

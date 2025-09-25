@@ -1,0 +1,269 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Copyright 2025 Akretion France (https://www.akretion.com/)
+  @author: Alexis de Lattre <alexis.delattre@akretion.com>
+  License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+-->
+<odoo noupdate="1">
+
+                  <record
+        id="restaurant_and_bar_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">restaurant_and_bar</field>
+                          <field name="name">Restaurant and Bar</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="food_and_grocery_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">food_and_grocery</field>
+                          <field name="name">Food and Grocery</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="transport_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">transport</field>
+                          <field name="name">Transport</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="gas_station_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">gas_station</field>
+                          <field name="name">Gas Station</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="hotel_and_lodging_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">hotel_and_lodging</field>
+                          <field name="name">Hotel and Lodging</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="it_and_electronics_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">it_and_electronics</field>
+                          <field name="name">IT and Electronics</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="hardware_and_equipment_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">hardware_and_equipment</field>
+                          <field name="name">Hardware and Equipment</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="office_supply_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">office_supply</field>
+                          <field name="name">Office Supply</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="office_rental_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">office_rental</field>
+                          <field name="name">Office Rental</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="utility_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">utility</field>
+                          <field name="name">Utility</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="insurance_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">insurance</field>
+                          <field name="name">Insurance</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="logistics_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">logistics</field>
+                          <field name="name">Logistics</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="online_service_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">online_service</field>
+                          <field name="name">Online Service</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="legal_and_accounting_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">legal_and_accounting</field>
+                          <field name="name">Legal and Accounting</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="finance_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">finance</field>
+                          <field name="name">Finance</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="tax_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">tax</field>
+                          <field name="name">Tax</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="salary_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">salary</field>
+                          <field name="name">Salary</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="marketing_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">marketing</field>
+                          <field name="name">Marketing</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="manufacturing_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">manufacturing</field>
+                          <field name="name">Manufacturing</field>
+                          <field name="service">qonto</field>
+                  </record>
+                  <!--
+                  <record id="atm_expense_categ" model="account.bank.statement.expense.categ">
+                          <field name="code">atm</field>
+                          <field name="name">ATM</field>
+                          <field name="service">qonto</field>
+                  </record>
+                  -->
+                  <record
+        id="other_service_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">other_service</field>
+                          <field name="name">Other Service</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="other_expense_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">other_expense</field>
+                          <field name="name">Other Expense</field>
+                          <field name="service">qonto</field>
+                  </record>
+                  <!--
+                  <record id="treasury_and_interco_expense_categ" model="account.bank.statement.expense.categ">
+                          <field name="code">treasury_and_interco</field>
+                          <field name="name">Treasury and Interco</field>
+                          <field name="service">qonto</field>
+                    </record>
+                  <record id="sales_expense_categ" model="account.bank.statement.expense.categ">
+                          <field name="code">sales</field>
+                          <field name="name">Sales</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record id="other_income_expense_categ" model="account.bank.statement.expense.categ">
+                          <field name="code">other_income</field>
+                          <field name="name">Other Income</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record id="refund_expense_categ" model="account.bank.statement.expense.categ">
+                          <field name="code">refund</field>
+                          <field name="name">Refund</field>
+                          <field name="service">qonto</field>
+                  </record>
+                  -->
+
+                  <record
+        id="fees_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">fees</field>
+                          <field name="name">Fees</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="subscription_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">subscription</field>
+                          <field name="name">Subscription</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record
+        id="voucher_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">voucher</field>
+                          <field name="name">Voucher</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <!--
+                  <record id="fallback_expense_categ" model="account.bank.statement.expense.categ">
+                          <field name="code">fallback</field>
+                          <field name="name">Fallback</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+                  <record id="pending_expense_categ" model="account.bank.statement.expense.categ">
+                          <field name="code">pending</field>
+                          <field name="name">Pending</field>
+                          <field name="service">qonto</field>
+                  </record>
+                  -->
+
+          </odoo>

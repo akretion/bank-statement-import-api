@@ -1,0 +1,7 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_bank_statement_expense_categ_full,Full access on account.bank.statement.expense.categ,model_account_bank_statement_expense_categ,account.group_account_manager,1,1,1,1
+access_account_bank_statement_expense_categ_read,Read access on account.bank.statement.expense.categ,model_account_bank_statement_expense_categ,account.group_account_invoice,1,0,0,0
+access_account_bank_statement_card_full,Full access on account.bank.statement.card,model_account_bank_statement_card,account.group_account_manager,1,1,1,1
+access_account_bank_statement_card_read,Read access on account.bank.statement.card,model_account_bank_statement_card,account.group_account_invoice,1,0,0,0
+access_account_bank_statement_card_account_full,Full access on account.bank.statement.card.account,model_account_bank_statement_card_account,account.group_account_manager,1,1,1,1
+access_account_bank_statement_card_account_read,Read access on account.bank.statement.card.account,model_account_bank_statement_card_account,account.group_account_invoice,1,0,0,0

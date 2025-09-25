@@ -1,0 +1,5 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_account_statement_import_api_full,Full access on account.statement.import.api,model_account_statement_import_api,account.group_account_manager,1,1,1,1
+access_account_statement_import_api_read,Read access on account.statement.import.api,model_account_statement_import_api,account.group_account_readonly,1,0,0,0
+access_account_statement_import_api_log_full,Full access on account.statement.import.api.log,model_account_statement_import_api_log,account.group_account_manager,1,1,1,1
+access_account_statement_import_api_log_read,Read access on account.statement.import.api.log,model_account_statement_import_api_log,account.group_account_readonly,1,0,0,0
