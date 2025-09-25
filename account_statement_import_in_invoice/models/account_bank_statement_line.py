@@ -251,7 +251,8 @@ class AccountBankStatementLine(models.Model):
             move_type = "in_refund"
             total = self.amount
         untaxed = self.currency_id.round(total - self.in_invoice_vat_amount)
-        if not self.partner_id and not self.company_id.misc_partner_id:
+        partner = self.partner_id or self.company_id.misc_partner_id
+        if not partner:
             raise UserError(
                 _(
                     "No partner on the bank statement line and no misc partner "
@@ -259,6 +260,7 @@ class AccountBankStatementLine(models.Model):
                 )
                 % self.company_id.name
             )
+        partner = partner.with_company(self.company_id.id)
         vat_compare = self.company_currency_id.compare_amounts(
             self.in_invoice_vat_amount, 0
         )
@@ -303,10 +305,10 @@ class AccountBankStatementLine(models.Model):
             "company_id": self.company_id.id,
             "journal_id": journal.id,
             "invoice_date": self.in_invoice_force_invoice_date or self.date,
-            "partner_id": self.partner_id
-            and self.partner_id.id
-            or self.company_id.misc_partner_id.id,
+            "partner_id": partner.id,
             "currency_id": self.currency_id.id,
             "invoice_line_ids": [Command.create(lvals)],
         }
+        if not partner.property_supplier_payment_term_id:
+            vals["invoice_date_due"] = vals["invoice_date"]
         return vals
