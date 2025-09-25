@@ -17,7 +17,14 @@ New generation modules for Bank Statement Import by API
 
 [//]: # (addons)
 
-This part will be replaced when running the oca-gen-addons-table script from OCA/maintainer-tools.
+Available addons
+----------------
+addon | version | maintainers | summary
+--- | --- | --- | ---
+[account_statement_import_api](account_statement_import_api/) | 16.0.1.0.0 | [![alexis-via](https://github.com/alexis-via.png?size=30px)](https://github.com/alexis-via) | Base module to download bank statement via an API
+[account_statement_import_api_qonto](account_statement_import_api_qonto/) | 16.0.1.0.0 | [![alexis-via](https://github.com/alexis-via.png?size=30px)](https://github.com/alexis-via) | Use the Qonto API to download bank statement lines
+[account_statement_import_in_invoice](account_statement_import_in_invoice/) | 16.0.1.0.0 | [![alexis-via](https://github.com/alexis-via.png?size=30px)](https://github.com/alexis-via) | Enrich bank statement lines to allow the creation of vendor bills
+[account_statement_import_in_invoice_api](account_statement_import_in_invoice_api/) | 16.0.1.0.0 | [![alexis-via](https://github.com/alexis-via.png?size=30px)](https://github.com/alexis-via) | Glue module between account_statement_import_in_invoice and account_statement_import_api
 
 [//]: # (end addons)
 
