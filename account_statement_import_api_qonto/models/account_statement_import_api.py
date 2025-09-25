@@ -49,7 +49,7 @@ class AccountStatementImportApi(models.Model):
     def _get_show_backward_days(self, service):
         if service == "qonto":
             return False
-        return super()._show_backward_days(service)
+        return super()._get_show_backward_days(service)
 
     def _prepare_speedy(self):
         self.ensure_one()
