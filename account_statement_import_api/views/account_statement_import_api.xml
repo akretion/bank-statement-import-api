@@ -70,7 +70,11 @@
                 </group>
         </group>
         <notebook>
-                <page name="journals" string="Bank Journals">
+                <page
+                            name="journals"
+                            string="Bank Journals"
+                            invisible="not context.get('import_api_main_view')"
+                        >
                         <field name="journal_ids" nolabel="1" colspan="2" />
                 </page>
                 <page name="logs" string="Logs">
