@@ -1,0 +1,26 @@
+# Do NOT update manually; changes here will be overwritten by Copier
+_commit: efc17ec
+_src_path: https://github.com/akretion/private-addons-repo-template.git
+ci: GitHub
+convert_readme_fragments_to_markdown: true
+enable_checklog_odoo: false
+generate_requirements_txt: true
+github_check_license: true
+github_ci_extra_env: {}
+github_enable_codecov: true
+github_enable_makepot: true
+github_enable_stale_action: false
+github_enforce_dev_status_compatibility: false
+include_wkhtmltopdf: false
+odoo_test_flavor: Both
+odoo_version: 16.0
+org_name: Akretion
+org_slug: akretion
+rebel_module_groups: []
+repo_description: New generation modules for Bank Statement Import by API
+repo_name: Bank Statement Import by API
+repo_slug: bank-statement-import-api
+repo_website: https://github.com/akretion/bank-statement-import-api
+use_pyproject_toml: true
+use_ruff: false
+
