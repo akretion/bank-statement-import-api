@@ -5,6 +5,8 @@
 import datetime
 import logging
 
+import requests
+
 from odoo import Command, models
 from odoo.tools import float_compare
 
@@ -14,10 +16,27 @@ from odoo.addons.account_statement_import_in_invoice.models.account_bank_stateme
 
 logger = logging.getLogger(__name__)
 TAXINT_MULTIPLIER = 10000
+TIMEOUT = 30
 
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
+
+    # Documentation of the pivot format
+    # result['lines'] is updated with the following dict:
+    # {
+    #     "attachments": [{
+    #         "url": "https://xxx",
+    #         "identifier': "01998a83-d209-7d4d-858e-a92e85f06648",
+    #         "filename": "photo42.jpg",
+    #     }],
+    #     "in_invoice_vat_amount": 3.45,  # always positive
+    #     "in_invoice_vat_rate": 20.0,  # main VAT rate of the transaction
+    #     "in_invoice_expense_description": "Lunch with my dear customer",
+    #     "in_invoice_card_code": "1242",
+    #     "in_invoice_expense_categ_code": "restaurant",
+    #     "in_invoice_force_invoice_date": "2025-09-28",  # string or datetime
+    # }
 
     def _api_import_existing_line_bank_statement_line_fields(self):
         field_list = super()._api_import_existing_line_bank_statement_line_fields()
@@ -66,7 +85,6 @@ class AccountJournal(models.Model):
             attach_identifier2id[attach["bank_statement_import_identifier"]] = attach[
                 "id"
             ]
-        attach_method_name = f"_api_import_attachment_{speedy['service']}"
         # Load taxes
         taxes = self.env["account.tax"].search_read(
             self._api_import_purchase_tax_domain(), ["amount"]
@@ -81,7 +99,6 @@ class AccountJournal(models.Model):
             {
                 "card_code2id": card_code2id,
                 "attach_identifier2id": attach_identifier2id,
-                "attach_method": getattr(self, attach_method_name),
                 "tax_rateint2id": tax_rateint2id,
             }
         )
@@ -138,29 +155,51 @@ class AccountJournal(models.Model):
             if rateint in speedy["tax_rateint2id"]:
                 in_invoice_tax_ids = [speedy["tax_rateint2id"][rateint]]
         attachment_ids = []
-        attachment_identifiers_to_get = []
-        if update_mode:
-            existing_line = speedy["existing_lines"][pivot_line["unique_import_id"]]
-            attachment_identifiers_to_del = set(
-                existing_line["attachment_identifiers"]
-            ).difference(pivot_line["attachment_identifiers"])
-            for attachment_identifier in attachment_identifiers_to_del:
-                attachment_ids.append(
-                    Command.delete(
-                        speedy["attach_identifier2id"][attachment_identifier]
+        if pivot_line.get("attachments"):
+            attachments_to_get = []  # list of dict
+            # {'url': 'https://xxx', 'identifier': 'JLKDS'n 'filename' 'photo.jpg'}
+            if update_mode:
+                existing_line_attach_identifiers = speedy["existing_lines"][
+                    pivot_line["unique_import_id"]
+                ]["attachment_identifiers"]
+                pivot_line_attach_identifiers = [
+                    x["identifier"] for x in pivot_line["attachments"]
+                ]
+                attachment_identifiers_to_del = set(
+                    existing_line_attach_identifiers
+                ).difference(pivot_line_attach_identifiers)
+                for attachment_identifier in attachment_identifiers_to_del:
+                    attachment_ids.append(
+                        Command.delete(
+                            speedy["attach_identifier2id"][attachment_identifier]
+                        )
                     )
+                attachment_identifiers_to_get = set(
+                    pivot_line_attach_identifiers
+                ).difference(existing_line_attach_identifiers)
+                for attach_pivot in pivot_line["attachments"]:
+                    if attach_pivot["identifier"] in attachment_identifiers_to_get:
+                        attachments_to_get.append(attach_pivot)
+            else:
+                attachments_to_get = pivot_line["attachments"]
+            for attachment_pivot in attachments_to_get:
+                attach_raw = self._api_import_get_attachment_from_url(
+                    attachment_pivot["url"], result
                 )
-            attachment_identifiers_to_get = set(
-                pivot_line["attachment_identifiers"]
-            ).difference(existing_line["attachment_identifiers"])
-        else:
-            attachment_identifiers_to_get = pivot_line["attachment_identifiers"]
-        for attachment_identifier in attachment_identifiers_to_get:
-            att_vals = self._api_import_get_attachment(
-                attachment_identifier, result, speedy
-            )
-            if att_vals:
-                attachment_ids.append(Command.create(att_vals))
+                if (
+                    attach_raw
+                    and attachment_pivot["identifier"]
+                    and attachment_pivot["filename"]
+                ):
+                    attach_vals = {
+                        "res_model": "account.move",
+                        "raw": attach_raw,
+                        "name": attachment_pivot["filename"],
+                        "bank_statement_import_identifier": attachment_pivot[
+                            "identifier"
+                        ],
+                    }
+                    attachment_ids.append(Command.create(attach_vals))
         lvals.update(
             {
                 "in_invoice_vat_amount": pivot_line.get("in_invoice_vat_amount"),
@@ -177,17 +216,25 @@ class AccountJournal(models.Model):
         )
         return lvals
 
-    def _api_import_get_attachment(self, attachment_identifier, result, speedy):
-        attach_tuple = speedy["attach_method"](attachment_identifier, result, speedy)
-        if attach_tuple:
-            filename, attach_raw = attach_tuple
-            att_vals = {
-                "res_model": "account.move",
-                "raw": attach_raw,
-                "name": filename,
-                "bank_statement_import_identifier": attachment_identifier,
-            }
-            return att_vals
+    def _api_import_get_attachment_from_url(self, url, result):
+        if not url:
+            return None
+        try:
+            res = requests.get(url, verify=True, timeout=TIMEOUT)
+        except Exception as e:
+            result["logs"].append(
+                f"ERROR API call to get attachment from {url} failed: {e}"
+            )
+            return None
+        if res.status_code != 200:
+            # let's see error_logs
+            result["logs"].append(
+                f"ERROR API call to get attachment from {url} returned an HTTP error code "
+                f"{res.status_code}."
+            )
+            return None
+        if res.content:
+            return res.content
         return None
 
     def _api_import_update_existing_line(self, pivot_line, result, speedy):

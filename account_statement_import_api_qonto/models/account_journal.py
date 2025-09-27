@@ -44,6 +44,7 @@ class AccountJournal(models.Model):
             "iban": self.bank_account_id.sanitized_acc_number,
             "status": ["completed"],
             "updated_at_from": from_dt_aware.isoformat(),
+            "includes[]": ["vat_details", "attachments"],
             "page": 1,
         }
         url = BASE_URL + "transactions"
@@ -75,6 +76,27 @@ class AccountJournal(models.Model):
             total_pages = qvals["meta"]["total_pages"]
             for trans in qvals["transactions"]:
                 sign = trans["side"] == "debit" and -1 or 1
+                vat_rate = False
+                vat_details_list = trans["vat_details"]["items"]
+                if vat_details_list:
+                    # I take the rate of the line with the biggest untaxed base
+                    base2rate = {
+                        x["amount_excluding_vat_cents"]: x["rate"]
+                        for x in vat_details_list
+                    }
+                    base2rate_list_sorted = sorted(
+                        base2rate.items(), key=lambda x: x[0]
+                    )
+                    vat_rate = base2rate_list_sorted[-1][1]
+                attachments = []
+                for attach in trans["attachments"]:
+                    attachments.append(
+                        {
+                            "url": attach["url"],
+                            "identifier": attach["id"],
+                            "filename": attach["file_name"],
+                        }
+                    )
                 pivot = {
                     "date": self._api_import_timestamp_iso8601_to_date(
                         trans["settled_at"], speedy
@@ -84,9 +106,9 @@ class AccountJournal(models.Model):
                     "currency_code": trans["currency"],  # currency of the bank account
                     "payment_ref": trans["label"],
                     "unique_import_id": trans["transaction_id"],
-                    "attachment_identifiers": trans["attachment_ids"],
+                    "attachments": attachments,
                     "in_invoice_vat_amount": trans["vat_amount"],
-                    "in_invoice_vat_rate": trans["vat_rate"],
+                    "in_invoice_vat_rate": vat_rate,
                     "in_invoice_expense_description": trans["note"],
                     "in_invoice_card_code": trans["card_last_digits"],
                     "in_invoice_expense_categ_code": trans["category"],
@@ -101,38 +123,3 @@ class AccountJournal(models.Model):
                 lines.append(pivot)
             params["page"] += 1
         result["lines"] = lines
-
-    def _api_import_attachment_qonto(self, qonto_attach_identifier, result, speedy):
-        url = f"{BASE_URL}/attachments/{qonto_attach_identifier}"
-        try:
-            res1 = requests.get(
-                url, verify=True, headers=speedy["headers"], timeout=TIMEOUT
-            )
-        except Exception as e:
-            result["logs"].append(f"ERROR API call on {url} failed: {e}")
-            return None
-        if res1.status_code != 200:
-            # let's see error_logs
-            result["logs"].append(
-                f"ERROR API call on {url} returned an HTTP error code {res1.status_code}."
-            )
-            return None
-        res1_dict = res1.json()
-        filename = res1_dict["attachment"]["file_name"]
-        url_dl = res1_dict["attachment"]["url"]
-        if url_dl and filename:
-            try:
-                res2 = requests.get(url_dl, verify=True, timeout=TIMEOUT)
-            except Exception as e:
-                result["logs"].append(f"ERROR API call on {url_dl} failed: {e}")
-                return None
-            if res2.status_code != 200:
-                # let's see error_logs
-                result["logs"].append(
-                    f"ERROR API call on {url_dl} returned an HTTP error code "
-                    f"{res2.status_code}."
-                )
-                return None
-            if res2.content:
-                return (filename, res2.content)
-        return None
