@@ -102,6 +102,7 @@ class AccountStatementImportApi(models.Model):
             "user_id": self.env.ref("base.user_root").id,
             "interval_number": 1,
             "interval_type": "days",
+            "numbercall": -1,  # remove when porting in v18
             "model_id": model.id,
             "state": "code",
             "code": "model.cron_run(%s)" % self.id,
@@ -118,7 +119,7 @@ class AccountStatementImportApi(models.Model):
     def cron_run(self, import_api_id):
         import_api = self.browse(import_api_id)
         logger.info("Start Bank Statement API cron %s", import_api.name)
-        import_api.run_now()
+        import_api.run_import()
         logger.info("End Bank Statement API cron %s", import_api.name)
 
     def _prepare_speedy(self):
