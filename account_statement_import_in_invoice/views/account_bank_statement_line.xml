@@ -67,7 +67,7 @@
                             t-if="record.attachment_ids.raw_value.length > 0"
                         >📷 <t t-esc="record.attachment_ids.raw_value.length" /></div>
                                                 <div
-                            t-if="record.attachment_ids.raw_value.length === 0"
+                            t-if="record.attachment_ids.raw_value.length === 0 &amp;&amp; !record.is_reconciled.raw_value"
                             class="badge text-bg-warning"
                             style="font-weight: bold"
                         >Missing 📷</div>
