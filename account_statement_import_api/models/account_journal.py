@@ -352,6 +352,14 @@ class AccountJournal(models.Model):
 
     def api_import_bank_statement_lines_button(self):
         self.ensure_one()
+        if not self.statement_import_api_id:
+            raise UserError(
+                _(
+                    "Journal '%s' is not configured to import bank statements "
+                    "via API."
+                )
+                % self.display_name
+            )
         speedy = self.statement_import_api_id._prepare_speedy()
         log = self._api_import_bank_statement_lines(speedy)
         if log.status == "failure":
