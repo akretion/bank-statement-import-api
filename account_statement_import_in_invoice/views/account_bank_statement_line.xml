@@ -182,21 +182,26 @@
                                                   <field
                                 name="in_invoice_force_invoice_date"
                             />
+                                                  <field
+                                name="partner_id"
+                                string="Force Partner"
+                                attrs="{'invisible': [('partner_id', '!=', False)]}"
+                            />
 
                                                   <field
                                 name="in_invoice_show_button"
                                 invisible="1"
                             />
                                             </group>
-                                                  </group>
-                                          <group name="attachments">
-                                                  <field
-                            name="attachment_ids"
-                            widget="many2many_binary"
+                                    </group>
+                                    <group name="chatter">
+                                            <field
+                            name="move_id"
+                            widget="account_reconcile_oca_chatter"
                             nolabel="1"
-                            string="Expense Evidences"
+                            colspan="2"
                         />
-                                                  </group>
+                                    </group>
                                           </page>
                                   </page>
                                   <button
