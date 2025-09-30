@@ -3,10 +3,13 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import datetime
+import logging
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools.misc import format_date, format_datetime
+
+logger = logging.getLogger(__name__)
 
 
 class AccountJournal(models.Model):
@@ -116,10 +119,14 @@ class AccountJournal(models.Model):
     def _api_import_update_speedy(self, speedy):
         """This method is designed to be inherited"""
         self.ensure_one()
+        # Method _statement_line_import_speeddict() is defined in
+        # the OCA module account_statement_import_base
+        update_hook_speeddict = self._statement_line_import_speeddict()
         speedy.update(
             {
                 "journal_currency": self.currency_id or self.company_id.currency_id,
                 "existing_lines": {},
+                "update_hook_speeddict": update_hook_speeddict,
             }
         )
         existing_lines_read = self.env["account.bank.statement.line"].search_read(
@@ -151,6 +158,7 @@ class AccountJournal(models.Model):
     def _api_import_bank_statement_lines(self, speedy):
         self.ensure_one()
         log_obj = self.env["account.statement.import.api.log"]
+        logger.info("Start bank statement import API of journal %s", self.display_name)
         # raise for cases that should never happen because that are python constrains on it
         if (
             not self.statement_import_api_last_success
@@ -242,6 +250,11 @@ class AccountJournal(models.Model):
                     lvals = self._api_prepare_bank_statement_line(
                         pivot_line, result, speedy
                     )
+                    # The method _statement_line_import_update_hook() is defined
+                    # in the OCA module account_statement_import_base
+                    self._statement_line_import_update_hook(
+                        lvals, speedy["update_hook_speeddict"]
+                    )
                     new_line_vals.append(lvals)
                     result["logs"].append(
                         f"INFO Created new line dated {lvals['date']} "
@@ -253,28 +266,41 @@ class AccountJournal(models.Model):
                 self.env["account.bank.statement.line"].create(new_line_vals)
 
         result["new_line_count"] = len(new_line_vals)
+        logger.info(
+            "%d bank statement lines created. %d updated.",
+            result["new_line_count"],
+            result["updated_line_count"],
+        )
         log_vals = self._api_import_prepare_log(result, speedy)
         log = log_obj.create(log_vals)
+        logger.debug("Bank statement import log created ID %d", log.id)
+        logger.info("End of bank statement import API of journal %s", self.display_name)
         return log
 
     def _api_import_prepare_log(self, result, speedy):
         logs = []
         for log in result["logs"]:
             if log.startswith("INFO "):
+                msg = log[5:]
                 logs.append(
                     f'<span style="color: green; font-weight: bold">'
-                    f"INFO </span>{log[5:]}"
+                    f"INFO </span>{msg}"
                 )
+                logger.info(msg)
             elif log.startswith("WARN "):
+                msg = log[5:]
                 logs.append(
                     f'<span style="color: orange; font-weight: bold">'
-                    f"WARN </span>{log[5:]}"
+                    f"WARN </span>{msg}"
                 )
+                logger.warning(msg)
             elif log.startswith("ERROR "):
+                msg = log[6:]
                 logs.append(
                     f'<span style="color: red; font-weight: bold">'
-                    f"ERROR </span>{log[6:]}"
+                    f"ERROR </span>{msg}"
                 )
+                logger.error(msg)
             else:  # Should not happen
                 logs.append(log)
         has_error = any([log.startswith("ERROR ") for log in result["logs"]])
