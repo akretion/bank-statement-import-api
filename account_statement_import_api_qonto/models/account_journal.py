@@ -75,51 +75,51 @@ class AccountJournal(models.Model):
             qvals = res.json()
             total_pages = qvals["meta"]["total_pages"]
             for trans in qvals["transactions"]:
-                sign = trans["side"] == "debit" and -1 or 1
-                vat_rate = False
-                vat_details_list = trans["vat_details"]["items"]
-                if vat_details_list:
-                    # I take the rate of the line with the biggest untaxed base
-                    base2rate = {
-                        x["amount_excluding_vat_cents"]: x["rate"]
-                        for x in vat_details_list
-                    }
-                    base2rate_list_sorted = sorted(
-                        base2rate.items(), key=lambda x: x[0]
-                    )
-                    vat_rate = base2rate_list_sorted[-1][1]
-                attachments = []
-                for attach in trans["attachments"]:
-                    attachments.append(
-                        {
-                            "url": attach["url"],
-                            "identifier": attach["id"],
-                            "filename": attach["file_name"],
-                        }
-                    )
-                pivot = {
-                    "date": self._api_import_timestamp_iso8601_to_date(
-                        trans["settled_at"], speedy
-                    ),
-                    "amount": trans["amount"]
-                    * sign,  # 'amount' is in the currency of the bank account
-                    "currency_code": trans["currency"],  # currency of the bank account
-                    "payment_ref": trans["label"],
-                    "unique_import_id": trans["transaction_id"],
-                    "attachments": attachments,
-                    "in_invoice_vat_amount": trans["vat_amount"],
-                    "in_invoice_vat_rate": vat_rate,
-                    "in_invoice_expense_description": trans["note"],
-                    "in_invoice_card_code": trans["card_last_digits"],
-                    "in_invoice_expense_categ_code": trans["category"],
-                    "in_invoice_force_invoice_date": self._api_import_timestamp_iso8601_to_date(
-                        trans["emitted_at"][:10], speedy
-                    ),
-                }
-                if trans["reference"]:
-                    pivot["payment_ref"] = " ".join(
-                        [pivot["payment_ref"], trans["reference"]]
-                    )
-                lines.append(pivot)
+                pivot = self._api_import_qonto_prepare_pivot_line(trans, result, speedy)
+                if pivot:
+                    lines.append(pivot)
             params["page"] += 1
         result["lines"] = lines
+
+    def _api_import_qonto_prepare_pivot_line(self, trans, result, speedy):
+        sign = trans["side"] == "debit" and -1 or 1
+        vat_rate = False
+        vat_details_list = trans["vat_details"]["items"]
+        if vat_details_list and trans["vat_amount"]:
+            # I take the rate of the line with the biggest untaxed base
+            base2rate = {
+                x["amount_excluding_vat_cents"]: x["rate"] for x in vat_details_list
+            }
+            base2rate_list_sorted = sorted(base2rate.items(), key=lambda x: x[0])
+            vat_rate = base2rate_list_sorted[-1][1]
+        attachments = []
+        for attach in trans["attachments"]:
+            attachments.append(
+                {
+                    "url": attach["url"],
+                    "identifier": attach["id"],
+                    "filename": attach["file_name"],
+                }
+            )
+        pivot = {
+            "date": self._api_import_timestamp_iso8601_to_date(
+                trans["settled_at"], speedy
+            ),
+            "amount": trans["amount"]
+            * sign,  # 'amount' is in the currency of the bank account
+            "currency_code": trans["currency"],  # currency of the bank account
+            "payment_ref": trans["label"],
+            "unique_import_id": trans["transaction_id"],
+            "attachments": attachments,
+            "in_invoice_vat_amount": trans["vat_amount"],
+            "in_invoice_vat_rate": vat_rate,
+            "in_invoice_expense_description": trans["note"],
+            "in_invoice_card_code": trans["card_last_digits"],
+            "in_invoice_expense_categ_code": trans["category"],
+            "in_invoice_force_invoice_date": self._api_import_timestamp_iso8601_to_date(
+                trans["emitted_at"][:10], speedy
+            ),
+        }
+        if trans["reference"]:
+            pivot["payment_ref"] = " ".join([pivot["payment_ref"], trans["reference"]])
+        return pivot

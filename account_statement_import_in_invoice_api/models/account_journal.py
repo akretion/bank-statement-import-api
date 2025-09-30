@@ -150,9 +150,15 @@ class AccountJournal(models.Model):
         # for the moment, we consider that autoliq taxes are set by country-specific modules
         # that inherit this method
         in_invoice_tax_ids = []
-        if pivot_line.get("in_invoice_vat_rate"):
+        if (
+            pivot_line.get("in_invoice_vat_rate")
+            and pivot_line.get("in_invoice_vat_amount")
+            and not speedy["journal_currency"].is_zero(
+                pivot_line["in_invoice_vat_amount"]
+            )
+        ):
             rateint = int(round(pivot_line["in_invoice_vat_rate"] * TAXINT_MULTIPLIER))
-            if rateint in speedy["tax_rateint2id"]:
+            if rateint and rateint in speedy["tax_rateint2id"]:
                 in_invoice_tax_ids = [speedy["tax_rateint2id"][rateint]]
         attachment_ids = []
         if pivot_line.get("attachments"):
