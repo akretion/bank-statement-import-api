@@ -86,11 +86,14 @@
             ref="account.account_journal_dashboard_kanban_view"
         />
             <field name="arch" type="xml">
+                    <field name="show_on_dashboard" position="after">
+                            <field name="statement_import_api_id" />
+                    </field>
                     <xpath
                 expr="//t[@t-name='JournalManage']//div[hasclass('o_kanban_manage_reconciliation')]//a[@name='open_action_with_context']/.."
                 position="after"
             >
-                        <div>
+                        <div t-if="record.statement_import_api_id.raw_value">
                             <a
                         role="menuitem"
                         type="object"
