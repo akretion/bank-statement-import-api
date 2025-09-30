@@ -146,9 +146,11 @@ class AccountStatementImportApi(models.Model):
 
     def run_import(self):
         self.ensure_one()
+        logger.info("Start bank statement import API %s", self.name)
         speedy = self._prepare_speedy()
         for journal in self.journal_ids:
             journal._api_import_bank_statement_lines(speedy)
+        logger.info("End of bank statement import API %s", self.name)
 
     def test_api(self):
         self.ensure_one()
