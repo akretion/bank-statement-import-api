@@ -31,6 +31,7 @@ class AccountBankStatementLine(models.Model):
         precompute=True,
         string="Expense Account",
         check_company=True,
+        domain="[('company_id', '=', company_id), ('deprecated', '=', False)]",
     )
     in_invoice_analytic_distribution = fields.Json(
         string="Analytic",

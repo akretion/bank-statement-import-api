@@ -20,7 +20,10 @@ class AccountBankStatementExpenseCateg(models.Model):
         index=True,
     )
     account_id = fields.Many2one(
-        "account.account", string="Account", company_dependent=True
+        "account.account",
+        string="Account",
+        company_dependent=True,
+        domain="[('company_id', '=', current_company_id), ('deprecated', '=', False)]",
     )
     active = fields.Boolean(default=True)
     card_account_ids = fields.One2many(
