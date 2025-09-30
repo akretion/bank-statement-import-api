@@ -133,6 +133,7 @@
                           </field>
                   </record>
 
+                  <!-- This is the view used on the right side of the bank statement reconcile interface -->
                   <record
         id="bank_statement_line_form_reconcile_view"
         model="ir.ui.view"
@@ -163,12 +164,13 @@
                                 name="in_invoice_expense_description"
                             />
                                                   <field
-                                name="in_invoice_receipt_lost"
-                                attrs="{'invisible': [('attachment_ids', '!=', [])]}"
+                                name="attachment_ids"
+                                widget="many2many_binary"
+                                string="Expense Evidences"
                             />
                                                   <field
-                                name="attachment_ids"
-                                invisible="1"
+                                name="in_invoice_receipt_lost"
+                                attrs="{'invisible': [('attachment_ids', '!=', [])]}"
                             />
                                             </group>
                                             <group name="in_invoice_right">
