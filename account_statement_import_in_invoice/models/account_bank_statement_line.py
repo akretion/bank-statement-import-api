@@ -234,13 +234,14 @@ class AccountBankStatementLine(models.Model):
                     "This should never happen."
                 )
             )
-        invoice.message_post(
-            body=_(
-                "Total VAT Amount has been forced from %(ini_vat_amount)s to %(vat_amount)s.",
-                ini_vat_amount=format_amount(self.env, ini_vat_amount, cur),
-                vat_amount=format_amount(self.env, invoice.amount_tax, cur),
+        if invoice.currency_id.compare_amounts(ini_vat_amount, invoice.amount_tax):
+            invoice.message_post(
+                body=_(
+                    "Total VAT Amount has been forced from %(ini_vat_amount)s to %(vat_amount)s.",
+                    ini_vat_amount=format_amount(self.env, ini_vat_amount, cur),
+                    vat_amount=format_amount(self.env, invoice.amount_tax, cur),
+                )
             )
-        )
 
     def _prepare_in_invoice(self):
         self.ensure_one()
