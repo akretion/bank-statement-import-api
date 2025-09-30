@@ -31,7 +31,7 @@ class AccountJournal(models.Model):
 
     def __get_bank_statements_available_sources(self):
         res = super().__get_bank_statements_available_sources()
-        res.append(("api", _("API")))
+        res.insert(0, ("api", _("API")))
         return res
 
     @api.constrains(
