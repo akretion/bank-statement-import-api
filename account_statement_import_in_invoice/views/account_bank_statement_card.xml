@@ -25,7 +25,6 @@
             </div>
                             <group name="main">
                                     <field name="code" />
-                                    <field name="name" />
                                     <field
                             name="company_id"
                             groups="base.group_multi_company"
@@ -92,7 +91,7 @@
         id="account_bank_statement_card_menu"
         action="account_bank_statement_card_action"
         parent="account.account_banks_menu"
-        sequence="7"
+        sequence="90"
     />
 
 </odoo>

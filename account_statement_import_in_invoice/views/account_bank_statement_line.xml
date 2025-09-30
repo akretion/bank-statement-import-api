@@ -164,6 +164,11 @@
                             />
                                                   <field
                                 name="in_invoice_receipt_lost"
+                                attrs="{'invisible': [('attachment_ids', '!=', [])]}"
+                            />
+                                                  <field
+                                name="attachment_ids"
+                                invisible="1"
                             />
                                             </group>
                                             <group name="in_invoice_right">
@@ -184,8 +189,7 @@
                             />
                                                   <field
                                 name="partner_id"
-                                string="Force Partner"
-                                attrs="{'invisible': [('partner_id', '!=', False)]}"
+                                string="Force Partner (optional)"
                             />
 
                                                   <field
