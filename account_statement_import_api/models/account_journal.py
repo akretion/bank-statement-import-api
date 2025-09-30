@@ -116,7 +116,12 @@ class AccountJournal(models.Model):
     def _api_import_update_speedy(self, speedy):
         """This method is designed to be inherited"""
         self.ensure_one()
-        speedy["existing_lines"] = {}
+        speedy.update(
+            {
+                "journal_currency": self.currency_id or self.company_id.currency_id,
+                "existing_lines": {},
+            }
+        )
         existing_lines_read = self.env["account.bank.statement.line"].search_read(
             [
                 ("journal_id", "=", self.id),
@@ -194,8 +199,7 @@ class AccountJournal(models.Model):
                     pivot_line["unique_import_id"]
                 )
             self._api_import_update_speedy(speedy)
-            journal_currency = self.currency_id or self.company_id.currency_id
-            journal_currency_code = journal_currency.name
+            journal_currency_code = speedy["journal_currency"].name
             self.write({"statement_import_api_last_success": fields.Datetime.now()})
             existing_lines = speedy["existing_lines"]
             for pivot_line in result["lines"]:
