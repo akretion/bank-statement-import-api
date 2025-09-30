@@ -23,7 +23,7 @@
                         <div class="o_setting_container">
                                 <field
                                 name="misc_partner_id"
-                                context="{'default_is_company': True, 'default_name': 'Misc'}"
+                                context="{'default_is_company': True}"
                             />
                         </div>
 
