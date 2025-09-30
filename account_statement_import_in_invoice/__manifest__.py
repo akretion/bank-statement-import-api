@@ -20,5 +20,6 @@
         "views/ir_attachment.xml",
         "wizards/res_config_settings_view.xml",
     ],
+    "demo": ["demo/demo.xml"],
     "installable": True,
 }
