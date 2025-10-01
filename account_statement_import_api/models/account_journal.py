@@ -78,7 +78,10 @@ class AccountJournal(models.Model):
                 if (
                     journal.statement_import_api_last_success
                     and journal.statement_import_api_start_date
-                    and journal.statement_import_api_last_success.date()
+                    and (
+                        journal.statement_import_api_last_success.date()
+                        + datetime.timedelta(1)
+                    )
                     < journal.statement_import_api_start_date
                 ):
                     raise ValidationError(
