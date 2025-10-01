@@ -36,8 +36,9 @@ class AccountBankStatementExpenseCateg(models.Model):
                 # Too generic
                 # 'other_service': '',
                 # 'other_expense': '',
-                "fees": "6278",
+                "fees": "6226",  # honoraires
                 "subscription": "6181",
+                "qonto_fee": "6278",
             }
         }
         return mapping

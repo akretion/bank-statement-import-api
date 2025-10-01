@@ -266,4 +266,15 @@
                   </record>
                   -->
 
+    <!-- This category doesn't exist on Qonto ; we map it with operation_type = "qonto_fee" -->
+                  <record
+        id="qonto_fee_expense_categ"
+        model="account.bank.statement.expense.categ"
+    >
+                          <field name="code">qonto_fee</field>
+                          <field name="name">Qonto Bank Fees</field>
+                          <field name="service">qonto</field>
+                  </record>
+
+
           </odoo>

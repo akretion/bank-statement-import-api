@@ -122,4 +122,6 @@ class AccountJournal(models.Model):
         }
         if trans["reference"]:
             pivot["payment_ref"] = " ".join([pivot["payment_ref"], trans["reference"]])
+        if trans["operation_type"] == "qonto_fee":
+            pivot["in_invoice_expense_categ_code"] = "qonto_fee"
         return pivot
