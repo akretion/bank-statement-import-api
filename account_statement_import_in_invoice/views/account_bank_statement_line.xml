@@ -126,7 +126,7 @@
                         name="attachment_ids"
                         widget="many2many_binary"
                         nolabel="1"
-                        string="Expense Evidences"
+                        string="Receipt(s)"
                     />
                                           </group>
                                   </xpath>
@@ -166,7 +166,7 @@
                                                   <field
                                 name="attachment_ids"
                                 widget="many2many_binary"
-                                string="Expense Evidences"
+                                string="Receipt(s)"
                             />
                                                   <field
                                 name="in_invoice_receipt_lost"
@@ -191,7 +191,7 @@
                             />
                                                   <field
                                 name="partner_id"
-                                string="Force Partner (optional)"
+                                string="Force Vendor (optional)"
                             />
 
                                                   <field
@@ -268,13 +268,13 @@
                                           </group>
                                           <group
                         name="in_invoice_attach"
-                        string="Expense Evidences"
+                        string="Receipt(s)"
                     >
                                               <field
                             name="attachment_ids"
                             widget="many2many_binary"
                             nolabel="1"
-                            string="Expense Evidences"
+                            string="Receipt(s)"
                         />
                                           </group>
                                       </page>

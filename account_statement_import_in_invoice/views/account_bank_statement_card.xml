@@ -82,7 +82,7 @@
         </record>
 
         <record id="account_bank_statement_card_action" model="ir.actions.act_window">
-                <field name="name">Bank Statement Cards</field>
+                <field name="name">Bank Cards</field>
                 <field name="res_model">account.bank.statement.card</field>
                 <field name="view_mode">tree,form</field>
         </record>

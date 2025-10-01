@@ -61,7 +61,7 @@ class AccountStatementImportApi(models.Model):
         (
             "name_company_uniq",
             "unique(name, company_id)",
-            "A statement import API already exists with that name is this company.",
+            "A bank statement import API already exists with that name is this company.",
         )
     ]
 
