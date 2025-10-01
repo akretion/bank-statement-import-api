@@ -1,0 +1,439 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_statement_import_api
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-01 08:26+0000\n"
+"PO-Revision-Date: 2025-10-01 08:27+0000\n"
+"Last-Translator: Alexis de Lattre <alexis.delattre@akretion.com>\n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "%s bank statement lines created."
+msgstr "%s lignes de relevé de compte créées."
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "%s updated."
+msgstr "%s mises à jour."
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "1 bank statement line created."
+msgstr "1 ligne de relevé de compte créée."
+
+#. module: account_statement_import_api
+#: model:ir.model.constraint,message:account_statement_import_api.constraint_account_statement_import_api_name_company_uniq
+msgid "A bank statement import API already exists with that name is this company."
+msgstr ""
+"Une API d'import de relevés de compte existe déjà sous ce nom dans cette société."
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "API"
+msgstr "API"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_search
+msgid "Automatic"
+msgstr "Automatique"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__backward_days
+msgid "Backward Days"
+msgstr "Jours rétroactifs"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__journal_id
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
+msgid "Bank Journal"
+msgstr "Journal de banque"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__journal_ids
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_form
+msgid "Bank Journals"
+msgstr "Journaux de banque"
+
+#. module: account_statement_import_api
+#: model:ir.actions.act_window,name:account_statement_import_api.account_statement_import_api_action
+#: model:ir.model,name:account_statement_import_api.model_account_statement_import_api
+#: model:ir.ui.menu,name:account_statement_import_api.account_statement_import_api_menu
+msgid "Bank Statement Import API"
+msgstr "API d'import des relevés de compte"
+
+#. module: account_statement_import_api
+#: model:ir.actions.act_window,name:account_statement_import_api.account_statement_import_api_log_action
+msgid "Bank Statement Import API Logs"
+msgstr "Messages de l'API d'import des relevés de compte"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__company_id
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__company_id
+msgid "Company"
+msgstr "Société"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,help:account_statement_import_api.field_account_statement_import_api_log__company_id
+msgid "Company related to this journal"
+msgstr "Société liée à ce journal"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_form
+msgid "Create Scheduled Action"
+msgstr "Créer une action planifiée"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__create_uid
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__create_uid
+msgid "Created by"
+msgstr "Créé par"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__create_date
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__create_date
+msgid "Created on"
+msgstr "Créé le"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_list
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
+msgid "Date"
+msgstr "Date"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,help:account_statement_import_api.field_account_journal__statement_import_api_last_success
+msgid "Date and time of the last successful API import"
+msgstr "Date et heure du dernier import API réussi"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__display_name
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__display_name
+msgid "Display Name"
+msgstr "Nom affiché"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.view_account_journal_form
+msgid "Download bank statement lines via the API"
+msgstr "Télécharger des lignes de relevé de compte via l'API"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_log__status__failure
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
+msgid "Failure"
+msgstr "Échec"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__id
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__id
+msgid "ID"
+msgstr "ID"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,help:account_statement_import_api.field_account_statement_import_api__tz
+msgid ""
+"If the API provides datetime fields instead of date fields, Odoo will use "
+"this timezone to translate the datetime to a date."
+msgstr ""
+"Si l'API fournit des champs de type date+heure au lieu de champs de type date, "
+"Odoo utilisera ce fuseau horaire pour convertir la date+heure en date."
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.view_account_journal_form
+msgid "Import Logs"
+msgstr "Logs d'import"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_journal__statement_import_api_start_date
+msgid "Import Start Date"
+msgstr "Date de début de l'import"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "Import Start Date is not set on journal '%(journal)s'."
+msgstr ""
+"La date de début de l'import n'est pas définie pour le journal "
+"'%(journal)s'."
+
+#. module: account_statement_import_api
+#: model:ir.model,name:account_statement_import_api.model_account_journal
+msgid "Journal"
+msgstr "Journal"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "Journal '%s' is not configured to import bank statements via API."
+msgstr ""
+"Le journal '%s' n'est pas configuré pour importer des relevés de compte via "
+"API."
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_journal__statement_import_api_last_success
+msgid "Last Import"
+msgstr "Dernier import"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api____last_update
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log____last_update
+msgid "Last Modified on"
+msgstr "Dernière modification le"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__last_success
+msgid "Last Success"
+msgstr "Dernier succès"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__write_uid
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__write_uid
+msgid "Last Updated by"
+msgstr "Dernière mise à jour par"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__write_date
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__write_date
+msgid "Last Updated on"
+msgstr "Dernière mise à jour le"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__login
+msgid "Login or Client ID"
+msgstr "Login ou identifiant"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__log_ids
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__logs
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_form
+msgid "Logs"
+msgstr "Messages"
+
+#. module: account_statement_import_api
+#: model:ir.model,name:account_statement_import_api.model_account_statement_import_api_log
+msgid "Logs for the download of bank statements via API"
+msgstr "Messages liés au téléchargement des relevés de compte via API"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_search
+msgid "Manual"
+msgstr "Manuel"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__name
+msgid "Name"
+msgstr "Nom"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_list
+msgid "New Lines"
+msgstr "Nouvelles lignes"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "No new bank statement lines."
+msgstr "Pas de nouvelles lignes de relevé de compte."
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__new_line_count
+msgid "Number of New Statement Lines"
+msgstr "Nombre de lignes de relevé de compte créés"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__updated_line_count
+msgid "Number of Statement Lines Updated"
+msgstr "Nombre de lignes de relevé de compte mises à jour"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__password
+msgid "Password or Client Secret"
+msgstr "Mot de passe ou secret"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_journal_dashboard_kanban_view
+msgid "Re-sync Now"
+msgstr "Re-synchroniser maintenant"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.view_account_journal_form
+msgid "Run Now"
+msgstr "Exécuter maintenant"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__cron_id
+msgid "Scheduled Action"
+msgstr "Action planifiée"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "See error log on Statement Import API '%s'."
+msgstr ""
+"Voir les messages d'erreur sur l'API d'import de relevés de compte '%s'."
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__service
+msgid "Service"
+msgstr "Service"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__show_backward_days
+msgid "Show Backward Days"
+msgstr "Afficher les jours rétroactifs"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_journal__statement_import_api_id
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__statement_import_api_id
+msgid "Statement Import API"
+msgstr "API d'import des relevés"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_journal__statement_import_api_log_ids
+msgid "Statement Import API Logs"
+msgstr "Messages de l'API d'import des relevés"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__status
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
+msgid "Status"
+msgstr "Statut"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_log__status__success
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
+msgid "Success"
+msgstr "Succès"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_log__status__success_warn
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
+msgid "Success with Warnings"
+msgstr "Succès avec avertissements"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "Successful Sync"
+msgstr "Synchronisation réussie"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_statement_import_api.py:0
+#, python-format
+msgid "Successful connection to the '%(service)s' API."
+msgstr "Connexion réussie à l'API '%(service)s'."
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "Sync Failed"
+msgstr "Échec de la synchronisation"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid "Sync with warning(s), cf last log on Statement Import API '%s'."
+msgstr ""
+"Synchronisation avec avertissement(s), cf dernier log sur l'API d'import '%s'."
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_form
+msgid "Test API"
+msgstr "Test API"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid ""
+"The bank journal '%(journal)s' is configured with Bank Feeds set to API, but "
+"the Account Number is not set."
+msgstr ""
+"Le journal de banque \"%(journal)s\" est configuré avec la provenance "
+"des relevés bancaires défini à API, mais le numéro de compte n'est pas défini."
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid ""
+"The bank journal '%(journal)s' is configured with Bank Feeds set to API, so "
+"you must configure a Statement Import API."
+msgstr ""
+"Le journal de banque \"%(journal)s\" est configuré avec la provenance "
+"des relevés bancaires défini à API, donc vous devez configurer une API d'import des relevés."
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid ""
+"The bank journal '%(journal)s' is configured with Bank Feeds set to API, so "
+"you must configure an Import Start Date."
+msgstr ""
+"Le journal de banque \"%(journal)s\" est configuré avec la provenance "
+"des relevés bancaires défini à API, donc vous devez configurer une date de début d'import."
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_journal.py:0
+#, python-format
+msgid ""
+"The bank journal '%(journal)s' is configured with Import Start Date "
+"%(start_date)s, so the Last Import Date %(last_success)s cannot be prior to "
+"the Import Start Date."
+msgstr ""
+"Le journal de banque \"%(journal)s\" est configuré avec la date de début "
+"d'import %(start_date)s, donc la date de dernier import "
+"%(last_success)s ne peut être antérieure à la date de début d'import."
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,help:account_statement_import_api.field_account_journal__statement_import_api_start_date
+msgid "The first bank statement API import will start from this date."
+msgstr "Le premier import de relevé de compte par API commencera à cette date."
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_statement_import_api.py:0
+#, python-format
+msgid "The test feature has not been implemented for the '%(service)s' API."
+msgstr ""
+"La fonction de test n'a pas été implémentée pour l'API \"%(service)s\"."
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__tz
+msgid "Timezone"
+msgstr "Fuseau horaire"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_list
+msgid "Updated Lines"
+msgstr "Lignes mises à jour"

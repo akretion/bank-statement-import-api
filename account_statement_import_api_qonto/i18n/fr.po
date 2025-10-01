@@ -1,0 +1,204 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_statement_import_api_qonto
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-01 20:57+0000\n"
+"PO-Revision-Date: 2025-10-01 20:57+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_statement_import_api_qonto
+#: model:ir.model,name:account_statement_import_api_qonto.model_account_bank_statement_expense_categ
+msgid "Bank Statement Expense Category"
+msgstr "Catégorie de dépense du relevé de compte"
+
+#. module: account_statement_import_api_qonto
+#: model:ir.model,name:account_statement_import_api_qonto.model_account_statement_import_api
+msgid "Bank Statement Import API"
+msgstr "API d'import des relevés de compte"
+
+#. module: account_statement_import_api_qonto
+#. odoo-python
+#: code:addons/account_statement_import_api_qonto/models/account_statement_import_api.py:0
+#, python-format
+msgid "Failure in the request to Qonto API. Error: %(err)s"
+msgstr "Échec de la requête à l'API Qonto. Erreur : %(err)s"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.fees_expense_categ
+msgid "Fees"
+msgstr "Honoraires"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.finance_expense_categ
+msgid "Finance"
+msgstr ""
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.food_and_grocery_expense_categ
+msgid "Food and Grocery"
+msgstr "Alimentaire"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.gas_station_expense_categ
+msgid "Gas Station"
+msgstr "Essence"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.hardware_and_equipment_expense_categ
+msgid "Hardware and Equipment"
+msgstr "Matériel et équipement"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.hotel_and_lodging_expense_categ
+msgid "Hotel and Lodging"
+msgstr "Hébergement"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.it_and_electronics_expense_categ
+msgid "IT and Electronics"
+msgstr "IT & électronique"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.insurance_expense_categ
+msgid "Insurance"
+msgstr "Assurance"
+
+#. module: account_statement_import_api_qonto
+#: model:ir.model,name:account_statement_import_api_qonto.model_account_journal
+msgid "Journal"
+msgstr ""
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.legal_and_accounting_expense_categ
+msgid "Legal and Accounting"
+msgstr "Juridique & comptabilité"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.logistics_expense_categ
+msgid "Logistics"
+msgstr "Logistique"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.manufacturing_expense_categ
+msgid "Manufacturing"
+msgstr "Fabrication"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.marketing_expense_categ
+msgid "Marketing"
+msgstr ""
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.office_rental_expense_categ
+msgid "Office Rental"
+msgstr "Location de bureaux"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.office_supply_expense_categ
+msgid "Office Supply"
+msgstr "Fournitures de bureau"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.online_service_expense_categ
+msgid "Online Service"
+msgstr "Service en ligne"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.other_expense_expense_categ
+msgid "Other Expense"
+msgstr "Autre dépense"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.other_service_expense_categ
+msgid "Other Service"
+msgstr "Autre service"
+
+#. module: account_statement_import_api_qonto
+#: model:ir.model.fields.selection,name:account_statement_import_api_qonto.selection__account_bank_statement_expense_categ__service__qonto
+#: model:ir.model.fields.selection,name:account_statement_import_api_qonto.selection__account_statement_import_api__service__qonto
+msgid "Qonto"
+msgstr ""
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.qonto_fee_expense_categ
+msgid "Qonto Bank Fees"
+msgstr "Frais bancaires Qonto"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.restaurant_and_bar_expense_categ
+msgid "Restaurant and Bar"
+msgstr "Restaurant & bar"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.salary_expense_categ
+msgid "Salary"
+msgstr "Salaire"
+
+#. module: account_statement_import_api_qonto
+#: model:ir.model.fields,field_description:account_statement_import_api_qonto.field_account_bank_statement_expense_categ__service
+#: model:ir.model.fields,field_description:account_statement_import_api_qonto.field_account_statement_import_api__service
+msgid "Service"
+msgstr ""
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.subscription_expense_categ
+msgid "Subscription"
+msgstr "Abonnement"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.tax_expense_categ
+msgid "Tax"
+msgstr "Impôts & taxes"
+
+#. module: account_statement_import_api_qonto
+#. odoo-python
+#: code:addons/account_statement_import_api_qonto/models/account_statement_import_api.py:0
+#, python-format
+msgid ""
+"The Bank Statement Import API '%(name)s' uses the Qonto API and therefore it"
+" must be linked to a specific company."
+msgstr ""
+"L'API d'import des relevés de compte '%(name)s' utilise l'API Qonto et doit "
+"donc être liée à une société spécifique."
+
+#. module: account_statement_import_api_qonto
+#. odoo-python
+#: code:addons/account_statement_import_api_qonto/models/account_statement_import_api.py:0
+#, python-format
+msgid ""
+"The Bank Statement Import API '%(name)s' uses the Qonto API and therefore it"
+" requires a login and password."
+msgstr ""
+"L'API d'import des relevés de compte '%(name)s' utilise l'API Qonto et "
+"nécessite donc un login et un mot de passe."
+
+#. module: account_statement_import_api_qonto
+#. odoo-python
+#: code:addons/account_statement_import_api_qonto/models/account_statement_import_api.py:0
+#, python-format
+msgid "The Qonto API returned an HTTP error code (%(status_code)s)."
+msgstr "L'API Qonto a renvoyé un code d'erreur HTTP (%(status_code)s)."
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.transport_expense_categ
+msgid "Transport"
+msgstr ""
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.utility_expense_categ
+msgid "Utility"
+msgstr "Électricité, eau, gaz"
+
+#. module: account_statement_import_api_qonto
+#: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.voucher_expense_categ
+msgid "Voucher"
+msgstr "Bon"

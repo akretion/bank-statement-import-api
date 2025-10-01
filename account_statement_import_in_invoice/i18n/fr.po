@@ -1,0 +1,425 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_statement_import_in_invoice
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-10-01 08:47+0000\n"
+"PO-Revision-Date: 2025-10-01 08:48+0000\n"
+"Last-Translator: Alexis de Lattre <alexis.delattre@akretion.com>\n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_reconcile_view
+msgid "<span style=\"font-weight: bold\">VAT</span>"
+msgstr "<span style=\"font-weight: bold\">TVA</span>"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__account_id
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__account_id
+msgid "Account"
+msgstr "Compte"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__active
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__active
+msgid "Active"
+msgstr "Actif"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_analytic_distribution
+msgid "Analytic"
+msgstr "Analytique"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__analytic_precision
+msgid "Analytic Precision"
+msgstr "Précision analytique"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_card_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_card_search
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_expense_categ_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_expense_categ_search
+msgid "Archived"
+msgstr "Archivé"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model,name:account_statement_import_in_invoice.model_ir_attachment
+msgid "Attachment"
+msgstr "Pièce jointe"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__journal_id
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_card_search
+msgid "Bank Journal"
+msgstr "Journal de banque"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.actions.act_window,name:account_statement_import_in_invoice.account_bank_statement_card_action
+#: model:ir.ui.menu,name:account_statement_import_in_invoice.account_bank_statement_card_menu
+msgid "Bank Cards"
+msgstr "Cartes bancaires"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.actions.act_window,name:account_statement_import_in_invoice.account_bank_statement_expense_categ_action
+#: model:ir.ui.menu,name:account_statement_import_in_invoice.account_bank_statement_expense_categ_menu
+msgid "Bank Statement Expense Categories"
+msgstr "Catégories de dépense du relevé de compte"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model,name:account_statement_import_in_invoice.model_account_bank_statement_expense_categ
+msgid "Bank Statement Expense Category"
+msgstr "Catégorie de dépense du relevé de compte"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_ir_attachment__bank_statement_import_identifier
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_mrp_document__bank_statement_import_identifier
+msgid "Bank Statement Import Identifier"
+msgstr "Identifiant d'import du relevé de compte"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model,name:account_statement_import_in_invoice.model_account_bank_statement_line
+msgid "Bank Statement Line"
+msgstr "Ligne de relevé de compte"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__card_id
+msgid "Card"
+msgstr "Carte"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model,name:account_statement_import_in_invoice.model_account_bank_statement_card_account
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__card_account_ids
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_expense_categ_form
+msgid "Card-specific Accounts"
+msgstr "Comptes spécifiques à une carte donnée"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__categ_id
+msgid "Categ"
+msgstr "Catégorie"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__code
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__code
+msgid "Code"
+msgstr "Code"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_expense_categ_form
+msgid "Code (do not modify)"
+msgstr "Code (ne pas modifier)"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,help:account_statement_import_in_invoice.field_account_bank_statement_card__code
+msgid "Code used in the Bank API for that payment card."
+msgstr "Code utilisé par l'API de la banque pour cette carte de paiement."
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model,name:account_statement_import_in_invoice.model_res_company
+msgid "Companies"
+msgstr "Sociétés"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__company_id
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__company_id
+msgid "Company"
+msgstr "Société"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model,name:account_statement_import_in_invoice.model_res_config_settings
+msgid "Config Settings"
+msgstr "Configuration"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_reconcile_view
+msgid "Create Vendor Bill"
+msgstr "Créer facture fournisseur"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__create_uid
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__create_uid
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__create_uid
+msgid "Created by"
+msgstr "Créé par"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__create_date
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__create_date
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__create_date
+msgid "Created on"
+msgstr "Créé le"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__display_name
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__display_name
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__display_name
+msgid "Display Name"
+msgstr "Nom affiché"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_account_id
+msgid "Expense Account"
+msgstr "Compte de charge"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_expense_categ_id
+msgid "Expense Category"
+msgstr "Catégorie de dépense"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_expense_description
+msgid "Expense Description"
+msgstr "Libellé de la dépense"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_line_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_add_view
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_reconcile_view
+msgid "Receipt(s)"
+msgstr "Reçu(s)"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_force_invoice_date
+msgid "Force Invoice Date"
+msgstr "Forcer la date de facture"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_reconcile_view
+msgid "Force Vendor (optional)"
+msgstr "Forcer le fournisseur (facultatif)"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__id
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__id
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__id
+msgid "ID"
+msgstr "ID"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__name
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__name
+msgid "Label"
+msgstr "Libellé"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_card_search
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_expense_categ_search
+msgid "Label or Code"
+msgstr "Libellé ou code"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card____last_update
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account____last_update
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ____last_update
+msgid "Last Modified on"
+msgstr "Dernière modification le"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__write_uid
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__write_uid
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__write_uid
+msgid "Last Updated by"
+msgstr "Dernière mise à jour par"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__write_date
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__write_date
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__write_date
+msgid "Last Updated on"
+msgstr "Dernière mise à jour le"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_res_company__misc_partner_id
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_res_config_settings__misc_partner_id
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.res_config_settings_view_form
+msgid "Misc Partner"
+msgstr "Partenaire divers"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.res_config_settings_view_form
+msgid ""
+"Misc Partner used when creating a Vendor Bill from a bank statement line."
+msgstr ""
+"Partenaire divers utilisé lors de la création d'une facture fournisseur à "
+"partir d'une ligne de relevé de compte."
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_reconcile_view
+msgid "Missing 📷"
+msgstr "📷 manquante"
+
+#. module: account_statement_import_in_invoice
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
+#, python-format
+msgid ""
+"No partner on the bank statement line and no misc partner on the accounting "
+"configuration page of company '%s'."
+msgstr ""
+"Pas de partenaire sur la ligne relevé de compte et pas de partenaire divers "
+"configuré sur la page de configuration de la comptabilité de la société '%s'."
+
+#. module: account_statement_import_in_invoice
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
+#, python-format
+msgid "No purchase journal in company '%s'."
+msgstr "Aucun journal d'achat dans la société '%s'."
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model,name:account_statement_import_in_invoice.model_account_bank_statement_card
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_card_id
+msgid "Payment Card"
+msgstr "Carte de paiement"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_receipt_lost
+msgid "Receipt Lost"
+msgstr "Reçu perdu"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__service
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_expense_categ_search
+msgid "Service"
+msgstr "Service"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_show_button
+msgid "Show Button to Create Vendor Bill"
+msgstr "Afficher le bouton pour créer une facture fournisseur"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_tax_ids
+msgid "Taxes"
+msgstr "Taxes"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields.selection,name:account_statement_import_in_invoice.selection__account_bank_statement_expense_categ__service__test
+msgid "Test"
+msgstr "Test"
+
+#. module: account_statement_import_in_invoice
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
+#, python-format
+msgid "The Force Invoice Date (%s) is in the future!"
+msgstr "La date de facturation forcée (%s) se situe dans le futur !"
+
+#. module: account_statement_import_in_invoice
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
+#, python-format
+msgid "The VAT amount is not null (%s), so you must select a tax."
+msgstr ""
+"Le montant de TVA n'est pas nul (%s), vous devez donc sélectionner une "
+"taxe."
+
+#. module: account_statement_import_in_invoice
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
+#, python-format
+msgid "The VAT rate (%s %%) must be positive."
+msgstr "Le taux de TVA (%s %%) doit être positif."
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.constraint,message:account_statement_import_in_invoice.constraint_account_bank_statement_line_in_invoice_vat_amount_positive
+msgid "The value of the field VAT Amount must be always positive."
+msgstr "La valeur du champ Montant TVA doit toujours être positive."
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.constraint,message:account_statement_import_in_invoice.constraint_account_bank_statement_card_account_categ_card_uniq
+msgid "This card has already been configured on this expense category."
+msgstr "Cette carte a déjà été configurée sur cette catégorie de dépense."
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.constraint,message:account_statement_import_in_invoice.constraint_account_bank_statement_expense_categ_code_service_uniq
+msgid "This code already exists for this service."
+msgstr "Ce code existe déjà pour ce service."
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,help:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_vat_amount
+msgid "To make things easier for users, the VAT Amount is always positive."
+msgstr ""
+"Pour faciliter la tâche des utilisateurs, le montant de TVA est toujours "
+"positif."
+
+#. module: account_statement_import_in_invoice
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
+#, python-format
+msgid ""
+"Total VAT Amount has been forced from %(ini_vat_amount)s to %(vat_amount)s."
+msgstr ""
+"Le montant total de TVA a été forcé de %(ini_vat_amount)s à "
+"%(vat_amount)s."
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_vat_amount
+msgid "VAT Amount"
+msgstr "Montant de TVA"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_vat_rate
+msgid "VAT Rate"
+msgstr "Taux de TVA"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_add_view
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_reconcile_view
+msgid "Vendor Bill"
+msgstr "Facture fournisseur"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_id
+msgid "Vendor Bill Created from Statement Line"
+msgstr "Facture fournisseur créée à partir de la ligne de relevé"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_line_form
+msgid "Vendor Bills"
+msgstr "Factures fournisseurs"
+
+#. module: account_statement_import_in_invoice
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
+#, python-format
+msgid ""
+"Vendor bill created from the bank statement line <a href=# data-oe-"
+"model=account.bank.statement.line data-oe-"
+"id=%(st_line_id)s>%(st_line_name)s</a>"
+msgstr ""
+"Facture fournisseur créée à partir de la ligne du relevé de compte <a "
+"href=# data-oe-model=account.bank.statement.line data-oe-"
+"id=%(st_line_id)s>%(st_line_name)s</a>"
+
+#. module: account_statement_import_in_invoice
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
+#, python-format
+msgid ""
+"Wrong tax amount. Maybe the code to force the tax amount didn't work. This "
+"should never happen."
+msgstr ""
+"Mauvais montant de taxe. Le code permettant de forcer le montant de la taxe "
+"n'a peut-être pas fonctionné. Cela ne devrait jamais se produire."
+
+#. module: account_statement_import_in_invoice
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
+#, python-format
+msgid ""
+"Wrong total amount. Transaction total amount: %(trans_total)s. Vendor bill/"
+"refund total amount: %(invoice_total)s. This should never happen."
+msgstr ""
+"Montant total erroné. Montant total de la transaction : %(trans_total)s. "
+"Montant total de la facture du fournisseur/de l'avoir : "
+"%(invoice_total)s. Cela ne devrait jamais se produire."
