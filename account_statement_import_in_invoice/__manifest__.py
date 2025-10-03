@@ -13,6 +13,7 @@
     "website": "https://github.com/akretion/bank-statement-import-api",
     "depends": ["account_statement_import_base", "account_reconcile_oca"],
     "data": [
+        "security/ir_rule.xml",
         "security/ir.model.access.csv",
         "views/account_bank_statement_expense_categ.xml",
         "views/account_bank_statement_card.xml",
