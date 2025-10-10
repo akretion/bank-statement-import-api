@@ -62,7 +62,12 @@ class AccountStatementImportApi(models.Model):
             "name_company_uniq",
             "unique(name, company_id)",
             "A bank statement import API already exists with that name is this company.",
-        )
+        ),
+        (
+            "backward_days_positive",
+            "CHECK(backward_days >= 0)",
+            "Backward days must be positive or null.",
+        ),
     ]
 
     @api.depends("journal_ids.statement_import_api_last_success")
