@@ -9,6 +9,7 @@ setuptools.setup(
     version=version,
     install_requires=[
         'odoo-addon-account_statement_import_api>=16.0dev,<16.1dev',
+        'odoo-addon-account_statement_import_api_bridge>=16.0dev,<16.1dev',
         'odoo-addon-account_statement_import_api_qonto>=16.0dev,<16.1dev',
         'odoo-addon-account_statement_import_in_invoice>=16.0dev,<16.1dev',
         'odoo-addon-account_statement_import_in_invoice_api>=16.0dev,<16.1dev',
