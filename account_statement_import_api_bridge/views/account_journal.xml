@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Copyright 2025 Akretion France (https://www.akretion.com/)
+  @author: Alexis de Lattre <alexis.delattre@akretion.com>
+  License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+-->
+<odoo>
+
+    <record id="view_account_journal_form" model="ir.ui.view">
+        <field name="model">account.journal</field>
+        <field
+            name="inherit_id"
+            ref="account_statement_import_api.view_account_journal_form"
+        />
+        <field name="arch" type="xml">
+            <field name="statement_import_api_start_date" position="after">
+                    <field
+                    name="bridge_account_identifier"
+                    attrs="{'invisible': [('statement_import_api_service', '!=', 'bridge')]}"
+                />
+                    <field
+                    name="bridge_preferred_date"
+                    attrs="{'invisible': [('statement_import_api_service', '!=', 'bridge')]}"
+                />
+            </field>
+        </field>
+    </record>
+
+</odoo>
