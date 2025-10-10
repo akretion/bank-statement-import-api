@@ -24,7 +24,7 @@ class AccountStatementImportApi(models.Model):
         ondelete={"qonto": "cascade"},
     )
 
-    @api.constrains("service", "company_id")
+    @api.constrains("service", "company_id", "login", "password")
     def _check_qonto(self):
         for rec in self:
             if rec.service == "qonto":
