@@ -18,6 +18,9 @@ class AccountJournal(models.Model):
     statement_import_api_id = fields.Many2one(
         "account.statement.import.api", "Statement Import API", check_company=True
     )
+    statement_import_api_service = fields.Selection(
+        related="statement_import_api_id.service", store=True
+    )
     statement_import_api_log_ids = fields.One2many(
         "account.statement.import.api.log",
         "journal_id",
@@ -351,7 +354,7 @@ class AccountJournal(models.Model):
             try:
                 pivot_line["date"] = datetime.datetime.strptime(
                     pivot_line["date"], "%Y-%m-%d"
-                )
+                ).date()
             except ValueError:
                 result["logs"].append(
                     f"ERROR Date '{pivot_line['date']}' is a string that doesn't "
