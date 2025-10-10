@@ -13,7 +13,7 @@ from odoo import models
 logger = logging.getLogger(__name__)
 
 BASE_URL = "https://thirdparty.qonto.com/v2/"
-TIMEOUT = 30
+TIMEOUT = 20
 
 
 class AccountJournal(models.Model):
@@ -23,7 +23,6 @@ class AccountJournal(models.Model):
         self.ensure_one()
         lines = []
         if self.bank_account_id.acc_type != "iban":
-            # We don't translate logs... would be too much translation work for no big add value
             result["logs"].append(
                 f"ERROR Bank account {self.bank_account_id.acc_number} is not "
                 f"an IBAN (account type is '{self.bank_account_id.acc_type}')."
@@ -31,9 +30,8 @@ class AccountJournal(models.Model):
             return
 
         if self.statement_import_api_last_success:
-            from_dt = self.statement_import_api_last_success
             # rewind 1h, just in case
-            from_dt -= timedelta(hours=1)
+            from_dt = self.statement_import_api_last_success - timedelta(hours=1)
             from_dt_aware = pytz.utc.localize(from_dt)
         else:
             from_dt = datetime.combine(
