@@ -13,9 +13,11 @@
     "website": "https://github.com/akretion/bank-statement-import-api",
     "depends": ["account_statement_import_api"],
     "data": [
+        "security/ir.model.access.csv",
         "views/account_statement_import_api.xml",
         "views/account_journal.xml",
         "views/res_company.xml",
+        "wizards/bridge_match_account_view.xml",
     ],
     "installable": True,
 }

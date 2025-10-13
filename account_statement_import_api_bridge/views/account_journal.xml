@@ -13,11 +13,25 @@
             ref="account_statement_import_api.view_account_journal_form"
         />
         <field name="arch" type="xml">
-            <field name="statement_import_api_start_date" position="after">
-                    <field
-                    name="bridge_account_identifier"
+                <field name="statement_import_api_start_date" position="after">
+                <label
+                    for="bridge_account_identifier"
                     attrs="{'invisible': [('statement_import_api_service', '!=', 'bridge')]}"
                 />
+                <div
+                    class="o_row"
+                    name="bridge_account_identifier"
+                    attrs="{'invisible': [('statement_import_api_service', '!=', 'bridge')]}"
+                >
+                    <field name="bridge_account_identifier" />
+                    <button
+                        name="bridge_set_account_identifier"
+                        type="object"
+                        string="Set Identifier"
+                        attrs="{'invisible': [('bridge_account_identifier', '!=', 0)]}"
+                        class="btn-link mb-1 px-0"
+                    />
+            </div>
                     <field
                     name="bridge_preferred_date"
                     attrs="{'invisible': [('statement_import_api_service', '!=', 'bridge')]}"
