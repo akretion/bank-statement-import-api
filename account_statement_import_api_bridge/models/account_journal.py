@@ -7,9 +7,11 @@ from datetime import timedelta
 import pytz
 import requests
 
-from odoo import fields, models
+from odoo import Command, _, fields, models
+from odoo.exceptions import UserError
 
 BRIDGE_BASE_URL = "https://api.bridgeapi.io"
+BRIDGE_MAX_PAGE_LIMIT = 500
 TIMEOUT = 20
 
 
@@ -30,13 +32,11 @@ class AccountJournal(models.Model):
     def _api_import_bridge(self, result, speedy):
         self.ensure_one()
         speedy["bridge_preferred_date"] = self.bridge_preferred_date
-        lines = []
         import_api = self.statement_import_api_id
         headers = import_api._bridge_get_headers(self.company_id, result, speedy)
         # I would like to filter-out future lines, but it not possible in params
         params = {
             "account_id": self.bridge_account_identifier,
-            # "limit": 10,
         }
         if self.statement_import_api_last_success:
             # rewind 1h, just in case
@@ -52,49 +52,14 @@ class AccountJournal(models.Model):
             )
 
         url = f"{BRIDGE_BASE_URL}/v3/aggregation/transactions"
-        try:
-            res = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
-        except Exception as e:
-            result["logs"].append(
-                f"ERROR API call on {url} with params={params} failed: {e}"
-            )
-            return
-        if res.status_code != 200:
-            result["logs"].append(
-                f"ERROR API call on {url} with params={params} returned an "
-                f"HTTP error code {res.status_code}."
-            )
-            return
-        result["logs"].append(f"INFO Successful API call on {url} with params={params}")
-        res_dict = res.json()
-        for trans in res_dict["resources"]:
-            pivot = self._api_import_bridge_prepare_pivot_line(trans, result, speedy)
-            if pivot:
-                lines.append(pivot)
-        next_uri = res_dict["pagination"].get("next_uri")
-        while next_uri:
-            url = f"{BRIDGE_BASE_URL}{next_uri}"
-            try:
-                res_next_page = requests.get(url, headers=headers, timeout=TIMEOUT)
-            except Exception as e:
-                result["logs"].append(f"ERROR API call on {url} failed: {e}")
-                return
-            if res_next_page.status_code != 200:
-                result["logs"].append(
-                    f"ERROR API call on {url} returned an "
-                    f"HTTP error code {res.status_code}."
-                )
-                return
-            result["logs"].append(f"INFO Successful API call on {url}")
-            res_next_page_dict = res_next_page.json()
-            for trans in res_next_page_dict["resources"]:
+        transactions = self._bridge_get_all_pages(url, headers, result, params)
+        if transactions:
+            for trans in transactions:
                 pivot = self._api_import_bridge_prepare_pivot_line(
                     trans, result, speedy
                 )
                 if pivot:
-                    lines.append(pivot)
-            next_uri = res_next_page_dict["pagination"].get("next_uri")
-        result["lines"] = lines
+                    result["lines"].append(pivot)
 
     def _api_import_bridge_prepare_pivot_line(self, trans, result, speedy):
         assert trans["account_id"] == self.bridge_account_identifier
@@ -127,3 +92,124 @@ class AccountJournal(models.Model):
             )
             return False
         return pivot
+
+    def bridge_set_account_identifier(self):
+        self.ensure_one()
+        assert not self.bridge_account_identifier
+        result = {"logs": []}
+        import_api = self.statement_import_api_id
+        speedy = import_api._prepare_speedy()
+        headers = import_api._bridge_get_headers(self.company_id, result, speedy)
+        url = f"{BRIDGE_BASE_URL}/v3/providers"
+        providers = self._bridge_get_all_pages(url, headers, result)
+        if providers is None:
+            raise UserError(result["logs"][-1])
+        providers_id2name = {}
+        for provider in providers:
+            providers_id2name[provider["id"]] = provider["name"]
+
+        url = f"{BRIDGE_BASE_URL}/v3/aggregation/accounts"
+        bridge_accounts = self._bridge_get_all_pages(url, headers, result)
+        if bridge_accounts is None:
+            raise UserError(result["logs"][-1])
+        existing_identifiers_read = self.search_read(
+            [
+                ("company_id", "=", self.company_id.id),
+                ("bridge_account_identifier", "!=", False),
+            ],
+            ["bridge_account_identifier"],
+        )
+        existing_identifiers = [
+            x["bridge_account_identifier"] for x in existing_identifiers_read
+        ]
+        bridge_account_identifier = False
+        iban_acc_number = False
+        if self.bank_account_id and self.bank_account_id.acc_type == "iban":
+            iban_acc_number = self.bank_account_id.sanitized_acc_number
+        bridge_options = []
+        for bridge_account in bridge_accounts:
+            if bridge_account["id"] not in existing_identifiers:
+                if iban_acc_number and bridge_account.get("iban") == iban_acc_number:
+                    bridge_account_identifier = bridge_account["id"]
+                    break
+                bridge_provider_name = False
+                if (
+                    bridge_account.get("provider_id")
+                    and bridge_account["provider_id"] in providers_id2name
+                ):
+                    bridge_provider_name = providers_id2name[
+                        bridge_account["provider_id"]
+                    ]
+                bridge_options.append(
+                    {
+                        "name": bridge_account["name"],
+                        "account_type": bridge_account.get("type"),
+                        "iban": bridge_account.get("iban"),
+                        "bridge_provider_name": bridge_provider_name,
+                        "bridge_identifier": bridge_account["id"],
+                    }
+                )
+
+        if bridge_account_identifier:
+            self.write({"bridge_account_identifier": bridge_account_identifier})
+        else:
+            wiz = self.env["bridge.match.account"].create(
+                {
+                    "journal_id": self.id,
+                    "option_ids": [Command.create(x) for x in bridge_options],
+                }
+            )
+            action = {
+                "type": "ir.actions.act_window",
+                "res_model": "bridge.match.account",
+                "name": _("Set Bridge Account Identifier"),
+                "view_mode": "form",
+                "res_id": wiz.id,
+                "target": "new",
+            }
+            return action
+
+    def _bridge_get_all_pages(self, url, headers, result, params=None):
+        if params is None:
+            params = {}
+        if not params.get("limit"):
+            params["limit"] = BRIDGE_MAX_PAGE_LIMIT
+        try:
+            res = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
+        except Exception as e:
+            result["logs"].append(
+                f"ERROR API call on {url} with params={params} failed: {e}"
+            )
+            return None
+        if res.status_code != 200:
+            result["logs"].append(
+                f"ERROR API call on {url} with params={params} returned an "
+                f"HTTP error code {res.status_code}."
+            )
+            return None
+        result["logs"].append(f"INFO Successful API call on {url} with params={params}")
+        res_dict = res.json()
+        res_list = res_dict["resources"]
+        next_uri = res_dict["pagination"].get("next_uri")
+        page = 1
+        while next_uri:
+            page += 1
+            url = f"{BRIDGE_BASE_URL}{next_uri}"
+            try:
+                res_next_page = requests.get(url, headers=headers, timeout=TIMEOUT)
+            except Exception as e:
+                result["logs"].append(
+                    f"ERROR API call on {url} failed (page {page}): {e}"
+                )
+                return None
+            if res_next_page.status_code != 200:
+                result["logs"].append(
+                    f"ERROR API call on {url} returned an "
+                    f"HTTP error code {res_next_page.status_code} (page {page})."
+                )
+                return None
+            result["logs"].append(f"INFO Successful API call on {url} (page {page})")
+            res_next_page_dict = res_next_page.json()
+            res_list += res_next_page_dict["resources"]
+            next_uri = res_next_page_dict["pagination"].get("next_uri")
+        return res_list
