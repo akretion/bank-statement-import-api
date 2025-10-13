@@ -31,6 +31,9 @@ class AccountJournal(models.Model):
 
     def _api_import_bridge(self, result, speedy):
         self.ensure_one()
+        if not self.bridge_account_identifier:
+            result["logs"].append("ERROR Bridge Account Identifier is not set")
+            return
         speedy["bridge_preferred_date"] = self.bridge_preferred_date
         import_api = self.statement_import_api_id
         headers = import_api._bridge_get_headers(self.company_id, result, speedy)
