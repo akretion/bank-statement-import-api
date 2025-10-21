@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 import pytz
 import requests
 
-from odoo import models
+from odoo import api, models
 
 logger = logging.getLogger(__name__)
 
@@ -44,8 +44,8 @@ class AccountJournal(models.Model):
             "includes[]": ["vat_details", "attachments"],
         }
         # TODO: when transition is finished, we should always use params['bank_account_id']
-        if self.statement_import_api_identifier:
-            params["bank_account_id"] = self.statement_import_api_identifier
+        if self.statement_import_api_account_identifier:
+            params["bank_account_id"] = self.statement_import_api_account_identifier
         else:
             params["iban"] = self.bank_account_id.sanitized_acc_number
         transactions = self._qonto_get_all_pages(
@@ -102,21 +102,7 @@ class AccountJournal(models.Model):
             pivot["in_invoice_expense_categ_code"] = "qonto_fee"
         return pivot
 
-    def _api_import_get_account_identifiers_qonto(self, result, speedy):
-        self.ensure_one()
-        accounts = self._qonto_get_all_pages("bank_accounts", result, speedy)
-        res = []
-        for account in accounts:
-            res.append(
-                {
-                    "name": account["name"],
-                    "account_number": account.get("iban"),
-                    "bank_name": account.get("bic"),
-                    "identifier": account["id"],
-                }
-            )
-        return res
-
+    @api.model
     def _qonto_get_all_pages(self, api_name, result, speedy, params=None):
         url = BASE_URL + api_name
         if params is None:

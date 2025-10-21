@@ -26,10 +26,18 @@
                         groups="account.group_account_manager"
                     />
                     <button
+                        name="update_api_accounts"
+                        type="object"
+                        string="Get/Update API Bank Accounts"
+                        class="btn-primary"
+                        groups="account.group_account_manager"
+                        attrs="{'invisible': [('service', '=', False)]}"
+                    />
+                    <button
                         name="run_import"
                         type="object"
                         string="Run Now"
-                        class="oe_highlight"
+                        class="btn-primary"
                         groups="account.group_account_manager"
                     />
                 </header>
@@ -70,12 +78,18 @@
                 </group>
         </group>
         <notebook>
-                <page
-                            name="journals"
-                            string="Bank Journals"
-                            invisible="not context.get('import_api_main_view')"
-                        >
-                        <field name="journal_ids" nolabel="1" colspan="2" />
+                <page name="journals" string="Bank Journals">
+                <field name="journal_ids" nolabel="1" colspan="2">
+                        <tree>
+                        <field name="display_name" />
+                        <field name="statement_import_api_account_id" />
+                        <field name="statement_import_api_start_date" />
+                        <field name="statement_import_api_last_success" />
+                </tree>
+                </field>
+                </page>
+                <page name="api_accounts" string="API Bank Accounts">
+                    <field name="api_account_ids" nolabel="1" colspan="2" />
                 </page>
                 <page name="logs" string="Logs">
                     <field name="log_ids" nolabel="1" colspan="2" />

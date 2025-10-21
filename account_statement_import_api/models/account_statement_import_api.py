@@ -56,6 +56,11 @@ class AccountStatementImportApi(models.Model):
         readonly=True,
         string="Logs",
     )
+    api_account_ids = fields.One2many(
+        "account.statement.import.api.account",
+        "statement_import_api_id",
+        string="API Bank Accounts",
+    )
 
     _sql_constraints = [
         (
@@ -186,3 +191,76 @@ class AccountStatementImportApi(models.Model):
             },
         }
         return action
+
+    def update_api_accounts(self):
+        self.ensure_one()
+        result = {"logs": []}
+        speedy = self._prepare_speedy()
+        if not self.service:
+            raise UserError(
+                _("Missing service on bank statement import API '%s'.")
+                % self.display_name
+            )
+        method_name = f"_update_api_accounts_{self.service}"
+        method = getattr(self, method_name)
+        res = method(result, speedy)
+        # res is a list of vals of account.statement.import.api.set.identifier.line
+        if not res:
+            raise UserError(result["logs"][-1])
+        api_acc_obj = self.env["account.statement.import.api.account"]
+        existing_identifiers_read = api_acc_obj.with_context(
+            active_test=False
+        ).search_read([("statement_import_api_id", "=", self.id)], ["identifier"])
+        identifier2id = {x["identifier"]: x["id"] for x in existing_identifiers_read}
+        identifier2id_orphaned = dict(identifier2id)
+        to_create_vals_list = []
+        for vals in res:
+            # clean-up vals
+            for key, value in vals.items():
+                if value and isinstance(value, str):
+                    vals[key] = value.strip()
+            if vals.get("account_number") and isinstance(vals["account_number"], str):
+                vals["account_number"] = vals["account_number"].replace(" ", "")
+            if not vals.get("identifier"):
+                raise UserError(
+                    _(
+                        "Missing identifier for API bank account %s. This should never happen."
+                    )
+                    % vals
+                )
+            if isinstance(vals["identifier"], int):
+                vals["identifier"] = str(vals["identifier"])
+            if not vals.get("name"):
+                raise UserError(
+                    _(
+                        "Missing 'name' for API bank account %s. This should never happen."
+                    )
+                    % vals
+                )
+            if vals["identifier"] in identifier2id_orphaned:
+                identifier2id_orphaned.pop(vals["identifier"])
+            if vals["identifier"] not in identifier2id:
+                to_create_vals_list.append(dict(vals, statement_import_api_id=self.id))
+                logger.info(
+                    "Identifier %s doesn't exist on statement import API ID %s. "
+                    "Will be created.",
+                    vals["identifier"],
+                    self.id,
+                )
+        if to_create_vals_list:
+            new_api_bank_accounts = api_acc_obj.create(to_create_vals_list)
+            logger.info(
+                "%d API bank account(s) created on statement import API ID %s",
+                len(new_api_bank_accounts),
+                self.id,
+            )
+        if identifier2id_orphaned:
+            to_archive_api_bank_accounts = api_acc_obj.browse(
+                list(identifier2id_orphaned.values())
+            )
+            to_archive_api_bank_accounts.write({"active": False})
+            logger.info(
+                "%d API bank account(s) archived on statement import API ID %s",
+                len(to_archive_api_bank_accounts),
+                self.id,
+            )

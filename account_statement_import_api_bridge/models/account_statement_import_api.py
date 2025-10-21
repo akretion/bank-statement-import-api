@@ -9,9 +9,12 @@ import requests
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
-from .account_journal import BRIDGE_BASE_URL, TIMEOUT
-
 BRIDGE_VERSION = "2025-01-15"
+BRIDGE_BASE_URL = "https://api.bridgeapi.io"
+BRIDGE_API_VERSION = "v3"
+BRIDGE_MAX_PAGE_LIMIT = 500
+TIMEOUT = 20
+
 
 logger = logging.getLogger(__name__)
 
@@ -137,3 +140,76 @@ class AccountStatementImportApi(models.Model):
                         err=log[6:],
                     )
                 )
+
+    def _update_api_accounts_bridge(self, result, speedy):
+        self.ensure_one()
+        headers = self._bridge_get_headers(self.company_id, result, speedy)
+        providers = self._bridge_get_all_pages("providers", headers, result)
+        if providers is None:
+            return None
+        providers_id2name = {}
+        for provider in providers:
+            providers_id2name[provider["id"]] = provider["name"]
+
+        bridge_accounts = self._bridge_get_all_pages(
+            "aggregation/accounts", headers, result
+        )
+        res = []
+        for account in bridge_accounts or []:
+            res.append(
+                {
+                    "name": account["name"],
+                    "account_type": account.get("type"),
+                    "account_number": account.get("iban"),
+                    "bank_name": providers_id2name.get(account.get("provider_id")),
+                    "identifier": account["id"],
+                }
+            )
+        return res
+
+    @api.model
+    def _bridge_get_all_pages(self, api_name, headers, result, params=None):
+        url = f"{BRIDGE_BASE_URL}/{BRIDGE_API_VERSION}/{api_name}"
+        if params is None:
+            params = {}
+        if not params.get("limit"):
+            params["limit"] = BRIDGE_MAX_PAGE_LIMIT
+        try:
+            res = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
+        except Exception as e:
+            result["logs"].append(
+                f"ERROR API call on {url} with params={params} failed: {e}"
+            )
+            return None
+        if res.status_code != 200:
+            result["logs"].append(
+                f"ERROR API call on {url} with params={params} returned an "
+                f"HTTP error code {res.status_code}."
+            )
+            return None
+        result["logs"].append(f"INFO Successful API call on {url} with params={params}")
+        res_dict = res.json()
+        res_list = res_dict["resources"]
+        next_uri = res_dict["pagination"].get("next_uri")
+        page = 1
+        while next_uri:
+            page += 1
+            url = f"{BRIDGE_BASE_URL}{next_uri}"
+            try:
+                res_next_page = requests.get(url, headers=headers, timeout=TIMEOUT)
+            except Exception as e:
+                result["logs"].append(
+                    f"ERROR API call on {url} failed (page {page}): {e}"
+                )
+                return None
+            if res_next_page.status_code != 200:
+                result["logs"].append(
+                    f"ERROR API call on {url} returned an "
+                    f"HTTP error code {res_next_page.status_code} (page {page})."
+                )
+                return None
+            result["logs"].append(f"INFO Successful API call on {url} (page {page})")
+            res_next_page_dict = res_next_page.json()
+            res_list += res_next_page_dict["resources"]
+            next_uri = res_next_page_dict["pagination"].get("next_uri")
+        return res_list

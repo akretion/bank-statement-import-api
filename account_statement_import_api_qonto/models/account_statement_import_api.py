@@ -86,3 +86,20 @@ class AccountStatementImportApi(models.Model):
                     status_code=res.status_code,
                 )
             )
+
+    def _update_api_accounts_qonto(self, result, speedy):
+        self.ensure_one()
+        accounts = self.env["account.journal"]._qonto_get_all_pages(
+            "bank_accounts", result, speedy
+        )
+        res = []
+        for account in accounts:
+            res.append(
+                {
+                    "name": account["name"],
+                    "account_number": account.get("iban"),
+                    "bank_name": account.get("bic"),
+                    "identifier": account["id"],
+                }
+            )
+        return res
