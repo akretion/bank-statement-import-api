@@ -7,8 +7,7 @@ from datetime import timedelta
 import pytz
 import requests
 
-from odoo import Command, _, fields, models
-from odoo.exceptions import UserError
+from odoo import fields, models
 
 BRIDGE_BASE_URL = "https://api.bridgeapi.io"
 BRIDGE_MAX_PAGE_LIMIT = 500
@@ -96,81 +95,33 @@ class AccountJournal(models.Model):
             return False
         return pivot
 
-    def bridge_set_account_identifier(self):
+    def _api_import_get_account_identifiers_bridge(self, result, speedy):
         self.ensure_one()
-        assert not self.bridge_account_identifier
-        result = {"logs": []}
-        import_api = self.statement_import_api_id
-        speedy = import_api._prepare_speedy()
-        headers = import_api._bridge_get_headers(self.company_id, result, speedy)
+        headers = self.statement_import_api_id._bridge_get_headers(
+            self.company_id, result, speedy
+        )
         url = f"{BRIDGE_BASE_URL}/v3/providers"
         providers = self._bridge_get_all_pages(url, headers, result)
         if providers is None:
-            raise UserError(result["logs"][-1])
+            return None
         providers_id2name = {}
         for provider in providers:
             providers_id2name[provider["id"]] = provider["name"]
 
         url = f"{BRIDGE_BASE_URL}/v3/aggregation/accounts"
         bridge_accounts = self._bridge_get_all_pages(url, headers, result)
-        if bridge_accounts is None:
-            raise UserError(result["logs"][-1])
-        existing_identifiers_read = self.search_read(
-            [
-                ("company_id", "=", self.company_id.id),
-                ("bridge_account_identifier", "!=", False),
-            ],
-            ["bridge_account_identifier"],
-        )
-        existing_identifiers = [
-            x["bridge_account_identifier"] for x in existing_identifiers_read
-        ]
-        bridge_account_identifier = False
-        iban_acc_number = False
-        if self.bank_account_id and self.bank_account_id.acc_type == "iban":
-            iban_acc_number = self.bank_account_id.sanitized_acc_number
-        bridge_options = []
-        for bridge_account in bridge_accounts:
-            if bridge_account["id"] not in existing_identifiers:
-                if iban_acc_number and bridge_account.get("iban") == iban_acc_number:
-                    bridge_account_identifier = bridge_account["id"]
-                    break
-                bridge_provider_name = False
-                if (
-                    bridge_account.get("provider_id")
-                    and bridge_account["provider_id"] in providers_id2name
-                ):
-                    bridge_provider_name = providers_id2name[
-                        bridge_account["provider_id"]
-                    ]
-                bridge_options.append(
-                    {
-                        "name": bridge_account["name"],
-                        "account_type": bridge_account.get("type"),
-                        "iban": bridge_account.get("iban"),
-                        "bridge_provider_name": bridge_provider_name,
-                        "bridge_identifier": bridge_account["id"],
-                    }
-                )
-
-        if bridge_account_identifier:
-            self.write({"bridge_account_identifier": bridge_account_identifier})
-        else:
-            wiz = self.env["bridge.match.account"].create(
+        res = []
+        for account in bridge_accounts or []:
+            res.append(
                 {
-                    "journal_id": self.id,
-                    "option_ids": [Command.create(x) for x in bridge_options],
+                    "name": account["name"],
+                    "account_type": account.get("type"),
+                    "account_number": account.get("iban"),
+                    "bank_name": providers_id2name.get(account.get("provider_id")),
+                    "identifier": account["id"],
                 }
             )
-            action = {
-                "type": "ir.actions.act_window",
-                "res_model": "bridge.match.account",
-                "name": _("Set Bridge Account Identifier"),
-                "view_mode": "form",
-                "res_id": wiz.id,
-                "target": "new",
-            }
-            return action
+        return res
 
     def _bridge_get_all_pages(self, url, headers, result, params=None):
         if params is None:

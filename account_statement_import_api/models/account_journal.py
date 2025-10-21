@@ -5,7 +5,7 @@
 import datetime
 import logging
 
-from odoo import _, api, fields, models
+from odoo import Command, _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools.misc import format_date, format_datetime
 
@@ -16,7 +16,10 @@ class AccountJournal(models.Model):
     _inherit = "account.journal"
 
     statement_import_api_id = fields.Many2one(
-        "account.statement.import.api", "Statement Import API", check_company=True
+        "account.statement.import.api",
+        "Statement Import API",
+        check_company=True,
+        tracking=True,
     )
     statement_import_api_service = fields.Selection(
         related="statement_import_api_id.service", store=True
@@ -33,6 +36,12 @@ class AccountJournal(models.Model):
     )
     statement_import_api_last_success = fields.Datetime(
         string="Last Import", help="Date and time of the last successful API import"
+    )
+    statement_import_api_identifier = fields.Char(
+        string="Account Identifier",
+        readonly=True,
+        tracking=True,
+        help="Technical ID given by the bank statement import provider for this bank account.",
     )
 
     def __get_bank_statements_available_sources(self):
@@ -450,3 +459,82 @@ class AccountJournal(models.Model):
         timestamp_dt_our_tz = timestamp_dt.astimezone(speedy["tz"])
         date_dt = timestamp_dt_our_tz.date()
         return date_dt
+
+    def statement_import_api_set_identifier(self):
+        self.ensure_one()
+        if self.statement_import_api_identifier:
+            raise UserError(
+                _("The identifier is already set on journal '%s'.") % self.display_name
+            )
+        import_api = self.statement_import_api_id
+        assert import_api
+        result = {"logs": []}
+        speedy = import_api._prepare_speedy()
+        method_name = f"_api_import_get_account_identifiers_{speedy['service']}"
+        method = getattr(self, method_name)
+        res = method(result, speedy)
+        # res is a list of vals of account.statement.import.api.set.identifier.line
+        if not res:
+            raise UserError(result["logs"][-1])
+        existing_identifiers_read = self.search_read(
+            [
+                ("company_id", "=", self.company_id.id),
+                ("statement_import_api_id", "=", import_api.id),
+                ("statement_import_api_identifier", "!=", False),
+            ],
+            ["statement_import_api_identifier"],
+        )
+        existing_identifiers = [
+            x["statement_import_api_identifier"] for x in existing_identifiers_read
+        ]
+        journal_acc_number = (
+            self.bank_account_id and self.bank_account_id.sanitized_acc_number or False
+        )
+        identifier = False
+        lines = []
+        for vals in res:
+            # clean-up vals
+            for key, value in vals.items():
+                if value and isinstance(value, str):
+                    vals[key] = value.strip()
+            if vals.get("account_number") and isinstance(vals["account_number"], str):
+                vals["account_number"] = vals["account_number"].replace(" ", "")
+            if vals["identifier"] in existing_identifiers:
+                logger.info(
+                    "Skipping identifier %s which is already set on a bank journal",
+                    vals["identifier"],
+                )
+                continue
+            if vals.get("account_number") and journal_acc_number:
+                if vals["account_number"] == journal_acc_number:
+                    identifier = vals["identifier"]
+                    break
+            if not vals.get("name"):
+                raise UserError(
+                    _("Key 'name' missing for account %s. This should never happen.")
+                    % vals
+                )
+            lines.append(vals)
+        if identifier:
+            self.write({"statement_import_api_identifier": identifier})
+            action = {}
+        else:
+            wiz = self.env["account.statement.import.api.set.identifier"].create(
+                {
+                    "journal_id": self.id,
+                    "line_ids": [Command.create(x) for x in lines],
+                }
+            )
+            action = {
+                "type": "ir.actions.act_window",
+                "res_model": "account.statement.import.api.set.identifier",
+                "name": _("Select Account"),
+                "view_mode": "form",
+                "res_id": wiz.id,
+                "target": "new",
+            }
+        return action
+
+    def statement_import_api_remove_identifier(self):
+        self.ensure_one()
+        self.write({"statement_import_api_identifier": False})

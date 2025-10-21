@@ -1,3 +1,0 @@
-id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
-access_bridge_match_account,Full access on bridge.match.account wizard,model_bridge_match_account,account.group_account_manager,1,1,1,1
-access_bridge_match_account_option,Read/create/del access on bridge.match.account.option wizard,model_bridge_match_account_option,account.group_account_manager,1,0,1,1
