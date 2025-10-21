@@ -39,44 +39,22 @@ class AccountJournal(models.Model):
             )
             from_dt_aware = speedy["tz"].localize(from_dt)
         params = {
-            "iban": self.bank_account_id.sanitized_acc_number,
             "status": ["completed"],
             "updated_at_from": from_dt_aware.isoformat(),
             "includes[]": ["vat_details", "attachments"],
-            "page": 1,
         }
-        url = BASE_URL + "transactions"
-        total_pages = 1  # default value for first pass
-        while params["page"] <= total_pages:
-            try:
-                res = requests.get(
-                    url,
-                    verify=True,
-                    headers=speedy["headers"],
-                    params=params,
-                    timeout=TIMEOUT,
-                )
-            except Exception as e:
-                result["logs"].append(
-                    f"ERROR API call on {url} with params={params} failed: {e}"
-                )
-                return
-            if res.status_code != 200:
-                result["logs"].append(
-                    f"ERROR API call on {url} with params={params} returned an "
-                    f"HTTP error code {res.status_code}."
-                )
-                return
-            result["logs"].append(
-                f"INFO Successful API call on {url} with params={params}"
-            )
-            qvals = res.json()
-            total_pages = qvals["meta"]["total_pages"]
-            for trans in qvals["transactions"]:
-                pivot = self._api_import_qonto_prepare_pivot_line(trans, result, speedy)
-                if pivot:
-                    lines.append(pivot)
-            params["page"] += 1
+        # TODO: when transition is finished, we should always use params['bank_account_id']
+        if self.statement_import_api_identifier:
+            params["bank_account_id"] = self.statement_import_api_identifier
+        else:
+            params["iban"] = self.bank_account_id.sanitized_acc_number
+        transactions = self._qonto_get_all_pages(
+            "transactions", result, speedy, params=params
+        )
+        for trans in transactions:
+            pivot = self._api_import_qonto_prepare_pivot_line(trans, result, speedy)
+            if pivot:
+                lines.append(pivot)
         result["lines"] = lines
 
     def _api_import_qonto_prepare_pivot_line(self, trans, result, speedy):
@@ -123,3 +101,53 @@ class AccountJournal(models.Model):
         if trans["operation_type"] == "qonto_fee":
             pivot["in_invoice_expense_categ_code"] = "qonto_fee"
         return pivot
+
+    def _api_import_get_account_identifiers_qonto(self, result, speedy):
+        self.ensure_one()
+        accounts = self._qonto_get_all_pages("bank_accounts", result, speedy)
+        res = []
+        for account in accounts:
+            res.append(
+                {
+                    "name": account["name"],
+                    "account_number": account.get("iban"),
+                    "bank_name": account.get("bic"),
+                    "identifier": account["id"],
+                }
+            )
+        return res
+
+    def _qonto_get_all_pages(self, api_name, result, speedy, params=None):
+        url = BASE_URL + api_name
+        if params is None:
+            params = {}
+        params["page"] = 1
+        # 'per_page' is set by default to the maximum (100), cf
+        # https://docs.qonto.com/get-started/general/pagination
+        total_pages = 1
+        data = []
+        while params["page"] <= total_pages:
+            try:
+                res = requests.get(
+                    url,
+                    verify=True,
+                    headers=speedy["headers"],
+                    params=params,
+                    timeout=TIMEOUT,
+                )
+            except Exception as e:
+                result["logs"].append(
+                    f"ERROR API call on {url} with params={params} failed: {e}"
+                )
+                return []
+            if res.status_code != 200:
+                result["logs"].append(
+                    f"ERROR API call on {url} with params={params} returned an "
+                    f"HTTP error code {res.status_code}."
+                )
+                return []
+            res_json = res.json()
+            total_pages = res_json["meta"]["total_pages"]
+            data += res_json.get(api_name, [])
+            params["page"] += 1
+        return data

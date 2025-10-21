@@ -6,33 +6,34 @@
 -->
 <odoo>
 
-    <record id="bridge_match_account_form" model="ir.ui.view">
-        <field name="model">bridge.match.account</field>
+    <record id="account_statement_import_api_set_identifier_form" model="ir.ui.view">
+        <field name="model">account.statement.import.api.set.identifier</field>
         <field name="arch" type="xml">
             <form>
                 <group name="main">
                     <field name="journal_id" />
-                    <field name="option_id" required="1" />
+                    <field
+                        name="bank_account_id"
+                        attrs="{'invisible': [('bank_account_id', '=', False)]}"
+                    />
+                    <field name="line_id" required="1" />
                 </group>
-                <group name="options" string="Available Bridge Accounts">
-                    <field name="option_ids" nolabel="1" colspan="2">
+                <group name="lines" string="Available Accounts">
+                    <field name="line_ids" nolabel="1" colspan="2">
                         <tree>
                             <field name="name" />
-                            <field name="iban" />
-                            <field name="bridge_provider_name" />
+                            <field name="account_number" />
+                            <field name="bank_name" />
                             <field name="account_type" />
-                            <field
-                                name="bridge_identifier"
-                                groups="base.group_no_one"
-                            />
+                            <field name="identifier" groups="base.group_no_one" />
                         </tree>
                     </field>
                 </group>
                 <footer>
                     <button
-                        name="run"
+                        name="validate"
                         type="object"
-                        string="Select"
+                        string="Validate"
                         class="btn-primary"
                     />
                     <button special="cancel" string="Cancel" class="btn-default" />
