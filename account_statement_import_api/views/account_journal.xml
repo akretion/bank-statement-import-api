@@ -43,33 +43,10 @@
                             attrs="{'invisible': [('statement_import_api_id', '=', False)]}"
                         />
             </div>
-                    <label
-                        for="statement_import_api_identifier"
-                        attrs="{'invisible': [('statement_import_api_id', '=', False)]}"
+            <field
+                        name="statement_import_api_account_id"
+                        attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
                     />
-                <div
-                        class="o_row"
-                        name="statement_import_api_identifier"
-                        attrs="{'invisible': [('statement_import_api_id', '=', False)]}"
-                    >
-                    <field name="statement_import_api_identifier" />
-                    <button
-                            name="statement_import_api_set_identifier"
-                            type="object"
-                            string="Set Identifier"
-                            attrs="{'invisible': [('statement_import_api_identifier', '!=', False)]}"
-                            class="btn-link mb-1 px-0"
-                        />
-                    <button
-                            name="statement_import_api_remove_identifier"
-                            type="object"
-                            string="Remove Identifier"
-                            attrs="{'invisible': [('statement_import_api_identifier', '=', False)]}"
-                            class="btn-link mb-1 px-0"
-                            confirm="Are you sure you want to remove the identifier?"
-                        />
-
-                </div>
                     <field
                         name="statement_import_api_last_success"
                         attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
