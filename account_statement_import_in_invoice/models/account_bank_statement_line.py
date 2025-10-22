@@ -114,6 +114,7 @@ class AccountBankStatementLine(models.Model):
             line.in_invoice_account_id = account
 
     @api.depends(
+        "in_invoice_id",
         "in_invoice_receipt_lost",
         "attachment_ids",
         "in_invoice_expense_description",
@@ -123,7 +124,8 @@ class AccountBankStatementLine(models.Model):
         for line in self:
             show_button = False
             if (
-                line.in_invoice_account_id
+                not line.in_invoice_id
+                and line.in_invoice_account_id
                 and line.in_invoice_expense_description
                 and (line.attachment_ids or line.in_invoice_receipt_lost)
             ):
@@ -165,7 +167,7 @@ class AccountBankStatementLine(models.Model):
     def in_invoice_create_disabled(self):
         self.ensure_one()
 
-    def in_invoice_create(self):
+    def _in_invoice_create_draft(self):
         self.ensure_one()
         logger.info("Start Vendor Bill")
         vals = self._prepare_in_invoice()
@@ -188,11 +190,46 @@ class AccountBankStatementLine(models.Model):
                 )
             )
         )
-        inv.with_context(validate_analytic=True)._post(soft=False)
         self._in_invoice_post_process(inv)
-        stvals = {"in_invoice_id": inv.id, "can_reconcile": True}
-        if not self.partner_id:
-            stvals["partner_id"] = vals["partner_id"]
+        return inv
+
+    def _in_invoice_prepare_statement_line(self, invoice, can_reconcile=False):
+        stvals = {"in_invoice_id": invoice.id}
+        if self.partner_id != invoice.commercial_partner_id:
+            stvals["partner_id"] = invoice.commercial_partner_id.id
+        if can_reconcile:
+            stvals["can_reconcile"] = True
+        return stvals
+
+    def _in_invoice_update_statement_line(self, invoice, can_reconcile=False):
+        stvals = self._in_invoice_prepare_statement_line(
+            invoice, can_reconcile=can_reconcile
+        )
+        self.write(stvals)
+
+    def in_invoice_create_draft_button(self):
+        inv = self._in_invoice_create_draft()
+        self._in_invoice_update_statement_line(inv)
+        action = self.env["ir.actions.actions"]._for_xml_id(
+            "account.action_move_in_invoice_type"
+        )
+        action.update(
+            {
+                "views": False,
+                "view_id": False,
+                "view_mode": "form,tree",
+                "res_id": inv.id,
+                "domain": [("move_type", "in", ("in_invoice", "in_refund"))],
+            }
+        )
+        return action
+
+    def in_invoice_create(self):
+        """Method called by the button 'Create Vendor Bill and Reconcile'"""
+        self.ensure_one()
+        inv = self._in_invoice_create_draft()
+        inv.with_context(validate_analytic=True)._post(soft=False)
+        self._in_invoice_update_statement_line(inv, can_reconcile=True)
         new_data = []
         for line in self.reconcile_data_info["data"]:
             new_data.append(line)
@@ -208,7 +245,6 @@ class AccountBankStatementLine(models.Model):
             self.reconcile_data_info["reconcile_auxiliary_id"],
             self.manual_reference,
         )
-        self.write(stvals)
         self.reconcile_data_info = data_info
         self.reconcile_bank_line()  # button "Validate"
         logger.info("End Vendor Bill")

@@ -143,29 +143,44 @@
                                           <page name="in_invoice" string="Vendor Bill">
 
                                           <group name="in_invoice_group">
-                                            <group name="in_invoice_left">
+                                                  <group name="in_invoice_left">
+                                                          <field
+                                name="in_invoice_id"
+                                string="Created Vendor Bill"
+                                attrs="{'invisible': [('in_invoice_id', '=', False)]}"
+                            />
                                                   <field
                                 name="in_invoice_expense_categ_id"
+                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
                             />
-                                                  <field name="in_invoice_card_id" />
-                                                  <field name="in_invoice_account_id" />
+                                                  <field
+                                name="in_invoice_card_id"
+                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                            />
+                                                  <field
+                                name="in_invoice_account_id"
+                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                            />
                                                     <field
                                 name="in_invoice_analytic_distribution"
                                 widget="analytic_distribution"
                                 groups="analytic.group_analytic_accounting"
                                 options="{'account_field': 'in_invoice_account_id'}"
+                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
                             />
                                                   <field
                                 name="in_invoice_expense_description"
+                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
                             />
                                                   <field
                                 name="attachment_ids"
                                 widget="many2many_binary"
                                 string="Receipt(s)"
+                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
                             />
                                                   <field
                                 name="in_invoice_receipt_lost"
-                                attrs="{'invisible': [('attachment_ids', '!=', [])]}"
+                                attrs="{'invisible': [('attachment_ids', '!=', [])], 'readonly': [('in_invoice_id', '!=', False)]}"
                             />
                                             </group>
                                             <group name="in_invoice_right">
@@ -173,20 +188,27 @@
                                                   <div name="in_invoice_vat_rate">
                                                           <field
                                     name="in_invoice_vat_rate"
+                                    attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
                                     class="oe_inline"
                                 /> %
                                                   </div>
                                                   <field
                                 name="in_invoice_tax_ids"
                                 widget="many2many_tags"
+                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
                             />
-                                                  <field name="in_invoice_vat_amount" />
+                                                  <field
+                                name="in_invoice_vat_amount"
+                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                            />
                                                   <field
                                 name="in_invoice_force_invoice_date"
+                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
                             />
                                                   <field
                                 name="partner_id"
                                 string="Force Vendor (optional)"
+                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
                             />
 
                                                   <field
@@ -211,7 +233,15 @@
             >
                                         <button
                     name="in_invoice_create"
-                    string="Create Vendor Bill"
+                    string="Create Vendor Bill and Reconcile"
+                    type="object"
+                    colspan="2"
+                    class="btn btn-secondary"
+                    attrs="{'invisible': [('in_invoice_show_button', '=', False)]}"
+                />
+                                        <button
+                    name="in_invoice_create_draft_button"
+                    string="Create Draft Vendor Bill"
                     type="object"
                     colspan="2"
                     class="btn btn-secondary"
