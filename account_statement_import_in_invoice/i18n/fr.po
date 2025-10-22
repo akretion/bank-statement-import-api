@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-01 08:47+0000\n"
-"PO-Revision-Date: 2025-10-01 08:48+0000\n"
+"POT-Creation-Date: 2025-10-22 13:14+0000\n"
+"PO-Revision-Date: 2025-10-22 13:14+0000\n"
 "Last-Translator: Alexis de Lattre <alexis.delattre@akretion.com>\n"
 "Language-Team: \n"
 "Language: fr\n"
@@ -57,16 +57,16 @@ msgid "Attachment"
 msgstr "Pièce jointe"
 
 #. module: account_statement_import_in_invoice
-#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__journal_id
-#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_card_search
-msgid "Bank Journal"
-msgstr "Journal de banque"
-
-#. module: account_statement_import_in_invoice
 #: model:ir.actions.act_window,name:account_statement_import_in_invoice.account_bank_statement_card_action
 #: model:ir.ui.menu,name:account_statement_import_in_invoice.account_bank_statement_card_menu
 msgid "Bank Cards"
 msgstr "Cartes bancaires"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__journal_id
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_card_search
+msgid "Bank Journal"
+msgstr "Journal de banque"
 
 #. module: account_statement_import_in_invoice
 #: model:ir.actions.act_window,name:account_statement_import_in_invoice.account_bank_statement_expense_categ_action
@@ -141,8 +141,23 @@ msgstr "Configuration"
 
 #. module: account_statement_import_in_invoice
 #: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_reconcile_view
+msgid "Create Draft Vendor Bill"
+msgstr "Créer facture fournisseur brouillon"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_reconcile_view
 msgid "Create Vendor Bill"
 msgstr "Créer facture fournisseur"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_reconcile_view
+msgid "Create Vendor Bill and Reconcile"
+msgstr "Créer facture fournisseur et réconcilier"
+
+#. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_reconcile_view
+msgid "Created Vendor Bill"
+msgstr "Facture fournisseur créée"
 
 #. module: account_statement_import_in_invoice
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__create_uid
@@ -179,13 +194,6 @@ msgstr "Catégorie de dépense"
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_expense_description
 msgid "Expense Description"
 msgstr "Libellé de la dépense"
-
-#. module: account_statement_import_in_invoice
-#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_line_form
-#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_add_view
-#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_reconcile_view
-msgid "Receipt(s)"
-msgstr "Reçu(s)"
 
 #. module: account_statement_import_in_invoice
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_force_invoice_date
@@ -287,6 +295,13 @@ msgid "Receipt Lost"
 msgstr "Reçu perdu"
 
 #. module: account_statement_import_in_invoice
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_line_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_add_view
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_form_reconcile_view
+msgid "Receipt(s)"
+msgstr "Reçu(s)"
+
+#. module: account_statement_import_in_invoice
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__service
 #: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_expense_categ_search
 msgid "Service"
@@ -320,8 +335,7 @@ msgstr "La date de facturation forcée (%s) se situe dans le futur !"
 #, python-format
 msgid "The VAT amount is not null (%s), so you must select a tax."
 msgstr ""
-"Le montant de TVA n'est pas nul (%s), vous devez donc sélectionner une "
-"taxe."
+"Le montant de TVA n'est pas nul (%s), vous devez donc sélectionner une taxe."
 
 #. module: account_statement_import_in_invoice
 #. odoo-python
@@ -336,6 +350,11 @@ msgid "The value of the field VAT Amount must be always positive."
 msgstr "La valeur du champ Montant TVA doit toujours être positive."
 
 #. module: account_statement_import_in_invoice
+#: model:ir.model.constraint,message:account_statement_import_in_invoice.constraint_account_bank_statement_card_code_journal_unique
+msgid "A card already exists in this journal with the same code."
+msgstr "Une carte existe déjà dans ce journal avec le même code."
+
+#. module: account_statement_import_in_invoice
 #: model:ir.model.constraint,message:account_statement_import_in_invoice.constraint_account_bank_statement_card_account_categ_card_uniq
 msgid "This card has already been configured on this expense category."
 msgstr "Cette carte a déjà été configurée sur cette catégorie de dépense."
@@ -344,6 +363,11 @@ msgstr "Cette carte a déjà été configurée sur cette catégorie de dépense.
 #: model:ir.model.constraint,message:account_statement_import_in_invoice.constraint_account_bank_statement_expense_categ_code_service_uniq
 msgid "This code already exists for this service."
 msgstr "Ce code existe déjà pour ce service."
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.constraint,message:account_statement_import_in_invoice.constraint_account_bank_statement_card_name_unique
+msgid "This label is already used on another card."
+msgstr "Cette étiquette est déjà utilisée sur une autre carte."
 
 #. module: account_statement_import_in_invoice
 #: model:ir.model.fields,help:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_vat_amount
@@ -359,8 +383,7 @@ msgstr ""
 msgid ""
 "Total VAT Amount has been forced from %(ini_vat_amount)s to %(vat_amount)s."
 msgstr ""
-"Le montant total de TVA a été forcé de %(ini_vat_amount)s à "
-"%(vat_amount)s."
+"Le montant total de TVA a été forcé de %(ini_vat_amount)s à %(vat_amount)s."
 
 #. module: account_statement_import_in_invoice
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_vat_amount
@@ -397,8 +420,8 @@ msgid ""
 "model=account.bank.statement.line data-oe-"
 "id=%(st_line_id)s>%(st_line_name)s</a>"
 msgstr ""
-"Facture fournisseur créée à partir de la ligne du relevé de compte <a "
-"href=# data-oe-model=account.bank.statement.line data-oe-"
+"Facture fournisseur créée à partir de la ligne du relevé de compte <a href=# "
+"data-oe-model=account.bank.statement.line data-oe-"
 "id=%(st_line_id)s>%(st_line_name)s</a>"
 
 #. module: account_statement_import_in_invoice
@@ -421,5 +444,5 @@ msgid ""
 "refund total amount: %(invoice_total)s. This should never happen."
 msgstr ""
 "Montant total erroné. Montant total de la transaction : %(trans_total)s. "
-"Montant total de la facture du fournisseur/de l'avoir : "
-"%(invoice_total)s. Cela ne devrait jamais se produire."
+"Montant total de la facture du fournisseur/de l'avoir : %(invoice_total)s. "
+"Cela ne devrait jamais se produire."

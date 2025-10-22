@@ -39,7 +39,7 @@ class AccountBankStatementCard(models.Model):
         (
             "code_journal_unique",
             "unique(code, journal_id)",
-            "This card already exists in this journal.",
+            "A card already exists in this journal with the same code.",
         ),
         (
             "name_unique",
