@@ -24,6 +24,7 @@ class AccountStatementImportApiAccount(models.Model):
     bank_name = fields.Char(string="Bank", readonly=True)
     account_type = fields.Char()
     active = fields.Boolean(default=True)
+    company_id = fields.Many2one("res.company", readonly=True, index=True)
 
     _sql_constraints = [
         (

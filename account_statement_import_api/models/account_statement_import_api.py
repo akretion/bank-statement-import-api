@@ -214,6 +214,7 @@ class AccountStatementImportApi(models.Model):
         identifier2id = {x["identifier"]: x["id"] for x in existing_identifiers_read}
         identifier2id_orphaned = dict(identifier2id)
         to_create_vals_list = []
+        to_activate_ids = []
         for vals in res:
             # clean-up vals
             for key, value in vals.items():
@@ -239,7 +240,9 @@ class AccountStatementImportApi(models.Model):
                 )
             if vals["identifier"] in identifier2id_orphaned:
                 identifier2id_orphaned.pop(vals["identifier"])
-            if vals["identifier"] not in identifier2id:
+            if vals["identifier"] in identifier2id:
+                to_activate_ids.append(identifier2id[vals["identifier"]])
+            else:
                 to_create_vals_list.append(dict(vals, statement_import_api_id=self.id))
                 logger.info(
                     "Identifier %s doesn't exist on statement import API ID %s. "
@@ -254,6 +257,9 @@ class AccountStatementImportApi(models.Model):
                 len(new_api_bank_accounts),
                 self.id,
             )
+        if to_activate_ids:
+            to_activate_api_bank_accounts = api_acc_obj.browse(to_activate_ids)
+            to_activate_api_bank_accounts.write({"active": True})
         if identifier2id_orphaned:
             to_archive_api_bank_accounts = api_acc_obj.browse(
                 list(identifier2id_orphaned.values())

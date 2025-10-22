@@ -143,7 +143,10 @@
         <field name="name">Bank Statement Import API</field>
         <field name="res_model">account.statement.import.api</field>
         <field name="view_mode">tree,form</field>
-        <field name="context">{'import_api_main_view': True}</field>
+        <!-- 'active_test': False to display inactive API bank accounts -->
+        <field
+            name="context"
+        >{'import_api_main_view': True, 'active_test': False}</field>
     </record>
 
     <menuitem
