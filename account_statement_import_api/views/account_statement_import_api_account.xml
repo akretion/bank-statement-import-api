@@ -23,6 +23,7 @@
                         attrs="{'invisible': [('account_type', '=', False)]}"
                     />
                                         <field name="identifier" />
+                                        <field name="company_id" />
                                         <field name="active" />
                                 </group>
                         </form>
@@ -32,7 +33,7 @@
     <record id="account_statement_import_api_account_list" model="ir.ui.view">
                 <field name="model">account.statement.import.api.account</field>
                 <field name="arch" type="xml">
-                        <tree create="0">
+                        <tree create="0" decoration-muted="not active">
                             <field
                     name="statement_import_api_id"
                     invisible="not context.get('account_statement_import_api_account')"
@@ -43,8 +44,11 @@
                             <field
                     name="account_type"
                     attrs="{'invisible': [('account_type', '=', False)]}"
+                    optional="show"
                 />
                             <field name="identifier" />
+                            <field name="company_id" optional="show" />
+                            <field name="active" optional="show" />
                         </tree>
                 </field>
         </record>

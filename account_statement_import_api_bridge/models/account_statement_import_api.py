@@ -143,7 +143,8 @@ class AccountStatementImportApi(models.Model):
 
     def _update_api_accounts_bridge(self, result, speedy):
         self.ensure_one()
-        headers = self._bridge_get_headers(self.company_id, result, speedy)
+        company = self.company_id or self.env.company
+        headers = self._bridge_get_headers(company, result, speedy)
         providers = self._bridge_get_all_pages("providers", headers, result)
         if providers is None:
             return None
@@ -163,6 +164,7 @@ class AccountStatementImportApi(models.Model):
                     "account_number": account.get("iban"),
                     "bank_name": providers_id2name.get(account.get("provider_id")),
                     "identifier": account["id"],
+                    "company_id": company.id,
                 }
             )
         return res

@@ -100,6 +100,7 @@ class AccountStatementImportApi(models.Model):
                     "account_number": account.get("iban"),
                     "bank_name": account.get("bic"),
                     "identifier": account["id"],
+                    "company_id": self.company_id.id,
                 }
             )
         return res

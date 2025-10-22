@@ -32,6 +32,7 @@
                     <field
                             name="statement_import_api_id"
                             attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'required': [('bank_statements_source', '=', 'api')]}"
+                            context="{'active_test': False}"
                         />
                     <button
                             name="api_import_bank_statement_lines_button"
