@@ -19,7 +19,6 @@
         "views/account_statement_import_api_account.xml",
         "views/account_statement_import_api.xml",
         "views/account_journal.xml",
-        "wizards/account_statement_import_api_set_identifier_view.xml",
     ],
     "installable": True,
 }
