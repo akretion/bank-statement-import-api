@@ -6,56 +6,54 @@
 -->
 <odoo>
 
-                <!-- kanban view -->
-                  <record id="bank_statement_line_reconcile_view" model="ir.ui.view">
-                          <field name="model">account.bank.statement.line</field>
-                          <field
+    <!-- kanban view -->
+    <record id="bank_statement_line_reconcile_view" model="ir.ui.view">
+        <field name="model">account.bank.statement.line</field>
+        <field
             name="inherit_id"
             ref="account_reconcile_oca.bank_statement_line_reconcile_view"
         />
-                          <field name="arch" type="xml">
-                                  <field name="is_reconciled" position="after">
-                                          <field
-                    name="in_invoice_expense_description"
-                />
-                                          <field name="in_invoice_expense_categ_id" />
-                                          <field name="in_invoice_account_id" />
-                                          <field name="in_invoice_vat_rate" />
-                                          <field name="in_invoice_tax_ids" />
-                                          <field name="in_invoice_vat_amount" />
-                                          <field name="attachment_ids" />
-                                  </field>
-                                  <xpath
+        <field name="arch" type="xml">
+            <field name="is_reconciled" position="after">
+                <field name="in_invoice_expense_description" />
+                <field name="in_invoice_expense_categ_id" />
+                <field name="in_invoice_account_id" />
+                <field name="in_invoice_vat_rate" />
+                <field name="in_invoice_tax_ids" />
+                <field name="in_invoice_vat_amount" />
+                <field name="in_invoice_card_id" />
+                <field name="attachment_ids" />
+            </field>
+            <xpath
                 expr="//templates//field[@name='payment_ref']/../.."
                 position="after"
             >
-                                          <div
-                    class="row"
-                    name="in_invoice"
-                    t-if="record.in_invoice_expense_description.raw_value"
-                >
-                                            <div class="col-8">
-                                                    <div>💳 <field
-                                name="in_invoice_expense_description"
+                <div class="row" name="in_invoice">
+                    <div class="col-8">
+                        <div t-if="record.in_invoice_card_id.value">💳 <field
+                                name="in_invoice_card_id"
                             /></div>
-                                                    <div>📂 <field
-                                name="in_invoice_expense_categ_id"
-                            /></div>
-                                                    <div>🗁  <field
-                                name="in_invoice_account_id"
-                            /></div>
-                                            </div>
-                                            <div
+                        <div
+                            t-if="record.in_invoice_expense_description.raw_value"
+                        >✎ <field name="in_invoice_expense_description" /></div>
+                        <div
+                            t-if="record.in_invoice_expense_description.raw_value"
+                        >📂 <field name="in_invoice_expense_categ_id" /></div>
+                        <div
+                            t-if="record.in_invoice_expense_description.raw_value"
+                        >🗁  <field name="in_invoice_account_id" /></div>
+                    </div>
+                    <div
                         class="col-4"
                         style="text-align: right"
+                        t-if="record.in_invoice_expense_description.raw_value"
                     >
-                                                <div
-                            t-if="record.in_invoice_tax_ids.raw_value.length > 0"
-                        ><field
+                        <div t-if="record.in_invoice_tax_ids.raw_value.length > 0">
+                        <field
                                 name="in_invoice_tax_ids"
                                 widget="many2many_tags"
                             /></div>
-                                                <div
+                        <div
                             t-if="record.in_invoice_tax_ids.raw_value.length === 0"
                         ><span style="font-weight: bold">VAT</span> <field
                                 name="in_invoice_vat_rate"
@@ -63,30 +61,30 @@
                                                 <div><span
                                 style="font-weight: bold"
                             >VAT</span> <field name="in_invoice_vat_amount" /></div>
-                                                <div
-                            t-if="record.attachment_ids.raw_value.length > 0"
-                        >📷 <t t-esc="record.attachment_ids.raw_value.length" /></div>
-                                                <div
+                        <div t-if="record.attachment_ids.raw_value.length > 0">📷 <t
+                                t-esc="record.attachment_ids.raw_value.length"
+                            /></div>
+                        <div
                             t-if="record.attachment_ids.raw_value.length === 0 &amp;&amp; !record.is_reconciled.raw_value"
                             class="badge text-bg-warning"
                             style="font-weight: bold"
                         >Missing 📷</div>
-                                            </div>
-                                        </div>
-                                  </xpath>
-                          </field>
-                  </record>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
 
-                  <record id="bank_statement_line_form_add_view" model="ir.ui.view">
-                          <field name="model">account.bank.statement.line</field>
-                          <field
+    <record id="bank_statement_line_form_add_view" model="ir.ui.view">
+        <field name="model">account.bank.statement.line</field>
+        <field
             name="inherit_id"
             ref="account_reconcile_oca.bank_statement_line_form_add_view"
         />
-                          <field name="arch" type="xml">
-                                  <xpath expr="/form/group" position="inside">
-                                          <separator string="Vendor Bill" />
-                                          <group name="in_invoice_left">
+        <field name="arch" type="xml">
+            <xpath expr="/form/group" position="inside">
+                <separator string="Vendor Bill" />
+                <group name="in_invoice_left">
                                                   <field
                         name="in_invoice_expense_categ_id"
                     />
@@ -128,22 +126,19 @@
                         nolabel="1"
                         string="Receipt(s)"
                     />
-                                          </group>
-                                  </xpath>
-                          </field>
-                  </record>
+                </group>
+            </xpath>
+        </field>
+    </record>
 
-                  <!-- This is the view used on the right side of the bank statement reconcile interface -->
-                  <record
-        id="bank_statement_line_form_reconcile_view"
-        model="ir.ui.view"
-    >
-                          <field name="model">account.bank.statement.line</field>
-                          <field
+    <!-- This is the view used on the right side of the bank statement reconcile interface -->
+    <record id="bank_statement_line_form_reconcile_view" model="ir.ui.view">
+        <field name="model">account.bank.statement.line</field>
+        <field
             name="inherit_id"
             ref="account_reconcile_oca.bank_statement_line_form_reconcile_view"
         />
-                          <field name="arch" type="xml">
+        <field name="arch" type="xml">
                                   <page name="manual" position="before">
                                           <page name="in_invoice" string="Vendor Bill">
 
@@ -231,17 +226,17 @@
                     attrs="{'invisible': [('in_invoice_show_button', '=', True)]}"
                 />
                                   </button>
-                          </field>
-                  </record>
+        </field>
+    </record>
 
-                  <record id="account_bank_statement_line_form" model="ir.ui.view">
-                          <field name="model">account.bank.statement.line</field>
-                          <field
+    <record id="account_bank_statement_line_form" model="ir.ui.view">
+        <field name="model">account.bank.statement.line</field>
+        <field
             name="inherit_id"
             ref="account_statement_base.account_bank_statement_line_form"
         />
-                          <field name="arch" type="xml">
-                                <notebook position="inside">
+        <field name="arch" type="xml">
+            <notebook position="inside">
                                     <page name="in_invoice" string="Vendor Bills">
                                         <group name="in_invoice">
                                             <field name="in_invoice_expense_categ_id" />
@@ -278,60 +273,38 @@
                         />
                                           </group>
                                       </page>
-                                  </notebook>
-                          </field>
-                  </record>
+            </notebook>
+        </field>
+    </record>
 
-                  <record id="account_bank_statement_line_tree" model="ir.ui.view">
-                          <field name="model">account.bank.statement.line</field>
-                          <field
+    <record id="account_bank_statement_line_tree" model="ir.ui.view">
+        <field name="model">account.bank.statement.line</field>
+        <field
             name="inherit_id"
             ref="account_statement_base.account_bank_statement_line_tree"
         />
-    <field name="arch" type="xml">
+        <field name="arch" type="xml">
             <field name="partner_bank_id" position="after">
-                                              <field
-                    name="in_invoice_expense_categ_id"
-                    optional="hide"
-                />
-                                              <field
-                    name="in_invoice_card_id"
-                    optional="hide"
-                />
-                                              <field
-                    name="in_invoice_account_id"
-                    optional="hide"
-                />
-                                              <field
+                <field name="in_invoice_expense_categ_id" optional="hide" />
+                <field name="in_invoice_card_id" optional="hide" />
+                <field name="in_invoice_account_id" optional="hide" />
+                <field
                     name="in_invoice_analytic_distribution"
                     widget="analytic_distribution"
                     groups="analytic.group_analytic_accounting"
                     optional="hide"
                 />
-                                              <field
-                    name="in_invoice_vat_rate"
-                    optional="hide"
-                />
-                                              <field
+                <field name="in_invoice_vat_rate" optional="hide" />
+                <field
                     name="in_invoice_tax_ids"
                     widget="many2many_tags"
                     optional="hide"
                 />
-                                              <field
-                    name="in_invoice_vat_amount"
-                    optional="hide"
-                />
-                                              <field
-                    name="in_invoice_expense_description"
-                    optional="hide"
-                />
-                                              <field
-                    name="in_invoice_force_invoice_date"
-                    optional="hide"
-                />
-
+                <field name="in_invoice_vat_amount" optional="hide" />
+                <field name="in_invoice_expense_description" optional="hide" />
+                <field name="in_invoice_force_invoice_date" optional="hide" />
             </field>
-    </field>
+        </field>
     </record>
 
-          </odoo>
+</odoo>

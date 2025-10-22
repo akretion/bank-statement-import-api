@@ -31,16 +31,19 @@ class AccountBankStatementCard(models.Model):
     def name_get(self):
         res = []
         for card in self:
-            dname = card.code
-            if card.name:
-                dname = f"[{dname}] {card.name}"
+            dname = card.name or card.code
             res.append((card.id, dname))
         return res
 
-    _sql_constrains = [
+    _sql_constraints = [
         (
             "code_journal_unique",
             "unique(code, journal_id)",
             "This card already exists in this journal.",
-        )
+        ),
+        (
+            "name_unique",
+            "unique(name)",
+            "This label is already used on another card.",
+        ),
     ]
