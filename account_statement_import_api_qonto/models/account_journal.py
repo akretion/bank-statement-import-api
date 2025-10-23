@@ -64,7 +64,9 @@ class AccountJournal(models.Model):
         if vat_details_list and trans["vat_amount"]:
             # I take the rate of the line with the biggest untaxed base
             base2rate = {
-                x["amount_excluding_vat_cents"]: x["rate"] for x in vat_details_list
+                x["amount_excluding_vat_cents"]: x["rate"]
+                for x in vat_details_list
+                if x["amount_excluding_vat_cents"]
             }
             base2rate_list_sorted = sorted(base2rate.items(), key=lambda x: x[0])
             vat_rate = base2rate_list_sorted[-1][1]
