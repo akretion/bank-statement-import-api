@@ -14,50 +14,49 @@
                 expr="//group[@name='bank_account_number']/field[@name='bank_statements_source']"
                 position="after"
             >
-            <group
+            <separator
                     name="statement_import_api"
-                    string="Statement Import by API"
+                    string="Bank Statement Import by API"
                     attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
                     colspan="2"
-                >
+                />
             <label
-                        for="statement_import_api_id"
-                        attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
-                    />
+                    for="statement_import_api_id"
+                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                />
             <div
-                        name="statement_import_api_id"
-                        attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
-                        class="o_row"
-                    >
+                    name="statement_import_api_id"
+                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                    class="o_row"
+                >
                     <field
-                            name="statement_import_api_id"
-                            attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'required': [('bank_statements_source', '=', 'api')]}"
-                            context="{'active_test': False}"
-                        />
+                        name="statement_import_api_id"
+                        attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'required': [('bank_statements_source', '=', 'api')]}"
+                        context="{'active_test': False}"
+                    />
                     <button
-                            name="api_import_bank_statement_lines_button"
-                            type="object"
-                            string=" Run Now"
-                            help="Download bank statement lines via the API"
-                            class="btn-link mb-1 px-0"
-                            icon="fa-refresh"
-                            attrs="{'invisible': [('statement_import_api_id', '=', False)]}"
-                        />
+                        name="api_import_bank_statement_lines_button"
+                        type="object"
+                        string=" Run Now"
+                        help="Download bank statement lines via the API"
+                        class="btn-link mb-1 px-0"
+                        icon="fa-refresh"
+                        attrs="{'invisible': [('statement_import_api_id', '=', False)]}"
+                    />
             </div>
             <field
-                        name="statement_import_api_account_id"
-                        attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
-                    />
+                    name="statement_import_api_account_id"
+                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                />
                     <field
-                        name="statement_import_api_last_success"
-                        attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
-                    />
+                    name="statement_import_api_last_success"
+                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                />
                     <field
-                        name="statement_import_api_start_date"
-                        attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'readonly': [('statement_import_api_last_success', '!=', False)], 'required': [('bank_statements_source', '=', 'api'), ('statement_import_api_last_success', '=', False)]}"
-                    />
+                    name="statement_import_api_start_date"
+                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'readonly': [('statement_import_api_last_success', '!=', False)], 'required': [('bank_statements_source', '=', 'api'), ('statement_import_api_last_success', '=', False)]}"
+                />
                     <field name="statement_import_api_service" invisible="1" />
-            </group>
             </xpath>
             <field name="bank_account_id" position="attributes">
                 <attribute
