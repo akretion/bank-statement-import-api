@@ -143,8 +143,8 @@ class AccountStatementImportApi(models.Model):
         speedy = {
             "statement_import_api_id": self.id,
             "currency_code2id": currency_code2id,
-            "login": self.login,
-            "password": self.password,
+            "login": self.sudo().login,
+            "password": self.sudo().password,
             "tz": self.tz and pytz.timezone(self.tz) or pytz.utc,
             "service": self.service,
             "backward_days": self.backward_days,
