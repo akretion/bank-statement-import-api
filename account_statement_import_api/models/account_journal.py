@@ -4,10 +4,17 @@
 
 import datetime
 import logging
+import sys
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools.misc import format_date, format_datetime
+
+# Backport of datetime.fromisoformat() for python < 3.11
+if sys.version_info < (3, 11):
+    from backports.datetime_fromisoformat import MonkeyPatch
+
+    MonkeyPatch.patch_fromisoformat()
 
 logger = logging.getLogger(__name__)
 
