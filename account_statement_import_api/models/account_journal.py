@@ -278,7 +278,7 @@ class AccountJournal(models.Model):
 
         new_line_vals = []
         if result["lines"] and not any(
-            [log.startswith("ERROR ") for log in result["logs"]]
+            [log_type == "error" for log_type, msg in result["logs"]]
         ):
             speedy["search_unique_import_ids"] = []
             for pivot_line in result["lines"]:
@@ -303,31 +303,34 @@ class AccountJournal(models.Model):
                     self.statement_import_api_start_date
                     and pivot_line["date"] < self.statement_import_api_start_date
                 ):
-                    result["logs"].append(
-                        f"INFO Skipped retreived transaction dated "
+                    self._api_import_info_log(
+                        result,
+                        f"Skipped retreived transaction dated "
                         f"{pivot_line['date']} amount {pivot_line['amount']} "
                         f"label {pivot_line['payment_ref']} because it is "
-                        f"before the start import date {self.statement_import_api_start_date}"
+                        f"before the start import date {self.statement_import_api_start_date}",
                     )
                 elif pivot_line["unique_import_id"] in existing_lines:
                     existing_line = existing_lines[pivot_line["unique_import_id"]]
                     if existing_line["is_reconciled"]:
-                        result["logs"].append(
-                            f"INFO Skipped existing reconciled line ID "
+                        self._api_import_info_log(
+                            result,
+                            f"Skipped existing reconciled line ID "
                             f"{existing_line['id']} dated {existing_line['date']} "
                             f"amount {existing_line['amount']} "
-                            f"label '{existing_line['payment_ref']}'"
+                            f"label '{existing_line['payment_ref']}'",
                         )
                     elif speedy.get("update_existing_bank_statement_lines"):
                         self._api_import_update_existing_line(
                             pivot_line, result, speedy
                         )
                     else:
-                        result["logs"].append(
-                            f"INFO Skipped existing unreconciled line ID "
+                        self._api_import_info_log(
+                            result,
+                            f"Skipped existing unreconciled line ID "
                             f"{existing_line['id']} dated {existing_line['date']} "
                             f"amount {existing_line['amount']} "
-                            f"label '{existing_line['payment_ref']}'"
+                            f"label '{existing_line['payment_ref']}'",
                         )
                 else:  # New bank statement line to create
                     lvals = self._api_prepare_bank_statement_line(
@@ -339,12 +342,13 @@ class AccountJournal(models.Model):
                         lvals, speedy["update_hook_speeddict"]
                     )
                     new_line_vals.append(lvals)
-                    result["logs"].append(
-                        f"INFO Created new line dated {lvals['date']} "
-                        f"amount {lvals['amount']} label '{lvals['payment_ref']}'"
+                    self._api_import_info_log(
+                        result,
+                        f"Created new line dated {lvals['date']} "
+                        f"amount {lvals['amount']} label '{lvals['payment_ref']}'",
                     )
             if new_line_vals and not any(
-                [log.startswith("ERROR ") for log in result["logs"]]
+                [log_type == "error" for log_type, msg in result["logs"]]
             ):
                 self.env["account.bank.statement.line"].create(new_line_vals)
 
@@ -362,36 +366,32 @@ class AccountJournal(models.Model):
 
     def _api_import_prepare_log(self, result, speedy):
         logs = []
-        for log in result["logs"]:
-            if log.startswith("INFO "):
-                msg = log[5:]
+        has_error = False
+        has_warning = False
+        for log_type, msg in result["logs"]:
+            if log_type == "info":
                 logs.append(
                     f'<span style="color: green; font-weight: bold">'
                     f"INFO </span>{msg}"
                 )
-                logger.info(msg)
-            elif log.startswith("WARN "):
-                msg = log[5:]
+            elif log_type == "warning":
                 logs.append(
                     f'<span style="color: orange; font-weight: bold">'
-                    f"WARN </span>{msg}"
+                    f"WARNING </span>{msg}"
                 )
-                logger.warning(msg)
-            elif log.startswith("ERROR "):
-                msg = log[6:]
+                has_warning = True
+            elif log_type == "error":
                 logs.append(
                     f'<span style="color: red; font-weight: bold">'
                     f"ERROR </span>{msg}"
                 )
-                logger.error(msg)
+                has_error = True
             else:  # Should not happen
-                logs.append(log)
-        has_error = any([log.startswith("ERROR ") for log in result["logs"]])
+                logs.append(msg)
         if has_error:
             status = "failure"
         else:
-            has_warn = any([log.startswith("WARN ") for log in result["logs"]])
-            if has_warn:
+            if has_warning:
                 status = "success_warn"
             else:
                 status = "success"
@@ -421,8 +421,9 @@ class AccountJournal(models.Model):
 
         for required_field in required_field2type.keys():
             if not pivot_line.get(required_field):
-                result["logs"].append(
-                    f"ERROR Field {required_field} is missing in pivot line {pivot_line}"
+                self._api_import_error_log(
+                    result,
+                    f"Field {required_field} is missing in pivot line {pivot_line}",
                 )
                 return False
         # for "date" key, we accept both string and date object.
@@ -433,28 +434,31 @@ class AccountJournal(models.Model):
                     pivot_line["date"], "%Y-%m-%d"
                 ).date()
             except ValueError:
-                result["logs"].append(
-                    f"ERROR Date '{pivot_line['date']}' is a string that doesn't "
-                    f"respect format '%Y-%m-%d' in pivot line {pivot_line}"
+                self._api_import_error_log(
+                    result,
+                    f"Date '{pivot_line['date']}' is a string that doesn't "
+                    f"respect format '%Y-%m-%d' in pivot line {pivot_line}",
                 )
                 return False
 
         for field, field_type in required_field2type.items():
             if not isinstance(pivot_line[field], field_type):
-                result["logs"].append(
-                    f"ERROR Field {field} has value '{pivot_line[field]}' "
+                self._api_import_error_log(
+                    result,
+                    f"Field {field} has value '{pivot_line[field]}' "
                     f"and type '{type(pivot_line[field])}' whereas the expected type "
-                    f"is '{field_type}' in pivot line {pivot_line}"
+                    f"is '{field_type}' in pivot line {pivot_line}",
                 )
                 return False
         if (
             pivot_line.get("currency_code")
             and pivot_line["currency_code"].upper() != journal_currency_code
         ):
-            result["logs"].append(
-                f"ERROR Transaction is in currency {pivot_line['currency_code']} "
+            self._api_import_error_log(
+                result,
+                f"Transaction is in currency {pivot_line['currency_code']} "
                 f"whereas the bank journal {self.display_name} is in currency "
-                f"{journal_currency_code} in pivot line {pivot_line}"
+                f"{journal_currency_code} in pivot line {pivot_line}",
             )
             return False
         return True
@@ -527,3 +531,18 @@ class AccountJournal(models.Model):
         timestamp_dt_our_tz = timestamp_dt.astimezone(speedy["tz"])
         date_dt = timestamp_dt_our_tz.date()
         return date_dt
+
+    @api.model
+    def _api_import_info_log(self, result, msg):
+        logger.info(msg)
+        result["logs"].append(("info", msg))
+
+    @api.model
+    def _api_import_warning_log(self, result, msg):
+        logger.warning(msg)
+        result["logs"].append(("warning", msg))
+
+    @api.model
+    def _api_import_error_log(self, result, msg):
+        logger.error(msg)
+        result["logs"].append(("error", msg))

@@ -26,6 +26,7 @@
                             widget="badge"
                             decoration-success="status == 'success'"
                             decoration-danger="status == 'failure'"
+                            decoration-warning="status == 'success_warn'"
                         />
                                         <field name="new_line_count" />
                                         <field name="updated_line_count" />

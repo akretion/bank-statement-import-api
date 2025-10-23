@@ -78,6 +78,9 @@
                     <field name="tz" />
                 </group>
         </group>
+        <group name="instructions">
+                <field name="instructions" nolabel="1" colspan="2" />
+        </group>
         <notebook>
                 <page name="journals" string="Bank Journals">
                 <field name="journal_ids" nolabel="1" colspan="2">
