@@ -60,9 +60,9 @@
                 </div>
                 <group name="main">
                 <group name="main-left">
+                    <field name="service" />
                     <field name="company_id" groups="base.group_multi_company" />
                     <field name="company_id" invisible="1" />
-                    <field name="service" />
                     <field name="cron_id" />
                     <field name="last_success" />
                 </group>
@@ -74,6 +74,7 @@
                                 attrs="{'invisible': [('show_backward_days', '=', False)]}"
                             />
                     <field name="show_backward_days" invisible="1" />
+                    <field name="show_company_user" invisible="1" />
                     <field name="tz" />
                 </group>
         </group>
@@ -88,7 +89,11 @@
                 </tree>
                 </field>
         </page>
-        <page name="company-users" string="Per-Company Users">
+        <page
+                            name="company-users"
+                            string="Per-Company Users"
+                            attrs="{'invisible': [('show_company_user', '=', False)]}"
+                        >
                 <field name="company_user_ids" nolabel="1" colspan="2">
                         <tree editable="bottom">
                                 <field name="company_id" />

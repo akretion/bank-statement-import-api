@@ -7,7 +7,7 @@ import logging
 import requests
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError
 
 BRIDGE_VERSION = "2025-01-15"
 BRIDGE_BASE_URL = "https://api.bridgeapi.io"
@@ -22,32 +22,28 @@ logger = logging.getLogger(__name__)
 class AccountStatementImportApi(models.Model):
     _inherit = "account.statement.import.api"
 
-    service = fields.Selection(
-        selection_add=[
-            ("bridge", "BridgeAPI.io"),
-        ],
-        ondelete={"bridge": "cascade"},
-    )
+    service = fields.Selection(ondelete={"bridge": "cascade"})
 
-    @api.constrains("service", "login", "password")
-    def _check_bridge(self):
-        for rec in self:
-            if rec.service == "bridge":
-                if not rec.login or not rec.password:
-                    raise ValidationError(
-                        _(
-                            "The Bank Statement Import API '%(name)s' uses the Bridge API "
-                            "and therefore it requires a login and a password.",
-                            name=rec.name,
-                        )
-                    )
+    @api.model
+    def _get_service_info(self):
+        service2info = super()._get_service_info()
+        service2info["bridge"] = {
+            "name": "BridgeAPI.io",
+            "company_required": False,
+            "login_required": True,
+            "password_required": True,
+            "user_company_required": True,
+            "show_backward_days": True,
+            "help": _("Write a help"),
+        }
+        return service2info
 
     def _bridge_get_token(self, company, result, speedy):
-        if not speedy["bridge_company_id2token"].get(company.id):
+        if not speedy["company_id2token"].get(company.id):
             token = self._bridge_get_new_token(company, result)
             # at this stage, token can be None
-            speedy["bridge_company_id2token"][company.id] = token
-        return speedy["bridge_company_id2token"][company.id]
+            speedy["company_id2token"][company.id] = token
+        return speedy["company_id2token"][company.id]
 
     def _bridge_get_headers(self, company, result, speedy):
         token = self._bridge_get_token(company, result, speedy)
@@ -115,17 +111,8 @@ class AccountStatementImportApi(models.Model):
         )
         return token
 
-    def _prepare_speedy(self):
-        self.ensure_one()
-        speedy = super()._prepare_speedy()
-        if self.service == "bridge":
-            self._check_company_user_identifier()
-            speedy["bridge_company_id2token"] = {}
-        return speedy
-
     def _bridge_test_api(self):
         self.ensure_one()
-        self._check_company_user_identifier()
         result = {"logs": []}
         company = self.company_id or self.env.company
         self._bridge_get_new_token(company, result)
