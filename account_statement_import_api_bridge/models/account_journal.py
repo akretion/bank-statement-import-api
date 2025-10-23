@@ -25,7 +25,7 @@ class AccountJournal(models.Model):
     def _api_import_bridge(self, result, speedy):
         self.ensure_one()
         if not self.statement_import_api_account_identifier:
-            result["logs"].append("ERROR Bridge Account Identifier is not set")
+            self._api_import_error_log(result, "Bridge Account Identifier is not set")
             return
         speedy["bridge_preferred_date"] = self.bridge_preferred_date
         import_api = self.statement_import_api_id
@@ -77,17 +77,19 @@ class AccountJournal(models.Model):
             "unique_import_id": str(trans["id"]),
         }
         if trans["future"]:
-            result["logs"].append(
-                f"INFO Skipped transaction dated {pivot['date']} "
+            self._api_import_info_log(
+                result,
+                f"Skipped transaction dated {pivot['date']} "
                 f"amount {pivot['amount']} label '{pivot['payment_ref']}' "
-                f"which has future flag"
+                f"which has future flag",
             )
             return False
         if trans["deleted"]:
-            result["logs"].append(
-                f"WARN Skipped transaction dated {pivot['date']} "
+            self._api_import_warning_log(
+                result,
+                f"Skipped transaction dated {pivot['date']} "
                 f"amount {pivot['amount']} label '{pivot['payment_ref']}' "
-                f"which has the deleted flag. It should never happen."
+                f"which has the deleted flag. It should never happen.",
             )
             return False
         return pivot

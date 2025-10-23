@@ -23,9 +23,10 @@ class AccountJournal(models.Model):
         self.ensure_one()
         lines = []
         if self.bank_account_id.acc_type != "iban":
-            result["logs"].append(
-                f"ERROR Bank account {self.bank_account_id.acc_number} is not "
-                f"an IBAN (account type is '{self.bank_account_id.acc_type}')."
+            self._api_import_error_log(
+                result,
+                f"Bank account {self.bank_account_id.acc_number} is not "
+                f"an IBAN (account type is '{self.bank_account_id.acc_type}').",
             )
             return
 
@@ -124,14 +125,15 @@ class AccountJournal(models.Model):
                     timeout=TIMEOUT,
                 )
             except Exception as e:
-                result["logs"].append(
-                    f"ERROR API call on {url} with params={params} failed: {e}"
+                self._api_import_error_log(
+                    result, f"API call on {url} with params={params} failed: {e}"
                 )
                 return []
             if res.status_code != 200:
-                result["logs"].append(
-                    f"ERROR API call on {url} with params={params} returned an "
-                    f"HTTP error code {res.status_code}."
+                self._api_import_error_log(
+                    result,
+                    f"API call on {url} with params={params} returned an "
+                    f"HTTP error code {res.status_code}.",
                 )
                 return []
             res_json = res.json()

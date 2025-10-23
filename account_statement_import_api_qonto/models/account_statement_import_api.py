@@ -29,8 +29,8 @@ class AccountStatementImportApi(models.Model):
             "password_required": True,
             "user_company_required": False,
             "show_backward_days": False,
-            "help": _(
-                "Go to the web interface of your Qonto account, go to ... and copy the ..."
+            "instructions": _(
+                """<p>Go to the web interface of your <a href="https://qonto.com/">Qonto</a> account. On the left panel, click on <strong>Integrations and Partnerships</strong> and then click on <strong>API Keys</strong>:</p><ul><li>Copy the <strong>Identifier</strong> to the field <em>Login or Client ID</em></li><li>Copy the <strong>Secret Key</strong> to the field <em>Password or Client Secret</em></li></ul><p>Then, click on the button <em>Test API</em> to test that Odoo is able to query the Qonto API.</p>"""
             ),
         }
         return service2info

@@ -70,6 +70,7 @@ class AccountStatementImportApi(models.Model):
         string="Per-Company Users",
     )
     show_company_user = fields.Boolean(compute="_compute_show")
+    instructions = fields.Html(compute="_compute_show")
 
     _sql_constraints = [
         (
@@ -104,7 +105,7 @@ class AccountStatementImportApi(models.Model):
                 if rec.service not in service2info:
                     raise ValidationError(_("Service '%s' is unknown.") % rec.service)
                 info = service2info[rec.service]
-                if info.get("company_required") and not rec.company:
+                if info.get("company_required") and not rec.company_id:
                     raise ValidationError(
                         _("Company is required for service '%s'.") % info["name"]
                     )
@@ -135,12 +136,15 @@ class AccountStatementImportApi(models.Model):
         for rec in self:
             show_backward_days = True
             show_company_user = True
+            instructions = False
             if rec.service:
                 info = service2info[rec.service]
                 show_backward_days = info.get("show_backward_days", True)
                 show_company_user = info.get("user_company_required", True)
+                instructions = info.get("instructions")
             rec.show_backward_days = show_backward_days
             rec.show_company_user = show_company_user
+            rec.instructions = instructions
 
     @api.depends("service")
     def _compute_company_id(self):
@@ -269,7 +273,7 @@ class AccountStatementImportApi(models.Model):
         res = method(result, speedy)
         # res is a list of vals of account.statement.import.api.set.identifier.line
         if not res:
-            raise UserError(result["logs"][-1])
+            raise UserError(result["logs"][-1][1])
         api_acc_obj = self.env["account.statement.import.api.account"]
         existing_identifiers_read = api_acc_obj.with_context(
             active_test=False

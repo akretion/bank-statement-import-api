@@ -34,7 +34,7 @@ class AccountStatementImportApi(models.Model):
             "password_required": True,
             "user_company_required": True,
             "show_backward_days": True,
-            "help": _("Write a help"),
+            # "instructions": _("TODO Write instructions"),
         }
         return service2info
 
@@ -61,6 +61,7 @@ class AccountStatementImportApi(models.Model):
 
     def _bridge_get_new_token(self, company, result):
         assert company
+        ajo = self.env["account.journal"]
         headers_token = {
             "Bridge-Version": BRIDGE_VERSION,
             "Client-Id": self.login,
@@ -85,23 +86,26 @@ class AccountStatementImportApi(models.Model):
                 url, headers=headers_token, json=post_json, timeout=TIMEOUT
             )
         except Exception as e:
-            result["logs"].append(
-                f"ERROR API call on {url} failed: {e}. "
-                f"Could not get a token for company {company.name}."
+            ajo._api_import_error_log(
+                result,
+                f"API call on {url} failed: {e}. "
+                f"Could not get a token for company {company.name}.",
             )
             return None
         if token_res.status_code != 200:
-            result["logs"].append(
-                f"ERROR API call on {url} return an HTTP error code "
+            ajo._api_import_error_log(
+                result,
+                f"API call on {url} return an HTTP error code "
                 f"{token_res.status_code}. Could not get a token for "
-                f"company {company.name}."
+                f"company {company.name}.",
             )
             return None
         token_dict = token_res.json()
         token = token_dict["access_token"]
-        result["logs"].append(
-            f"INFO Successful API call on {url} to get a new token "
-            f"for company {company.name}"
+        ajo._api_import_info_log(
+            result,
+            f"Successful API call on {url} to get a new token "
+            f"for company {company.name}",
         )
         logger.debug(
             "New Bridge API session token %s for company %s (user: %s)",
@@ -116,12 +120,12 @@ class AccountStatementImportApi(models.Model):
         result = {"logs": []}
         company = self.company_id or self.env.company
         self._bridge_get_new_token(company, result)
-        for log in result["logs"]:
-            if log.startswith("ERROR "):
+        for log_type, msg in result["logs"]:
+            if log_type == "error":
                 raise UserError(
                     _(
-                        "Failure in the request to Bridge API. Error: %(err)s",
-                        err=log[6:],
+                        "Failure in the request to Bridge API. Error: %(msg)s",
+                        msg=msg,
                     )
                 )
 
@@ -157,6 +161,7 @@ class AccountStatementImportApi(models.Model):
 
     @api.model
     def _bridge_get_all_pages(self, api_name, headers, result, params=None):
+        ajo = self.env["account.journal"]
         url = f"{BRIDGE_BASE_URL}/{BRIDGE_API_VERSION}/{api_name}"
         if params is None:
             params = {}
@@ -165,17 +170,20 @@ class AccountStatementImportApi(models.Model):
         try:
             res = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
         except Exception as e:
-            result["logs"].append(
-                f"ERROR API call on {url} with params={params} failed: {e}"
+            ajo._api_import_error_log(
+                result, f"API call on {url} with params={params} failed: {e}"
             )
             return None
         if res.status_code != 200:
-            result["logs"].append(
-                f"ERROR API call on {url} with params={params} returned an "
-                f"HTTP error code {res.status_code}."
+            ajo._api_import_error_log(
+                result,
+                f"API call on {url} with params={params} returned an "
+                f"HTTP error code {res.status_code}.",
             )
             return None
-        result["logs"].append(f"INFO Successful API call on {url} with params={params}")
+        ajo._api_import_info_log(
+            result, f"Successful API call on {url} with params={params}"
+        )
         res_dict = res.json()
         res_list = res_dict["resources"]
         next_uri = res_dict["pagination"].get("next_uri")
@@ -186,17 +194,20 @@ class AccountStatementImportApi(models.Model):
             try:
                 res_next_page = requests.get(url, headers=headers, timeout=TIMEOUT)
             except Exception as e:
-                result["logs"].append(
-                    f"ERROR API call on {url} failed (page {page}): {e}"
+                ajo._api_import_error_log(
+                    result, f"API call on {url} failed (page {page}): {e}"
                 )
                 return None
             if res_next_page.status_code != 200:
-                result["logs"].append(
-                    f"ERROR API call on {url} returned an "
-                    f"HTTP error code {res_next_page.status_code} (page {page})."
+                ajo._api_import_error_log(
+                    result,
+                    f"API call on {url} returned an "
+                    f"HTTP error code {res_next_page.status_code} (page {page}).",
                 )
                 return None
-            result["logs"].append(f"INFO Successful API call on {url} (page {page})")
+            ajo._api_import_info_log(
+                result, f"Successful API call on {url} (page {page})"
+            )
             res_next_page_dict = res_next_page.json()
             res_list += res_next_page_dict["resources"]
             next_uri = res_next_page_dict["pagination"].get("next_uri")

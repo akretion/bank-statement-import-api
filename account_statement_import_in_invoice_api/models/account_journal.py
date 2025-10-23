@@ -131,8 +131,8 @@ class AccountJournal(models.Model):
                         "journal_id": self.id,
                     }
                 )
-                result["logs"].append(
-                    f"WARN New card created with code '{card_code}' (ID {card.id})"
+                self._api_import_warning_log(
+                    result, f"New card created with code '{card_code}' (ID {card.id})"
                 )
                 speedy["card_code2id"][card_code] = card.id
             lvals["in_invoice_card_id"] = speedy["card_code2id"][card_code]
@@ -143,9 +143,10 @@ class AccountJournal(models.Model):
                     expcateg_code
                 ]
             else:
-                result["logs"].append(
-                    f"WARN Expense category code '{expcateg_code}' doesn't exist "
-                    f"for service {speedy['service']}"
+                self._api_import_warning_log(
+                    result,
+                    f"Expense category code '{expcateg_code}' doesn't exist "
+                    f"for service {speedy['service']}",
                 )
         # for the moment, we consider that autoliq taxes are set by country-specific modules
         # that inherit this method
@@ -228,15 +229,16 @@ class AccountJournal(models.Model):
         try:
             res = requests.get(url, verify=True, timeout=TIMEOUT)
         except Exception as e:
-            result["logs"].append(
-                f"ERROR API call to get attachment from {url} failed: {e}"
+            self._api_import_error_log(
+                result, f"API call to get attachment from {url} failed: {e}"
             )
             return None
         if res.status_code != 200:
             # let's see error_logs
-            result["logs"].append(
-                f"ERROR API call to get attachment from {url} returned an HTTP error code "
-                f"{res.status_code}."
+            self._api_import_error_log(
+                result,
+                f"API call to get attachment from {url} returned an HTTP error code "
+                f"{res.status_code}.",
             )
             return None
         if res.content:
@@ -252,10 +254,11 @@ class AccountJournal(models.Model):
         st_line = self.env["account.bank.statement.line"].browse(existing_line["id"])
         st_line.write(lvals)
         result["updated_line_count"] += 1
-        result["logs"].append(
-            f"INFO Updated existing unreconciled line ID {existing_line['id']} "
+        self._api_import_info_log(
+            result,
+            f"Updated existing unreconciled line ID {existing_line['id']} "
             f"dated {existing_line['date']} amount {existing_line['amount']} "
-            f"label '{existing_line['payment_ref']}'"
+            f"label '{existing_line['payment_ref']}'",
         )
         return res
 
@@ -275,11 +278,12 @@ class AccountJournal(models.Model):
                     pivot_line["in_invoice_force_invoice_date"], "%Y-%m-%d"
                 )
             except ValueError:
-                result["logs"].append(
-                    f"ERROR Field 'Force Invoice Date' has date "
+                self._api_import_error_log(
+                    result,
+                    f"Field 'Force Invoice Date' has date "
                     f"'{pivot_line['in_invoice_force_invoice_date']}' "
                     f"as a string that doesn't respect format '%Y-%m-%d' "
-                    f"in pivot line {pivot_line}"
+                    f"in pivot line {pivot_line}",
                 )
                 return False
         field2type = {
@@ -293,10 +297,11 @@ class AccountJournal(models.Model):
         for field, field_type in field2type.items():
             if pivot_line.get(field):
                 if not isinstance(pivot_line[field], field_type):
-                    result["logs"].append(
-                        f"ERROR Field {field} has value '{pivot_line[field]}' "
+                    self._api_import_error_log(
+                        result,
+                        f"Field {field} has value '{pivot_line[field]}' "
                         f"and type '{type(pivot_line[field])}' whereas the expected "
-                        f"type is '{field_type}' in pivot line {pivot_line}"
+                        f"type is '{field_type}' in pivot line {pivot_line}",
                     )
                     return False
         if pivot_line.get("in_invoice_vat_amount"):
@@ -312,10 +317,11 @@ class AccountJournal(models.Model):
             )
             < 0
         ):
-            result["logs"].append(
-                f"WARN Got a negative VAT rate "
+            self._api_import_warning_log(
+                result,
+                f"Got a negative VAT rate "
                 f"({pivot_line['in_invoice_vat_rate']}) on pivot line {pivot_line}: "
-                f"VAT rate forced to 0"
+                f"VAT rate forced to 0",
             )
             pivot_line["in_invoice_vat_rate"] = 0
         return res
