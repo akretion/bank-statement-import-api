@@ -16,7 +16,9 @@ class AccountStatementImportApiCompanyUser(models.Model):
         required=True,
     )
     identifier = fields.Char(required=True)
-    company_id = fields.Many2one("res.company", index=True, required=True, default=lambda self: self.env.company)
+    company_id = fields.Many2one(
+        "res.company", index=True, required=True, default=lambda self: self.env.company
+    )
 
     _sql_constraints = [
         (

@@ -275,3 +275,21 @@ class AccountStatementImportApi(models.Model):
                 len(to_archive_api_bank_accounts),
                 self.id,
             )
+
+    def _check_company_user_identifier(self):
+        self.ensure_one()
+        companies_missing_user = set()
+        for journal in self.journal_ids:
+            companies_missing_user.add(journal.company_id)
+        for company_user in self.company_user_ids:
+            if company_user.company_id in companies_missing_user:
+                companies_missing_user.remove(company_user.company_id)
+        if companies_missing_user:
+            raise UserError(
+                _(
+                    "Missing per-company user identifier for the following companies:\n%s."
+                )
+                % "\n".join(
+                    [f"- {company.display_name}" for company in companies_missing_user]
+                )
+            )

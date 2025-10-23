@@ -115,33 +115,17 @@ class AccountStatementImportApi(models.Model):
         )
         return token
 
-    def _check_bridge_company_user_identifier(self):
-        self.ensure_one()
-        companies_missing_user = set()
-        for journal in self.journal_ids:
-            companies_missing_user.add(journal.company_id)
-        for company_user in self.company_user_ids:
-            if company_user.company_id in companies_missing_user:
-                companies_missing_user.remove(company_user.company_id)
-        if companies_missing_user:
-            raise UserError(
-                _("Missing Bridge External User Identifier for the following companies:\n%s.")
-                % "\n".join(
-                    [f"- {company.display_name}" for company in companies_missing_user]
-                )
-            )
-
     def _prepare_speedy(self):
         self.ensure_one()
         speedy = super()._prepare_speedy()
         if self.service == "bridge":
-            self._check_bridge_company_user_identifier()
+            self._check_company_user_identifier()
             speedy["bridge_company_id2token"] = {}
         return speedy
 
     def _bridge_test_api(self):
         self.ensure_one()
-        self._check_bridge_company_user_identifier()
+        self._check_company_user_identifier()
         result = {"logs": []}
         company = self.company_id or self.env.company
         self._bridge_get_new_token(company, result)
