@@ -31,6 +31,7 @@
                         />
                                     <field name="company_id" invisible="1" />
                                     <field name="journal_id" />
+                                    <field name="misc_partner_id" />
                                     <field name="active" invisible="1" />
                             </group>
                     </sheet>
@@ -50,6 +51,7 @@
                     optional="hide"
                     groups="base.group_multi_company"
                 />
+                        <field name="misc_partner_id" optional="show" />
                     </tree>
                 </field>
         </record>

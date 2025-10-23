@@ -26,6 +26,12 @@ class AccountBankStatementCard(models.Model):
         domain="[('type', '=', 'bank'), ('company_id', '=', company_id)]",
         ondelete="restrict",
     )
+    misc_partner_id = fields.Many2one(
+        "res.partner",
+        help="Misc partner used when the bank statement line is linked to this card. "
+        "Otherwise, Odoo will use the misc partner configured on the "
+        "accounting configuration page.",
+    )
 
     @api.depends("name", "code")
     def name_get(self):

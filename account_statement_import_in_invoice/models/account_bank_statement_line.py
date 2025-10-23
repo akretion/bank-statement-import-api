@@ -229,6 +229,7 @@ class AccountBankStatementLine(models.Model):
         self.ensure_one()
         inv = self._in_invoice_create_draft()
         inv.with_context(validate_analytic=True)._post(soft=False)
+        self.clean_reconcile()
         self._in_invoice_update_statement_line(inv, can_reconcile=True)
         new_data = []
         for line in self.reconcile_data_info["data"]:
@@ -290,15 +291,31 @@ class AccountBankStatementLine(models.Model):
             move_type = "in_refund"
             total = self.amount
         untaxed = self.currency_id.round(total - self.in_invoice_vat_amount)
-        partner = self.partner_id or self.company_id.misc_partner_id
+        if self.partner_id:
+            partner = self.partner_id
+        elif self.in_invoice_card_id and self.in_invoice_card_id.misc_partner_id:
+            partner = self.in_invoice_card_id.misc_partner_id
+        else:
+            partner = self.company_id.misc_partner_id
         if not partner:
-            raise UserError(
-                _(
-                    "No partner on the bank statement line and no misc partner "
-                    "on the accounting configuration page of company '%s'."
+            if self.in_invoice_card_id:
+                raise UserError(
+                    _(
+                        "No partner on the bank statement line, no misc partner "
+                        "on bank card '%(card)s' and no misc partner "
+                        "on the accounting configuration page of company '%(company)s'.",
+                        card=self.in_invoice_card_id.display_name,
+                        company=self.company_id.display_name,
+                    )
                 )
-                % self.company_id.name
-            )
+            else:
+                raise UserError(
+                    _(
+                        "No partner on the bank statement line and no misc partner "
+                        "on the accounting configuration page of company '%s'."
+                    )
+                    % self.company_id.name
+                )
         partner = partner.with_company(self.company_id.id)
         vat_compare = self.company_currency_id.compare_amounts(
             self.in_invoice_vat_amount, 0
