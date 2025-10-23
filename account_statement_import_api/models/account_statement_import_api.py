@@ -7,7 +7,7 @@ import logging
 import pytz
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 
 from odoo.addons.base.models.res_partner import _tz_get
 
@@ -19,13 +19,16 @@ class AccountStatementImportApi(models.Model):
     _description = "Bank Statement Import API"
     _check_company_auto = True
 
+    name = fields.Char(required=True)
     company_id = fields.Many2one(
         "res.company",
         required=False,
         ondelete="cascade",
-        default=lambda self: self.env.company,
+        compute="_compute_company_id",
+        store=True,
+        readonly=False,
+        precompute=True,
     )
-    name = fields.Char(required=True)
     journal_ids = fields.One2many(
         "account.journal",
         "statement_import_api_id",
@@ -41,14 +44,14 @@ class AccountStatementImportApi(models.Model):
         "will use this timezone to translate the datetime to a date.",
     )
     # API-specific modules should show/hide the tz field
-    service = fields.Selection([], required=True)
+    service = fields.Selection("_service_selection", required=True)
     login = fields.Char(string="Login or Client ID", groups="base.group_system")
     password = fields.Char(
         string="Password or Client Secret", groups="base.group_system"
     )
     last_success = fields.Datetime(compute="_compute_last_success")
     backward_days = fields.Integer()  # API-specific module should show/hide it
-    show_backward_days = fields.Boolean(compute="_compute_show_backward_days")
+    show_backward_days = fields.Boolean(compute="_compute_show")
     cron_id = fields.Many2one("ir.cron", string="Scheduled Action", readonly=True)
     log_ids = fields.One2many(
         "account.statement.import.api.log",
@@ -66,6 +69,7 @@ class AccountStatementImportApi(models.Model):
         "statement_import_api_id",
         string="Per-Company Users",
     )
+    show_company_user = fields.Boolean(compute="_compute_show")
 
     _sql_constraints = [
         (
@@ -80,6 +84,41 @@ class AccountStatementImportApi(models.Model):
         ),
     ]
 
+    @api.model
+    def _get_service_info(self):
+        service2info = {}
+        # in service2info, the required keys are: 'name'
+        return service2info
+
+    @api.model
+    def _service_selection(self):
+        service2info = self._get_service_info()
+        res = [(service, info["name"]) for (service, info) in service2info.items()]
+        return res
+
+    @api.constrains("service", "login", "password", "company_id")
+    def _check_config(self):
+        service2info = self._get_service_info()
+        for rec in self:
+            if rec.service:
+                if rec.service not in service2info:
+                    raise ValidationError(_("Service '%s' is unknown.") % rec.service)
+                info = service2info[rec.service]
+                if info.get("company_required") and not rec.company:
+                    raise ValidationError(
+                        _("Company is required for service '%s'.") % info["name"]
+                    )
+                if info.get("login_required") and not rec.login:
+                    raise ValidationError(
+                        _("Login or Client ID is required for service '%s'.")
+                        % info["name"]
+                    )
+                if info.get("password_required") and not rec.password:
+                    raise ValidationError(
+                        _("Password or Client Secret is required for service '%s'.")
+                        % info["name"]
+                    )
+
     @api.depends("journal_ids.statement_import_api_last_success")
     def _compute_last_success(self):
         for rec in self:
@@ -90,14 +129,29 @@ class AccountStatementImportApi(models.Model):
             ]
             rec.last_success = last_success_list and max(last_success_list) or False
 
-    @api.model
-    def _get_show_backward_days(self, service):
-        return True  # key = service ; value = show_backward_days
+    @api.depends("service")
+    def _compute_show(self):
+        service2info = self._get_service_info()
+        for rec in self:
+            show_backward_days = True
+            show_company_user = True
+            if rec.service:
+                info = service2info[rec.service]
+                show_backward_days = info.get("show_backward_days", True)
+                show_company_user = info.get("user_company_required", True)
+            rec.show_backward_days = show_backward_days
+            rec.show_company_user = show_company_user
 
     @api.depends("service")
-    def _compute_show_backward_days(self):
+    def _compute_company_id(self):
+        service2info = self._get_service_info()
         for rec in self:
-            rec.show_backward_days = self._get_show_backward_days(rec.service)
+            if (
+                rec.service
+                and not rec.company_id
+                and service2info[rec.service].get("company_required")
+            ):
+                rec.company_id = self.env.company.id
 
     def _prepare_cron(self):
         self.ensure_one()
@@ -152,8 +206,12 @@ class AccountStatementImportApi(models.Model):
             "password": self.sudo().password,
             "tz": self.tz and pytz.timezone(self.tz) or pytz.utc,
             "service": self.service,
+            "service_info": self._get_service_info()[self.service],
             "backward_days": self.backward_days,
         }
+        if speedy["service_info"].get("user_company_required"):
+            self._check_company_user_identifier()
+            speedy["company_id2token"] = {}
         return speedy
 
     def _update_speedy(self, journal, speedy):
@@ -170,15 +228,15 @@ class AccountStatementImportApi(models.Model):
     def test_api(self):
         self.ensure_one()
         assert self.service
-        service2label = dict(
-            self.fields_get("service", "selection")["service"]["selection"]
-        )
+        service_info = self._get_service_info()[self.service]
+        if service_info.get("user_company_required"):
+            self._check_company_user_identifier()
         method_name = f"_{self.service}_test_api"
         if not hasattr(self, method_name):
             raise UserError(
                 _(
                     "The test feature has not been implemented for the '%(service)s' API.",
-                    service=service2label[self.service],
+                    service=service_info["name"],
                 )
             )
         method = getattr(self, method_name)
@@ -189,7 +247,7 @@ class AccountStatementImportApi(models.Model):
             "params": {
                 "message": _(
                     "Successful connection to the '%(service)s' API.",
-                    service=service2label[self.service],
+                    service=service_info["name"],
                 ),
                 "type": "success",
                 "sticky": False,

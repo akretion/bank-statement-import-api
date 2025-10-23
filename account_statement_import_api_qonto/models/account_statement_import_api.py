@@ -7,7 +7,7 @@ import logging
 import requests
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError, ValidationError
+from odoo.exceptions import UserError
 
 from .account_journal import BASE_URL, TIMEOUT
 
@@ -17,39 +17,23 @@ logger = logging.getLogger(__name__)
 class AccountStatementImportApi(models.Model):
     _inherit = "account.statement.import.api"
 
-    service = fields.Selection(
-        selection_add=[
-            ("qonto", "Qonto"),
-        ],
-        ondelete={"qonto": "cascade"},
-    )
-
-    @api.constrains("service", "company_id", "login", "password")
-    def _check_qonto(self):
-        for rec in self:
-            if rec.service == "qonto":
-                if not rec.company_id:
-                    raise ValidationError(
-                        _(
-                            "The Bank Statement Import API '%(name)s' uses the Qonto API "
-                            "and therefore it must be linked to a specific company.",
-                            name=rec.name,
-                        )
-                    )
-                if not rec.login or not rec.password:
-                    raise ValidationError(
-                        _(
-                            "The Bank Statement Import API '%(name)s' uses the Qonto API "
-                            "and therefore it requires a login and password.",
-                            name=rec.name,
-                        )
-                    )
+    service = fields.Selection(ondelete={"qonto": "cascade"})
 
     @api.model
-    def _get_show_backward_days(self, service):
-        if service == "qonto":
-            return False
-        return super()._get_show_backward_days(service)
+    def _get_service_info(self):
+        service2info = super()._get_service_info()
+        service2info["qonto"] = {
+            "name": "Qonto",
+            "company_required": True,
+            "login_required": True,
+            "password_required": True,
+            "user_company_required": False,
+            "show_backward_days": False,
+            "help": _(
+                "Go to the web interface of your Qonto account, go to ... and copy the ..."
+            ),
+        }
+        return service2info
 
     def _prepare_speedy(self):
         self.ensure_one()
