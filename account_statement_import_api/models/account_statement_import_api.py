@@ -61,6 +61,11 @@ class AccountStatementImportApi(models.Model):
         "statement_import_api_id",
         string="API Bank Accounts",
     )
+    company_user_ids = fields.One2many(
+        "account.statement.import.api.company.user",
+        "statement_import_api_id",
+        string="Per-Company Users",
+    )
 
     _sql_constraints = [
         (
