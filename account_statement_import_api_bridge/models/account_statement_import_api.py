@@ -43,13 +43,16 @@ class AccountStatementImportApi(models.Model):
                     )
 
     def _bridge_get_token(self, company, result, speedy):
-        if not speedy["bridge_user2token"].get(company.bridge_external_user_identifier):
+        if not speedy["bridge_company_id2token"].get(company.id):
             token = self._bridge_get_new_token(company, result)
-            speedy["bridge_user2token"][company.bridge_external_user_identifier] = token
-        return speedy["bridge_user2token"][company.bridge_external_user_identifier]
+            # at this stage, token can be None
+            speedy["bridge_company_id2token"][company.id] = token
+        return speedy["bridge_company_id2token"][company.id]
 
     def _bridge_get_headers(self, company, result, speedy):
         token = self._bridge_get_token(company, result, speedy)
+        if not token:
+            return None
         headers = {
             "Bridge-Version": BRIDGE_VERSION,
             "accept": "application/json",
@@ -69,52 +72,62 @@ class AccountStatementImportApi(models.Model):
             "accept": "application/json",
             "content-type": "application/json",
         }
-        if not company.bridge_external_user_identifier:
+        external_user_identifier = False
+        for company_user in self.company_user_ids:
+            if company_user.company_id == company:
+                external_user_identifier = company_user.identifier
+                break
+        if not external_user_identifier:
             raise UserError(
                 _("Missing Bridge External User Identifier on company '%s'.")
                 % company.display_name
             )
-        post_json = {"external_user_id": company.bridge_external_user_identifier}
+        post_json = {"external_user_id": external_user_identifier}
         url = f"{BRIDGE_BASE_URL}/v3/aggregation/authorization/token"
         try:
             token_res = requests.post(
                 url, headers=headers_token, json=post_json, timeout=TIMEOUT
             )
         except Exception as e:
-            result["logs"].append(f"ERROR API call on {url} failed: {e}")
-            return
+            result["logs"].append(
+                f"ERROR API call on {url} failed: {e}. "
+                f"Could not get a token for company {company.name}."
+            )
+            return None
         if token_res.status_code != 200:
             result["logs"].append(
-                f"ERROR API call on {url} return an HTTP error code {token_res.status_code}"
+                f"ERROR API call on {url} return an HTTP error code "
+                f"{token_res.status_code}. Could not get a token for "
+                f"company {company.name}."
             )
-            return
+            return None
         token_dict = token_res.json()
         token = token_dict["access_token"]
+        result["logs"].append(
+            f"INFO Successful API call on {url} to get a new token "
+            f"for company {company.name}"
+        )
         logger.debug(
-            "New Bridge API session token: %s (user: %s)",
+            "New Bridge API session token %s for company %s (user: %s)",
             token,
-            company.bridge_external_user_identifier,
+            company.name,
+            external_user_identifier,
         )
         return token
 
-    def _check_bridge_external_user_identifier(self):
+    def _check_bridge_company_user_identifier(self):
         self.ensure_one()
-        companies = self.env["res.company"]
+        companies_missing_user = set()
         for journal in self.journal_ids:
-            companies |= journal.company_id
-        companies_missing_external_user_identifier = companies.filtered(
-            lambda x: not x.bridge_external_user_identifier
-        )
-        if companies_missing_external_user_identifier:
+            companies_missing_user.add(journal.company_id)
+        for company_user in self.company_user_ids:
+            if company_user.company_id in companies_missing_user:
+                companies_missing_user.remove(company_user.company_id)
+        if companies_missing_user:
             raise UserError(
-                _(
-                    "Missing Bridge External User Identifier on the following companies:\n%s."
-                )
+                _("Missing Bridge External User Identifier for the following companies:\n%s.")
                 % "\n".join(
-                    [
-                        f"- {c.display_name}"
-                        for c in companies_missing_external_user_identifier
-                    ]
+                    [f"- {company.display_name}" for company in companies_missing_user]
                 )
             )
 
@@ -122,13 +135,13 @@ class AccountStatementImportApi(models.Model):
         self.ensure_one()
         speedy = super()._prepare_speedy()
         if self.service == "bridge":
-            self._check_bridge_external_user_identifier()
-            speedy["bridge_user2token"] = {}
+            self._check_bridge_company_user_identifier()
+            speedy["bridge_company_id2token"] = {}
         return speedy
 
     def _bridge_test_api(self):
         self.ensure_one()
-        self._check_bridge_external_user_identifier()
+        self._check_bridge_company_user_identifier()
         result = {"logs": []}
         company = self.company_id or self.env.company
         self._bridge_get_new_token(company, result)
@@ -145,6 +158,8 @@ class AccountStatementImportApi(models.Model):
         self.ensure_one()
         company = self.company_id or self.env.company
         headers = self._bridge_get_headers(company, result, speedy)
+        if not headers:
+            return None
         providers = self._bridge_get_all_pages("providers", headers, result)
         if providers is None:
             return None

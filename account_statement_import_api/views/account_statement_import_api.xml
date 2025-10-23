@@ -87,7 +87,15 @@
                         <field name="statement_import_api_last_success" />
                 </tree>
                 </field>
-                </page>
+        </page>
+        <page name="company-users" string="Per-Company Users">
+                <field name="company_user_ids" nolabel="1" colspan="2">
+                        <tree editable="bottom">
+                                <field name="company_id" />
+                                <field name="identifier" />
+                        </tree>
+                </field>
+        </page>
                 <page name="api_accounts" string="API Bank Accounts">
                     <field name="api_account_ids" nolabel="1" colspan="2" />
                 </page>

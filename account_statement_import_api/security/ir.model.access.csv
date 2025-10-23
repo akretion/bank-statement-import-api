@@ -5,3 +5,5 @@ access_account_statement_import_api_log_full,Full access on account.statement.im
 access_account_statement_import_api_log_read,Read access on account.statement.import.api.log,model_account_statement_import_api_log,account.group_account_readonly,1,0,0,0
 access_account_statement_import_api_account,Full access on account.statement.import.api.account,model_account_statement_import_api_account,account.group_account_manager,1,1,1,1
 access_account_statement_import_api_account_readonly,Readonly access on account.statement.import.api.account,model_account_statement_import_api_account,account.group_account_readonly,1,0,0,0
+access_account_statement_import_api_company_user_full,Full access on account.statement.import.api.company.user,model_account_statement_import_api_company_user,account.group_account_manager,1,1,1,1
+access_account_statement_import_api_company_user_read,Read access on account.statement.import.api.company.user,model_account_statement_import_api_company_user,account.group_account_readonly,1,0,0,0

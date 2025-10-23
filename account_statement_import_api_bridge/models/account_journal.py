@@ -30,6 +30,8 @@ class AccountJournal(models.Model):
         speedy["bridge_preferred_date"] = self.bridge_preferred_date
         import_api = self.statement_import_api_id
         headers = import_api._bridge_get_headers(self.company_id, result, speedy)
+        if not headers:
+            return  # The error is already in the logs
         # I would like to filter-out future lines, but it not possible in params
         params = {
             "account_id": self.statement_import_api_account_identifier,
@@ -59,7 +61,6 @@ class AccountJournal(models.Model):
                     result["lines"].append(pivot)
 
     def _api_import_bridge_prepare_pivot_line(self, trans, result, speedy):
-        print(trans)
         assert str(trans["account_id"]) == self.statement_import_api_account_identifier
         if speedy["bridge_preferred_date"]:
             date = trans.get(speedy["bridge_preferred_date"])
