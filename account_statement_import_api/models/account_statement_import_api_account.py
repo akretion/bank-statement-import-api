@@ -26,6 +26,7 @@ class AccountStatementImportApiAccount(models.Model):
     currency_id = fields.Many2one("res.currency", readonly=True)
     active = fields.Boolean(default=True)
     company_id = fields.Many2one("res.company", readonly=True, index=True)
+    auth_expiry_date = fields.Date(readonly=True, string="Auth Expiry")
 
     _sql_constraints = [
         (

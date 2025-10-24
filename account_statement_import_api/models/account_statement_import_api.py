@@ -216,10 +216,13 @@ class AccountStatementImportApi(models.Model):
         if speedy["service_info"].get("user_company_required"):
             self._check_company_user_identifier()
             speedy["company_id2token"] = {}
+            speedy["company_id2user_identifier"] = {}
+            for company_user in self.sudo().company_user_ids:
+                company_id = company_user.company_id.id
+                speedy["company_id2user_identifier"][
+                    company_id
+                ] = company_user.identifier
         return speedy
-
-    def _update_speedy(self, journal, speedy):
-        assert journal
 
     def run_import(self):
         self.ensure_one()
@@ -232,26 +235,34 @@ class AccountStatementImportApi(models.Model):
     def test_api(self):
         self.ensure_one()
         assert self.service
-        service_info = self._get_service_info()[self.service]
-        if service_info.get("user_company_required"):
-            self._check_company_user_identifier()
+        speedy = self._prepare_speedy()
         method_name = f"_{self.service}_test_api"
         if not hasattr(self, method_name):
             raise UserError(
                 _(
                     "The test feature has not been implemented for the '%(service)s' API.",
-                    service=service_info["name"],
+                    service=speedy["service_info"]["name"],
                 )
             )
+        result = {"logs": []}
         method = getattr(self, method_name)
-        method()
+        method(result, speedy)
+        for log_type, msg in result["logs"]:
+            if log_type == "error":
+                raise UserError(
+                    _(
+                        "The test of the %(service_name)s API failed. Error: %(msg)s",
+                        service_name=speedy["service_info"]["name"],
+                        msg=msg,
+                    )
+                )
         action = {
             "type": "ir.actions.client",
             "tag": "display_notification",
             "params": {
                 "message": _(
-                    "Successful connection to the '%(service)s' API.",
-                    service=service_info["name"],
+                    "Successful connection to the '%(service_name)s' API.",
+                    service_name=speedy["service_info"]["name"],
                 ),
                 "type": "success",
                 "sticky": False,
@@ -275,19 +286,13 @@ class AccountStatementImportApi(models.Model):
         if not res:
             raise UserError(result["logs"][-1][1])
         api_acc_obj = self.env["account.statement.import.api.account"]
-        currencies = (
-            self.env["res.currency"]
-            .with_context(active_test=False)
-            .search_read([], ["name"])
-        )
-        currency_code2id = {cur["name"]: cur["id"] for cur in currencies}
         existing_identifiers_read = api_acc_obj.with_context(
             active_test=False
         ).search_read([("statement_import_api_id", "=", self.id)], ["identifier"])
         identifier2id = {x["identifier"]: x["id"] for x in existing_identifiers_read}
         identifier2id_orphaned = dict(identifier2id)
         to_create_vals_list = []
-        to_activate_ids = []
+        to_update_id2vals = {}
         for vals in res:
             # clean-up vals
             for key, value in vals.items():
@@ -306,8 +311,8 @@ class AccountStatementImportApi(models.Model):
                 currency_code = vals.pop("currency_code")
                 if currency_code and isinstance(currency_code, str):
                     currency_code = currency_code.upper()
-                    if currency_code in currency_code2id:
-                        vals["currency_id"] = currency_code2id[currency_code]
+                    if currency_code in speedy["currency_code2id"]:
+                        vals["currency_id"] = speedy["currency_code2id"][currency_code]
             if isinstance(vals["identifier"], int):
                 vals["identifier"] = str(vals["identifier"])
             if not vals.get("name"):
@@ -320,7 +325,8 @@ class AccountStatementImportApi(models.Model):
             if vals["identifier"] in identifier2id_orphaned:
                 identifier2id_orphaned.pop(vals["identifier"])
             if vals["identifier"] in identifier2id:
-                to_activate_ids.append(identifier2id[vals["identifier"]])
+                vals["active"] = True
+                to_update_id2vals[identifier2id[vals["identifier"]]] = vals
             else:
                 to_create_vals_list.append(dict(vals, statement_import_api_id=self.id))
                 logger.info(
@@ -336,9 +342,9 @@ class AccountStatementImportApi(models.Model):
                 len(new_api_bank_accounts),
                 self.id,
             )
-        if to_activate_ids:
-            to_activate_api_bank_accounts = api_acc_obj.browse(to_activate_ids)
-            to_activate_api_bank_accounts.write({"active": True})
+        for to_update_id, vals in to_update_id2vals.items():
+            to_update_api_bank_account = api_acc_obj.browse(to_update_id)
+            to_update_api_bank_account.write(vals)
         if identifier2id_orphaned:
             to_archive_api_bank_accounts = api_acc_obj.browse(
                 list(identifier2id_orphaned.values())

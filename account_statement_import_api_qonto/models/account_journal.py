@@ -6,9 +6,8 @@ import logging
 from datetime import datetime, timedelta
 
 import pytz
-import requests
 
-from odoo import api, models
+from odoo import models
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +48,7 @@ class AccountJournal(models.Model):
             params["bank_account_id"] = self.statement_import_api_account_identifier
         else:
             params["iban"] = self.bank_account_id.sanitized_acc_number
-        transactions = self._qonto_get_all_pages(
+        transactions = self.statement_import_api_id._qonto_get_all_pages(
             "transactions", result, speedy, params=params
         )
         for trans in transactions:
@@ -104,40 +103,3 @@ class AccountJournal(models.Model):
         if trans["operation_type"] == "qonto_fee":
             pivot["in_invoice_expense_categ_code"] = "qonto_fee"
         return pivot
-
-    @api.model
-    def _qonto_get_all_pages(self, api_name, result, speedy, params=None):
-        url = BASE_URL + api_name
-        if params is None:
-            params = {}
-        params["page"] = 1
-        # 'per_page' is set by default to the maximum (100), cf
-        # https://docs.qonto.com/get-started/general/pagination
-        total_pages = 1
-        data = []
-        while params["page"] <= total_pages:
-            try:
-                res = requests.get(
-                    url,
-                    verify=True,
-                    headers=speedy["headers"],
-                    params=params,
-                    timeout=TIMEOUT,
-                )
-            except Exception as e:
-                self._api_import_error_log(
-                    result, f"API call on {url} with params={params} failed: {e}"
-                )
-                return []
-            if res.status_code != 200:
-                self._api_import_error_log(
-                    result,
-                    f"API call on {url} with params={params} returned an "
-                    f"HTTP error code {res.status_code}.",
-                )
-                return []
-            res_json = res.json()
-            total_pages = res_json["meta"]["total_pages"]
-            data += res_json.get(api_name, [])
-            params["page"] += 1
-        return data

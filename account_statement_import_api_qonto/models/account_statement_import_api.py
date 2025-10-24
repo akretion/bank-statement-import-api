@@ -7,7 +7,6 @@ import logging
 import requests
 
 from odoo import _, api, fields, models
-from odoo.exceptions import UserError
 
 from .account_journal import BASE_URL, TIMEOUT
 
@@ -30,7 +29,16 @@ class AccountStatementImportApi(models.Model):
             "user_company_required": False,
             "show_backward_days": False,
             "instructions": _(
-                """<p>Go to the web interface of your <a href="https://qonto.com/">Qonto</a> account. On the left panel, click on <strong>Integrations and Partnerships</strong> and then click on <strong>API Keys</strong>:</p><ul><li>Copy the <strong>Identifier</strong> to the field <em>Login or Client ID</em></li><li>Copy the <strong>Secret Key</strong> to the field <em>Password or Client Secret</em></li></ul><p>Then, click on the button <em>Test API</em> to test that Odoo is able to query the Qonto API.</p>"""
+                "<p>Go to the web interface of your "
+                '<a href="https://qonto.com/">Qonto</a> account. '
+                "On the left panel, click on <strong>Integrations and "
+                "Partnerships</strong> and then click on <strong>API Keys</strong>:</p>"
+                "<ul><li>Copy the <strong>Identifier</strong> to the field "
+                "<em>Login or Client ID</em></li>"
+                "<li>Copy the <strong>Secret Key</strong> to the field "
+                "<em>Password or Client Secret</em></li></ul>"
+                "<p>Then, click on the button <em>Test API</em> to test that "
+                "Odoo is able to query the Qonto API.</p>"
             ),
         }
         return service2info
@@ -49,33 +57,13 @@ class AccountStatementImportApi(models.Model):
             )
         return speedy
 
-    def _qonto_test_api(self):
+    def _qonto_test_api(self, result, speedy):
         self.ensure_one()
-        speedy = self._prepare_speedy()
-        try:
-            res = requests.get(
-                BASE_URL + "bank_accounts",
-                verify=True,
-                headers=speedy["headers"],
-                timeout=TIMEOUT,
-            )
-        except Exception as e:
-            raise UserError(
-                _("Failure in the request to Qonto API. Error: %(err)s", err=e)
-            )
-        if res.status_code != 200:
-            raise UserError(
-                _(
-                    "The Qonto API returned an HTTP error code (%(status_code)s).",
-                    status_code=res.status_code,
-                )
-            )
+        self._qonto_get_all_pages("bank_accounts", result, speedy)
 
     def _update_api_accounts_qonto(self, result, speedy):
         self.ensure_one()
-        accounts = self.env["account.journal"]._qonto_get_all_pages(
-            "bank_accounts", result, speedy
-        )
+        accounts = self._qonto_get_all_pages("bank_accounts", result, speedy)
         res = []
         for account in accounts:
             res.append(
@@ -89,3 +77,41 @@ class AccountStatementImportApi(models.Model):
                 }
             )
         return res
+
+    @api.model
+    def _qonto_get_all_pages(self, api_name, result, speedy, params=None):
+        ajo = self.env["account.journal"]
+        url = BASE_URL + api_name
+        if params is None:
+            params = {}
+        params["page"] = 1
+        # 'per_page' is set by default to the maximum (100), cf
+        # https://docs.qonto.com/get-started/general/pagination
+        total_pages = 1
+        data = []
+        while params["page"] <= total_pages:
+            try:
+                res = requests.get(
+                    url,
+                    verify=True,
+                    headers=speedy["headers"],
+                    params=params,
+                    timeout=TIMEOUT,
+                )
+            except Exception as e:
+                ajo._api_import_error_log(
+                    result, f"API call on {url} with params={params} failed: {e}"
+                )
+                return []
+            if res.status_code != 200:
+                ajo._api_import_error_log(
+                    result,
+                    f"API call on {url} with params={params} returned an "
+                    f"HTTP error code {res.status_code}.",
+                )
+                return []
+            res_json = res.json()
+            total_pages = res_json["meta"]["total_pages"]
+            data += res_json.get(api_name, [])
+            params["page"] += 1
+        return data
