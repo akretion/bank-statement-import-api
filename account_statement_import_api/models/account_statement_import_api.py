@@ -275,6 +275,12 @@ class AccountStatementImportApi(models.Model):
         if not res:
             raise UserError(result["logs"][-1][1])
         api_acc_obj = self.env["account.statement.import.api.account"]
+        currencies = (
+            self.env["res.currency"]
+            .with_context(active_test=False)
+            .search_read([], ["name"])
+        )
+        currency_code2id = {cur["name"]: cur["id"] for cur in currencies}
         existing_identifiers_read = api_acc_obj.with_context(
             active_test=False
         ).search_read([("statement_import_api_id", "=", self.id)], ["identifier"])
@@ -296,6 +302,12 @@ class AccountStatementImportApi(models.Model):
                     )
                     % vals
                 )
+            if "currency_code" in vals:
+                currency_code = vals.pop("currency_code")
+                if currency_code and isinstance(currency_code, str):
+                    currency_code = currency_code.upper()
+                    if currency_code in currency_code2id:
+                        vals["currency_id"] = currency_code2id[currency_code]
             if isinstance(vals["identifier"], int):
                 vals["identifier"] = str(vals["identifier"])
             if not vals.get("name"):
