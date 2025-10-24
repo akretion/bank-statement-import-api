@@ -24,6 +24,10 @@
                         attrs="{'invisible': [('account_type', '=', False)]}"
                     />
                                         <field name="identifier" />
+                                        <field
+                        name="auth_expiry_date"
+                        attrs="{'invisible': [('auth_expiry_date', '=', False)]}"
+                    />
                                         <field name="company_id" />
                                         <field name="active" />
                                 </group>
@@ -49,6 +53,7 @@
                     optional="show"
                 />
                             <field name="identifier" />
+                            <field name="auth_expiry_date" optional="show" />
                             <field name="company_id" optional="show" />
                             <field name="active" optional="show" />
                         </tree>

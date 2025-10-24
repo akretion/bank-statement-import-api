@@ -221,14 +221,18 @@ class AccountJournal(models.Model):
         speedy.update(
             {
                 "journal_currency": self.currency_id or self.company_id.currency_id,
-                "existing_lines": {},
                 "update_hook_speeddict": update_hook_speeddict,
+                "account_identifier": self.statement_import_api_account_identifier,
+                "bank_account_number": self.bank_account_id.sanitized_acc_number,
             }
         )
+
+    def _api_import_set_existing_lines(self, search_unique_import_ids, speedy):
+        speedy["existing_lines"] = {}
         existing_lines_read = self.env["account.bank.statement.line"].search_read(
             [
                 ("journal_id", "=", self.id),
-                ("unique_import_id", "in", speedy["search_unique_import_ids"]),
+                ("unique_import_id", "in", search_unique_import_ids),
             ],
             self._api_import_existing_line_bank_statement_line_fields(),
         )
@@ -271,6 +275,7 @@ class AccountJournal(models.Model):
             "updated_line_count": 0,
             "logs": [],
         }
+        self._api_import_update_speedy(speedy)
         # result['lines'] will contain a list of bank statement lines in pivot format
         # below:
         # {
@@ -293,16 +298,14 @@ class AccountJournal(models.Model):
         if result["lines"] and not any(
             [log_type == "error" for log_type, msg in result["logs"]]
         ):
-            speedy["search_unique_import_ids"] = []
+            search_unique_import_ids = []
             for pivot_line in result["lines"]:
                 # Update pivot_line['unique_import_id'] to have the "full" value
                 self._statement_line_import_update_unique_import_id(
                     pivot_line, self.bank_account_id.sanitized_acc_number
                 )
-                speedy["search_unique_import_ids"].append(
-                    pivot_line["unique_import_id"]
-                )
-            self._api_import_update_speedy(speedy)
+                search_unique_import_ids.append(pivot_line["unique_import_id"])
+            self._api_import_set_existing_lines(search_unique_import_ids, speedy)
             journal_currency_code = speedy["journal_currency"].name
             self.write({"statement_import_api_last_success": fields.Datetime.now()})
             existing_lines = speedy["existing_lines"]

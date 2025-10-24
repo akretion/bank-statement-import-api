@@ -40,7 +40,7 @@ class AccountStatementImportApi(models.Model):
 
     def _bridge_get_token(self, company, result, speedy):
         if not speedy["company_id2token"].get(company.id):
-            token = self._bridge_get_new_token(company, result)
+            token = self._bridge_get_new_token(company, result, speedy)
             # at this stage, token can be None
             speedy["company_id2token"][company.id] = token
         return speedy["company_id2token"][company.id]
@@ -59,7 +59,7 @@ class AccountStatementImportApi(models.Model):
         }
         return headers
 
-    def _bridge_get_new_token(self, company, result):
+    def _bridge_get_new_token(self, company, result, speedy):
         assert company
         ajo = self.env["account.journal"]
         headers_token = {
@@ -69,15 +69,15 @@ class AccountStatementImportApi(models.Model):
             "accept": "application/json",
             "content-type": "application/json",
         }
-        external_user_identifier = False
-        for company_user in self.company_user_ids:
-            if company_user.company_id == company:
-                external_user_identifier = company_user.identifier
-                break
+        external_user_identifier = speedy["company_id2user_identifier"].get(company.id)
         if not external_user_identifier:
             raise UserError(
-                _("Missing Bridge External User Identifier on company '%s'.")
-                % company.display_name
+                _(
+                    "On bank statement import API '%(import_api)s', "
+                    "missing Bridge External User Identifier for company '%(company)s'.",
+                    import_api=self.display_name,
+                    company=company.display_name,
+                )
             )
         post_json = {"external_user_id": external_user_identifier}
         url = f"{BRIDGE_BASE_URL}/v3/aggregation/authorization/token"
@@ -115,19 +115,10 @@ class AccountStatementImportApi(models.Model):
         )
         return token
 
-    def _bridge_test_api(self):
+    def _bridge_test_api(self, result, speedy):
         self.ensure_one()
-        result = {"logs": []}
         company = self.company_id or self.env.company
-        self._bridge_get_new_token(company, result)
-        for log_type, msg in result["logs"]:
-            if log_type == "error":
-                raise UserError(
-                    _(
-                        "Failure in the request to Bridge API. Error: %(msg)s",
-                        msg=msg,
-                    )
-                )
+        self._bridge_get_new_token(company, result, speedy)
 
     def _update_api_accounts_bridge(self, result, speedy):
         self.ensure_one()
