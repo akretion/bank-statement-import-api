@@ -23,6 +23,7 @@ class AccountStatementImportApiAccount(models.Model):
     account_number = fields.Char(readonly=True)
     bank_name = fields.Char(string="Bank", readonly=True)
     account_type = fields.Char()
+    currency_id = fields.Many2one("res.currency", readonly=True)
     active = fields.Boolean(default=True)
     company_id = fields.Many2one("res.company", readonly=True, index=True)
 
@@ -39,10 +40,12 @@ class AccountStatementImportApiAccount(models.Model):
         for rec in self:
             name = rec.name
             if rec.bank_name and rec.account_number:
-                name = f"{name} - {rec.account_number} ({rec.bank_name})"
+                name = f"{name} - {rec.account_number} {rec.bank_name}"
             elif rec.bank_name:
-                name = f"{name} ({rec.bank_name})"
+                name = f"{name} {rec.bank_name}"
             elif rec.account_number:
                 name = f"{name} - {rec.account_number}"
+            if rec.currency_id:
+                name = f"{name} ({rec.currency_id.name})"
             res.append((rec.id, name))
         return res

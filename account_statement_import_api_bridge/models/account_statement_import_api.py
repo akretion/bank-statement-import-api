@@ -153,6 +153,7 @@ class AccountStatementImportApi(models.Model):
                     "account_type": account.get("type"),
                     "account_number": account.get("iban"),
                     "bank_name": providers_id2name.get(account.get("provider_id")),
+                    "currency_code": account.get("currency_code"),
                     "identifier": account["id"],
                     "company_id": company.id,
                 }

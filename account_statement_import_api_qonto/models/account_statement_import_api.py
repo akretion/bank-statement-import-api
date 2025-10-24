@@ -85,6 +85,7 @@ class AccountStatementImportApi(models.Model):
                     "bank_name": account.get("bic"),
                     "identifier": account["id"],
                     "company_id": self.company_id.id,
+                    "currency_code": account.get("currency"),
                 }
             )
         return res

@@ -88,6 +88,7 @@ class AccountJournal(models.Model):
     @api.constrains(
         "statement_import_api_id",
         "bank_account_id",
+        "currency_id",
         "statement_import_api_account_id",
         "statement_import_api_start_date",
         "statement_import_api_last_success",
@@ -112,15 +113,27 @@ class AccountJournal(models.Model):
                             journal=journal.display_name,
                         )
                     )
-                # if not journal.statement_import_api_account_id:
-                #   raise ValidationError(
-                #       _(
-                #           "The bank journal '%(journal)s' is configured with "
-                #           "Bank Feeds set to API, so you must configure the "
-                #           "API Bank Account.",
-                #           journal=journal.display_name,
-                #           )
-                #       )
+                if (
+                    journal.statement_import_api_account_id
+                    and journal.statement_import_api_account_id.currency_id
+                ):
+                    api_account_currency = (
+                        journal.statement_import_api_account_id.currency_id
+                    )
+                    journal_currency = (
+                        journal.currency_id or journal.company_id.currency_id
+                    )
+                    if api_account_currency != journal_currency:
+                        raise ValidationError(
+                            _(
+                                "The bank journal '%(journal)s' is in currency "
+                                "%(journal_currency)s whereas the API Bank Account "
+                                "is in currency %(api_account_currency)s.",
+                                journal=journal.display_name,
+                                journal_currency=journal_currency.name,
+                                api_account_currency=api_account_currency.name,
+                            )
+                        )
                 api_account = journal.statement_import_api_account_id
                 if (
                     api_account
