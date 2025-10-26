@@ -3,6 +3,7 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 import logging
+import urllib.parse
 from socket import getaddrinfo
 
 import requests
@@ -13,7 +14,9 @@ from odoo.exceptions import UserError, ValidationError
 POWENS_API_VERSION = "2.0"
 POWENS_MAX_PAGE_LIMIT = 1000
 TIMEOUT = 20
-
+# Info source: https://docs.powens.com/api-reference/overview/webview
+POWENS_WEBVIEW_LANGS = ("en", "fr", "de", "nl", "pt", "it", "es")
+POWENS_WEBVIEW_BASE_URL = "https://webview.powens.com"
 
 logger = logging.getLogger(__name__)
 
@@ -23,18 +26,26 @@ class AccountStatementImportApi(models.Model):
 
     service = fields.Selection(ondelete={"powens": "cascade"})
     powens_hostname = fields.Char()
+    powens_redirect_url = fields.Char(string="Powens Redirect URL")
 
-    @api.constrains("service", "powens_hostname")
+    @api.constrains("service", "powens_hostname", "powens_redirect_url")
     def _check_powens_config(self):
         for rec in self:
-            if rec.service == "powens" and (
-                not rec.powens_hostname
-                or (rec.powens_hostname and not rec.powens_hostname.strip())
-            ):
-                raise ValidationError(
-                    _("Missing Powens Hostname on Bank Statement Import API '%s'.")
-                    % rec.display_name
-                )
+            if rec.service == "powens":
+                if not rec.powens_hostname or (
+                    rec.powens_hostname and not rec.powens_hostname.strip()
+                ):
+                    raise ValidationError(
+                        _("Missing Powens Hostname on Bank Statement Import API '%s'.")
+                        % rec.display_name
+                    )
+                if not rec.powens_redirect_url:
+                    raise ValidationError(
+                        _(
+                            "Missing Powens Redirect URL on Bank Statement Import API '%s'."
+                        )
+                        % rec.display_name
+                    )
 
     @api.model
     def _get_service_info(self):
@@ -235,3 +246,21 @@ class AccountStatementImportApi(models.Model):
         if answer_key in res_dict:
             return res_dict[answer_key]
         return res_dict
+
+    def _powens_get_add_account_url(self, company, result, speedy):
+        headers = self._powens_get_headers(company, result, speedy)
+        params = {"type": "singleAccess"}
+        code = self._powens_get("auth/token/code", headers, result, params=params)
+        webview_url_params = {
+            "code": code,
+            "redirect_uri": self.powens_redirect_url,
+            "client_id": self.login,
+            "domain": self.powens_hostname,
+        }
+        if self.env.user.lang and self.env.user.lang.startswith(POWENS_WEBVIEW_LANGS):
+            webview_lang = self.env.user.lang[:2]
+        else:
+            webview_lang = "en"
+        webview_url_params_encoded = urllib.parse.urlencode(webview_url_params)
+        webview_url = f"{POWENS_WEBVIEW_BASE_URL}/{webview_lang}/connect?{webview_url_params_encoded}"
+        return webview_url

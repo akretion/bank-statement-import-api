@@ -18,6 +18,10 @@
                     name="powens_hostname"
                     attrs="{'invisible': [('service', '!=', 'powens')], 'required': [('service', '=', 'powens')]}"
                 />
+                <field
+                    name="powens_redirect_url"
+                    attrs="{'invisible': [('service', '!=', 'powens')], 'required': [('service', '=', 'powens')]}"
+                />
             </field>
             <xpath
                 expr="//field[@name='company_user_ids']/tree/field[@name='identifier']"

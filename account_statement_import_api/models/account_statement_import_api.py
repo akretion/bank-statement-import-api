@@ -71,6 +71,7 @@ class AccountStatementImportApi(models.Model):
     )
     show_company_user = fields.Boolean(compute="_compute_show")
     instructions = fields.Html(compute="_compute_show")
+    show_add_account_wizard = fields.Boolean(compute="_compute_show")
 
     _sql_constraints = [
         (
@@ -137,14 +138,19 @@ class AccountStatementImportApi(models.Model):
             show_backward_days = True
             show_company_user = True
             instructions = False
+            show_add_account_wizard = False
             if rec.service:
                 info = service2info[rec.service]
                 show_backward_days = info.get("show_backward_days", True)
                 show_company_user = info.get("user_company_required", True)
                 instructions = info.get("instructions")
+                show_add_account_wizard = info.get(
+                    "user_company_required", True
+                )  # TODO
             rec.show_backward_days = show_backward_days
             rec.show_company_user = show_company_user
             rec.instructions = instructions
+            rec.show_add_account_wizard = show_add_account_wizard
 
     @api.depends("service")
     def _compute_company_id(self):
@@ -335,6 +341,7 @@ class AccountStatementImportApi(models.Model):
                     vals["identifier"],
                     self.id,
                 )
+        message_list = []
         if to_create_vals_list:
             new_api_bank_accounts = api_acc_obj.create(to_create_vals_list)
             logger.info(
@@ -342,9 +349,16 @@ class AccountStatementImportApi(models.Model):
                 len(new_api_bank_accounts),
                 self.id,
             )
-        for to_update_id, vals in to_update_id2vals.items():
-            to_update_api_bank_account = api_acc_obj.browse(to_update_id)
-            to_update_api_bank_account.write(vals)
+            message_list.append(
+                _("%d API bank accounts created.") % len(to_create_vals_list)
+            )
+        if to_update_id2vals:
+            for to_update_id, vals in to_update_id2vals.items():
+                to_update_api_bank_account = api_acc_obj.browse(to_update_id)
+                to_update_api_bank_account.write(vals)
+            message_list.append(
+                _("%d API bank accounts updated.") % len(to_update_id2vals)
+            )
         if identifier2id_orphaned:
             to_archive_api_bank_accounts = api_acc_obj.browse(
                 list(identifier2id_orphaned.values())
@@ -355,6 +369,19 @@ class AccountStatementImportApi(models.Model):
                 len(to_archive_api_bank_accounts),
                 self.id,
             )
+            message_list.append(
+                _("%d API bank accounts archived.") % len(identifier2id_orphaned)
+            )
+        action = {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "type": "success",
+                "title": _("Successful Update"),
+                "message": "\n".join(message_list),
+            },
+        }
+        return action
 
     def _check_company_user_identifier(self):
         self.ensure_one()

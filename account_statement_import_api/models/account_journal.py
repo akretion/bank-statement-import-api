@@ -54,7 +54,8 @@ class AccountJournal(models.Model):
         store=True,
         readonly=False,
         prefetch=True,
-        domain="[('statement_import_api_id', '=', statement_import_api_id), ('company_id', 'in', (False, company_id))]",
+        domain="[('statement_import_api_id', '=', statement_import_api_id), "
+        "('company_id', 'in', (False, company_id))]",
     )
     statement_import_api_account_identifier = fields.Char(
         related="statement_import_api_account_id.identifier",
