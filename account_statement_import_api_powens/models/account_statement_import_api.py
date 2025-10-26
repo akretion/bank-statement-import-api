@@ -11,6 +11,9 @@ import requests
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 
+# from pprint import pprint
+
+
 POWENS_API_VERSION = "2.0"
 POWENS_MAX_PAGE_LIMIT = 1000
 TIMEOUT = 20
@@ -57,6 +60,7 @@ class AccountStatementImportApi(models.Model):
             "password_required": True,
             "user_company_required": True,
             "show_backward_days": True,
+            "manage_accounts_wizard": True,
             # "instructions": _("TODO"),
         }
         return service2info
@@ -129,7 +133,6 @@ class AccountStatementImportApi(models.Model):
         res = []
         id_connection2expiry = {}
         for account in powens_accounts or []:
-            # pprint(account)
             res.append(
                 {
                     "name": account["name"],
@@ -140,7 +143,7 @@ class AccountStatementImportApi(models.Model):
                     and account["currency"].get("id"),
                     "identifier": account["id"],
                     "company_id": company.id,
-                    "powens_id_connection": account["id_connection"],
+                    "powens_connection_identifier": account["id_connection"],
                 }
             )
             id_connection2expiry[account["id_connection"]] = None
@@ -153,7 +156,7 @@ class AccountStatementImportApi(models.Model):
                 ):
                     id_connection2expiry[id_connection] = source["access_expire"][:10]
         for vals in res:
-            id_connection = vals.pop("powens_id_connection")
+            id_connection = vals["powens_connection_identifier"]
             if id_connection2expiry.get(id_connection):
                 vals["auth_expiry_date"] = id_connection2expiry[id_connection]
         return res
@@ -247,20 +250,38 @@ class AccountStatementImportApi(models.Model):
             return res_dict[answer_key]
         return res_dict
 
-    def _powens_get_add_account_url(self, company, result, speedy):
+    def _powens_get_url(self, path, company, result, speedy, connection_id=False):
         headers = self._powens_get_headers(company, result, speedy)
         params = {"type": "singleAccess"}
         code = self._powens_get("auth/token/code", headers, result, params=params)
-        webview_url_params = {
+        url_params = {
             "code": code,
-            "redirect_uri": self.powens_redirect_url,
             "client_id": self.login,
             "domain": self.powens_hostname,
         }
+        if path in ("connect", "reconnect"):
+            url_params["redirect_uri"] = self.powens_redirect_url
+        if path == "reconnect":
+            url_params["connection_id"] = connection_id
         if self.env.user.lang and self.env.user.lang.startswith(POWENS_WEBVIEW_LANGS):
-            webview_lang = self.env.user.lang[:2]
+            lang = self.env.user.lang[:2]
         else:
-            webview_lang = "en"
-        webview_url_params_encoded = urllib.parse.urlencode(webview_url_params)
-        webview_url = f"{POWENS_WEBVIEW_BASE_URL}/{webview_lang}/connect?{webview_url_params_encoded}"
+            lang = "en"
+        url_params_encoded = urllib.parse.urlencode(url_params)
+        webview_url = f"{POWENS_WEBVIEW_BASE_URL}/{lang}/{path}?{url_params_encoded}"
         return webview_url
+
+    def _powens_add_account_get_url(self, company, result, speedy):
+        return self._powens_get_url("connect", company, result, speedy)
+
+    def _powens_renew_auth_get_url(self, api_account, company, result, speedy):
+        return self._powens_get_url(
+            "reconnect",
+            company,
+            result,
+            speedy,
+            connection_id=api_account.powens_connection_identifier,
+        )
+
+    def _powens_manage_accounts_get_url(self, company, result, speedy):
+        return self._powens_get_url("manage", company, result, speedy)

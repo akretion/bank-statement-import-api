@@ -204,3 +204,36 @@ class AccountStatementImportApi(models.Model):
             res_list += res_next_page_dict["resources"]
             next_uri = res_next_page_dict["pagination"].get("next_uri")
         return res_list
+
+    @api.model  # TODO use for token
+    def _bridge_post(self, api_name, headers, result, params=None):
+        ajo = self.env["account.journal"]
+        url = f"{BRIDGE_BASE_URL}/{BRIDGE_API_VERSION}/{api_name}"
+        try:
+            res = requests.post(url, headers=headers, params=params, timeout=TIMEOUT)
+        except Exception as e:
+            ajo._api_import_error_log(
+                result, f"API call on {url} with params={params} failed: {e}"
+            )
+            return {}
+        if res.status_code != 200:
+            ajo._api_import_error_log(
+                result,
+                f"API call on {url} with params={params} returned an "
+                f"HTTP error code {res.status_code}.",
+            )
+            return {}
+        ajo._api_import_info_log(
+            result, f"Successful API call on {url} with params={params}"
+        )
+        res_dict = res.json()
+        return res_dict
+
+    def _bridge_add_account_get_url(self, company, result, speedy):
+        headers = self._bridge_get_headers(company, result, speedy)
+        params = {"user_email": "alexis@example.com"}  # TODO
+        res_json = self._bridge_post(
+            "aggregation/connect-sessions", headers, result, params=params
+        )
+        url = res_json.get("url")
+        return url

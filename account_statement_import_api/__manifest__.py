@@ -15,7 +15,7 @@
     "data": [
         "security/ir.model.access.csv",
         "security/ir_rule.xml",
-        "wizards/account_statement_import_api_add_account_view.xml",
+        "wizards/account_statement_import_api_generate_url_view.xml",
         "views/account_statement_import_api_log.xml",
         "views/account_statement_import_api_account.xml",
         "views/account_statement_import_api.xml",

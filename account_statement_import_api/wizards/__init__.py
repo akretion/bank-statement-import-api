@@ -1,1 +1,1 @@
-from . import account_statement_import_api_add_account
+from . import account_statement_import_api_generate_url

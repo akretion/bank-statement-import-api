@@ -64,6 +64,18 @@ class AccountStatementImportApi(models.Model):
         "statement_import_api_id",
         string="API Bank Accounts",
     )
+    active_api_account_ids = fields.One2many(
+        "account.statement.import.api.account",
+        "statement_import_api_id",
+        string="Active API Bank Accounts",
+        domain=[("active", "=", True)],
+    )
+    inactive_api_account_ids = fields.One2many(
+        "account.statement.import.api.account",
+        "statement_import_api_id",
+        string="Inactive API Bank Accounts",
+        domain=[("active", "=", False)],
+    )
     company_user_ids = fields.One2many(
         "account.statement.import.api.company.user",
         "statement_import_api_id",
@@ -72,6 +84,7 @@ class AccountStatementImportApi(models.Model):
     show_company_user = fields.Boolean(compute="_compute_show")
     instructions = fields.Html(compute="_compute_show")
     show_add_account_wizard = fields.Boolean(compute="_compute_show")
+    show_manage_accounts_wizard = fields.Boolean(compute="_compute_show")
 
     _sql_constraints = [
         (
@@ -139,6 +152,7 @@ class AccountStatementImportApi(models.Model):
             show_company_user = True
             instructions = False
             show_add_account_wizard = False
+            show_manage_accounts_wizard = False
             if rec.service:
                 info = service2info[rec.service]
                 show_backward_days = info.get("show_backward_days", True)
@@ -147,10 +161,12 @@ class AccountStatementImportApi(models.Model):
                 show_add_account_wizard = info.get(
                     "user_company_required", True
                 )  # TODO
+                show_manage_accounts_wizard = info.get("manage_accounts_wizard")
             rec.show_backward_days = show_backward_days
             rec.show_company_user = show_company_user
             rec.instructions = instructions
             rec.show_add_account_wizard = show_add_account_wizard
+            rec.show_manage_accounts_wizard = show_manage_accounts_wizard
 
     @api.depends("service")
     def _compute_company_id(self):
@@ -360,18 +376,22 @@ class AccountStatementImportApi(models.Model):
                 _("%d API bank accounts updated.") % len(to_update_id2vals)
             )
         if identifier2id_orphaned:
-            to_archive_api_bank_accounts = api_acc_obj.browse(
-                list(identifier2id_orphaned.values())
+            to_archive_api_bank_accounts = api_acc_obj.search(
+                [
+                    ("id", "in", list(identifier2id_orphaned.values())),
+                    ("active", "=", True),
+                ]
             )
-            to_archive_api_bank_accounts.write({"active": False})
-            logger.info(
-                "%d API bank account(s) archived on statement import API ID %s",
-                len(to_archive_api_bank_accounts),
-                self.id,
-            )
-            message_list.append(
-                _("%d API bank accounts archived.") % len(identifier2id_orphaned)
-            )
+            if to_archive_api_bank_accounts:
+                to_archive_api_bank_accounts.write({"active": False})
+                logger.info(
+                    "%d API bank account(s) archived on statement import API ID %s",
+                    len(to_archive_api_bank_accounts),
+                    self.id,
+                )
+                message_list.append(
+                    _("%d API bank accounts archived.") % len(identifier2id_orphaned)
+                )
         action = {
             "type": "ir.actions.client",
             "tag": "display_notification",

@@ -3,11 +3,12 @@
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
 from datetime import timedelta
-from pprint import pprint
 
 import pytz
 
 from odoo import fields, models
+
+# from pprint import pprint
 
 
 class AccountJournal(models.Model):
@@ -58,8 +59,6 @@ class AccountJournal(models.Model):
             api_name, headers, result, params
         )
         for trans in transactions:
-            print("trans========================")
-            pprint(trans)
             pivot = self._api_import_powens_prepare_pivot_line(trans, result, speedy)
             if pivot:
                 result["lines"].append(pivot)
