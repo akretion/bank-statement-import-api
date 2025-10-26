@@ -40,6 +40,13 @@
                         class="btn-primary"
                         groups="account.group_account_manager"
                     />
+                    <button
+                        name="%(account_statement_import_api_add_account_action)d"
+                        type="action"
+                        string="Add API Bank Accounts"
+                        attrs="{'invisible': [('show_add_account_wizard', '=', False)]}"
+                        groups="account.group_account_manager"
+                    />
                 </header>
                 <sheet>
                         <div class="oe_button_box" name="button_box">
@@ -63,6 +70,7 @@
                     <field name="service" />
                     <field name="company_id" groups="base.group_multi_company" />
                     <field name="company_id" invisible="1" />
+                    <field name="show_add_account_wizard" invisible="1" />
                     <field name="cron_id" />
                     <field name="last_success" />
                 </group>
