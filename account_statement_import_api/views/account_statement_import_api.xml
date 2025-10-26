@@ -41,12 +41,22 @@
                         groups="account.group_account_manager"
                     />
                     <button
-                        name="%(account_statement_import_api_add_account_action)d"
+                        name="%(account_statement_import_api_generate_url_action)d"
                         type="action"
                         string="Add API Bank Accounts"
                         attrs="{'invisible': [('show_add_account_wizard', '=', False)]}"
+                        context="{'default_feature': 'add_account'}"
                         groups="account.group_account_manager"
                     />
+                    <button
+                        name="%(account_statement_import_api_generate_url_action)d"
+                        type="action"
+                        string="Manage API Bank Accounts"
+                        attrs="{'invisible': [('show_manage_accounts_wizard', '=', False)]}"
+                        context="{'default_feature': 'manage_accounts'}"
+                        groups="account.group_account_manager"
+                    />
+
                 </header>
                 <sheet>
                         <div class="oe_button_box" name="button_box">
@@ -71,6 +81,7 @@
                     <field name="company_id" groups="base.group_multi_company" />
                     <field name="company_id" invisible="1" />
                     <field name="show_add_account_wizard" invisible="1" />
+                    <field name="show_manage_accounts_wizard" invisible="1" />
                     <field name="cron_id" />
                     <field name="last_success" />
                 </group>
@@ -112,8 +123,17 @@
                         </tree>
                 </field>
         </page>
-                <page name="api_accounts" string="API Bank Accounts">
-                    <field name="api_account_ids" nolabel="1" colspan="2" />
+            <page name="api_accounts" string="API Bank Accounts">
+                <group name="active_api_accounts" string="Active API accounts">
+                        <field name="active_api_account_ids" nolabel="1" colspan="2" />
+                </group>
+                <group name="inactive_api_accounts" string="Inactive API accounts">
+                        <field
+                                    name="inactive_api_account_ids"
+                                    nolabel="1"
+                                    colspan="2"
+                                />
+                </group>
                 </page>
                 <page name="logs" string="Logs">
                     <field name="log_ids" nolabel="1" colspan="2" />

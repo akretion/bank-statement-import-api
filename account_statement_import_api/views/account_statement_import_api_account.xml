@@ -30,6 +30,7 @@
                     />
                                         <field name="company_id" />
                                         <field name="active" />
+                                        <field name="service" invisible="1" />
                                 </group>
                         </form>
                 </field>
@@ -54,6 +55,13 @@
                 />
                             <field name="identifier" />
                             <field name="auth_expiry_date" optional="show" />
+                            <button
+                    icon="fa-share"
+                    string="Extend"
+                    name="%(account_statement_import_api.account_statement_import_api_generate_url_action)s"
+                    type="action"
+                    context="{'default_feature': 'renew_auth'}"
+                />
                             <field name="company_id" optional="show" />
                             <field name="active" optional="show" />
                         </tree>

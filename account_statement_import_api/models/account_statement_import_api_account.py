@@ -8,12 +8,14 @@ from odoo import fields, models
 class AccountStatementImportApiAccount(models.Model):
     _name = "account.statement.import.api.account"
     _description = "Bank statement import API Account"
+    _order = "statement_import_api_id, bank_name, currency_id, name, account_number"
 
     statement_import_api_id = fields.Many2one(
         "account.statement.import.api",
         ondelete="cascade",
         string="Statement Import API",
     )
+    service = fields.Selection(related="statement_import_api_id.service", store=True)
     identifier = fields.Char(
         required=True,
         readonly=True,

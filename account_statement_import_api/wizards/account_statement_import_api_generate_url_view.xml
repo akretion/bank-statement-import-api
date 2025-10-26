@@ -7,12 +7,12 @@
 <odoo>
 
                   <record
-        id="account_statement_import_api_add_account_form"
+        id="account_statement_import_api_generate_url_form"
         model="ir.ui.view"
     >
                           <field
             name="model"
-        >account.statement.import.api.add.account</field>
+        >account.statement.import.api.generate.url</field>
                           <field name="arch" type="xml">
                                   <form>
                                           <group name="main">
@@ -21,15 +21,29 @@
                         name="statement_import_api_id"
                     />
                                                   <field name="service" />
+                                                  <field
+                        name="renew_auth_api_account_id"
+                        attrs="{'invisible': [('feature', '!=', 'renew_auth')], 'required': [('feature', '=', 'renew_auth')]}"
+                    />
                                                   <field name="state" invisible="1" />
+                                                  <field name="feature" />
                                           </group>
                                           <group name="url" states="url">
-                                                <div colspan="2">
+                                                  <div
+                        colspan="2"
+                        attrs="{'invisible': [('feature', '!=', 'add_account')]}"
+                    >
                                                         <p
-                        >Open the URL below and follow the instructions to add one or several new API bank accounts.<br
-                            />Once finished, come back to this wizard and click on the <strong
+                        >Click on the URL below and follow the instructions to add one or several new API bank accounts.<br
+                            />Once finished, come back here and click on the <strong
                             >Close</strong> button below.</p>
-                                                </div>
+    </div>
+    <div colspan="2" attrs="{'invisible': [('feature', '!=', 'manage_accounts')]}">
+            <p>
+                    Click on the URL below and follow the instructions to manage the API bank accounts.<br
+                            />Once finished, come back here and click on the <strong
+                            >Close</strong> button below.</p>
+    </div>
                                                   <field name="url" widget="url" />
                                           </group>
                                           <footer>
@@ -59,11 +73,11 @@
                   </record>
 
                   <record
-        id="account_statement_import_api_add_account_action"
+        id="account_statement_import_api_generate_url_action"
         model="ir.actions.act_window"
     >
-    <field name="name">Add API Account(s)</field>
-    <field name="res_model">account.statement.import.api.add.account</field>
+    <field name="name">Generate URL to Manage API Bank Account(s)</field>
+    <field name="res_model">account.statement.import.api.generate.url</field>
     <field name="view_mode">form</field>
     <field name="target">new</field>
     </record>
