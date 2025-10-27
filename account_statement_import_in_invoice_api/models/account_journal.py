@@ -116,6 +116,14 @@ class AccountJournal(models.Model):
         ]
         return domain
 
+    def _api_import_prepare_card(self, pivot_line, speedy):
+        vals = {
+            "code": pivot_line["in_invoice_card_code"],
+            "journal_id": self.id,
+            "company_id": self.company_id.id,
+        }
+        return vals
+
     def _api_prepare_bank_statement_line(
         self, pivot_line, result, speedy, update_mode=False
     ):
@@ -126,12 +134,9 @@ class AccountJournal(models.Model):
         if card_code:
             if card_code not in speedy["card_code2id"]:
                 card = self.env["account.bank.statement.card"].create(
-                    {
-                        "code": card_code,
-                        "journal_id": self.id,
-                    }
+                    self._api_import_prepare_card(pivot_line, speedy)
                 )
-                self._api_import_warning_log(
+                self._api_import_info_log(
                     result, f"New card created with code '{card_code}' (ID {card.id})"
                 )
                 speedy["card_code2id"][card_code] = card.id
