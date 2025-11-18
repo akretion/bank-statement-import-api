@@ -37,6 +37,13 @@
                             t-if="record.in_invoice_expense_description.raw_value"
                         >✎ <field name="in_invoice_expense_description" /></div>
                         <div
+                            t-if="record.in_invoice_card_id.value &amp;&amp; !record.in_invoice_expense_description.raw_value &amp;&amp; !record.is_reconciled.raw_value"
+                            class="badge text-bg-warning"
+                            style="font-weight: bold"
+                        >
+                                Missing ✎
+                        </div>
+                        <div
                             t-if="record.in_invoice_expense_description.raw_value or record.in_invoice_card_id.value"
                         >📂 <field name="in_invoice_expense_categ_id" /></div>
                         <div
