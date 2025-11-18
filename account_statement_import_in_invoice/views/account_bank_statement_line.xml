@@ -37,16 +37,16 @@
                             t-if="record.in_invoice_expense_description.raw_value"
                         >✎ <field name="in_invoice_expense_description" /></div>
                         <div
-                            t-if="record.in_invoice_expense_description.raw_value"
+                            t-if="record.in_invoice_expense_description.raw_value or record.in_invoice_card_id.value"
                         >📂 <field name="in_invoice_expense_categ_id" /></div>
                         <div
-                            t-if="record.in_invoice_expense_description.raw_value"
+                            t-if="(record.in_invoice_expense_description.raw_value or record.in_invoice_card_id.value) and record.in_invoice_account_id.raw_value"
                         >🗁  <field name="in_invoice_account_id" /></div>
                     </div>
                     <div
                         class="col-4"
                         style="text-align: right"
-                        t-if="record.in_invoice_expense_description.raw_value"
+                        t-if="record.in_invoice_expense_description.raw_value or record.in_invoice_card_id.value"
                     >
                         <div t-if="record.in_invoice_tax_ids.raw_value.length > 0">
                         <field
@@ -151,36 +151,33 @@
                             />
                                                   <field
                                 name="in_invoice_expense_categ_id"
-                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
-                                                  <field
-                                name="in_invoice_card_id"
-                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
-                            />
+                                                  <field name="in_invoice_card_id" />
                                                   <field
                                 name="in_invoice_account_id"
-                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
                                                     <field
                                 name="in_invoice_analytic_distribution"
                                 widget="analytic_distribution"
                                 groups="analytic.group_analytic_accounting"
                                 options="{'account_field': 'in_invoice_account_id'}"
-                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
                                                   <field
                                 name="in_invoice_expense_description"
-                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
                                                   <field
                                 name="attachment_ids"
                                 widget="many2many_binary"
                                 string="Receipt(s)"
-                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
                                                   <field
                                 name="in_invoice_receipt_lost"
-                                attrs="{'invisible': [('attachment_ids', '!=', [])], 'readonly': [('in_invoice_id', '!=', False)]}"
+                                attrs="{'invisible': [('attachment_ids', '!=', [])], 'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
                                             </group>
                                             <group name="in_invoice_right">
@@ -188,27 +185,27 @@
                                                   <div name="in_invoice_vat_rate">
                                                           <field
                                     name="in_invoice_vat_rate"
-                                    attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                                    attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                                     class="oe_inline"
                                 /> %
                                                   </div>
                                                   <field
                                 name="in_invoice_tax_ids"
                                 widget="many2many_tags"
-                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
                                                   <field
                                 name="in_invoice_vat_amount"
-                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
                                                   <field
                                 name="in_invoice_force_invoice_date"
-                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
                                                   <field
                                 name="partner_id"
                                 string="Force Vendor (optional)"
-                                attrs="{'readonly': [('in_invoice_id', '!=', False)]}"
+                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
 
                                                   <field
