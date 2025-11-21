@@ -267,12 +267,8 @@ class AccountJournal(models.Model):
         )
         return res
 
-    def _api_import_check_update_pivot_line(
-        self, pivot_line, result, journal_currency_code
-    ):
-        res = super()._api_import_check_update_pivot_line(
-            pivot_line, result, journal_currency_code
-        )
+    def _api_import_check_update_pivot_line(self, pivot_line, result, speedy):
+        res = super()._api_import_check_update_pivot_line(pivot_line, result, speedy)
         if pivot_line.get("in_invoice_force_invoice_date") and isinstance(
             pivot_line["in_invoice_force_invoice_date"], str
         ):

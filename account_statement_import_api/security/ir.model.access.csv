@@ -8,3 +8,4 @@ access_account_statement_import_api_account_readonly,Readonly access on account.
 access_account_statement_import_api_company_user_full,Full access on account.statement.import.api.company.user,model_account_statement_import_api_company_user,account.group_account_manager,1,1,1,1
 access_account_statement_import_api_company_user_read,Read access on account.statement.import.api.company.user,model_account_statement_import_api_company_user,account.group_account_readonly,1,0,0,0
 access_account_statement_import_api_generate_url,Full access on account.statement.import.api.generate.url wizard,model_account_statement_import_api_generate_url,account.group_account_manager,1,1,1,1
+access_account_statement_import_api_create_user,Full access on account.statement.import.api.create.user wizard,model_account_statement_import_api_create_user,account.group_account_manager,1,1,1,1

@@ -61,6 +61,7 @@ class AccountStatementImportApi(models.Model):
             "user_company_required": True,
             "show_backward_days": True,
             "manage_accounts_wizard": True,
+            "is_aggregator": True,
             # "instructions": _("TODO"),
         }
         return service2info
@@ -120,9 +121,8 @@ class AccountStatementImportApi(models.Model):
         headers = self._powens_get_headers(company, result, speedy)
         self._powens_get_all_pages("account_types", headers, result)
 
-    def _update_api_accounts_powens(self, result, speedy):
+    def _update_api_accounts_powens(self, company, result, speedy):
         self.ensure_one()
-        company = self.company_id or self.env.company
         headers = self._powens_get_headers(company, result, speedy)
         if not headers:
             return None
@@ -131,7 +131,12 @@ class AccountStatementImportApi(models.Model):
 
         powens_accounts = self._powens_get_all_pages(api_name, headers, result)
         res = []
-        id_connection2expiry = {}
+        # WARNING: don't mix up 2 things:
+        # - Powens connection ID
+        # - Powens connection SOURCE ID <= that's what we store in odoo field
+        #                                  aggregator_connection_identifier
+        source_id2vals = {}  # key = Powens connection SOURCE ID
+        connection_ids = set()
         for account in powens_accounts or []:
             res.append(
                 {
@@ -143,22 +148,50 @@ class AccountStatementImportApi(models.Model):
                     and account["currency"].get("id"),
                     "identifier": account["id"],
                     "company_id": company.id,
-                    "powens_connection_identifier": account["id_connection"],
+                    "aggregator_connection_identifier": account["id_source"],
                 }
             )
-            id_connection2expiry[account["id_connection"]] = None
-        for id_connection in id_connection2expiry.keys():
-            api_name = f"users/{user_id}/connections/{id_connection}/sources"
+            connection_ids.add(account["id_connection"])
+        source_name2connection_type = {
+            "openapi": "api",
+            "directaccess": "scraping",
+        }
+        for connection_id in connection_ids:
+            api_name = f"users/{user_id}/connections/{connection_id}/sources"
             sources = self._powens_get(api_name, headers, result)
             for source in sources:
-                if source.get("id_connection") == id_connection and source.get(
-                    "access_expire"
-                ):
-                    id_connection2expiry[id_connection] = source["access_expire"][:10]
-        for vals in res:
-            id_connection = vals["powens_connection_identifier"]
-            if id_connection2expiry.get(id_connection):
-                vals["auth_expiry_date"] = id_connection2expiry[id_connection]
+                auth_expiry_date = connection_type = False
+                status = "ok"
+                messages = []
+                if source.get("state"):
+                    status = "ko"
+                    if source["state"] == "webauthRequired":
+                        status = "warning"
+                    if source.get("error_message"):
+                        messages.append(source["error_message"])
+                    messages.append(f"Connection State: {source['state']}")
+                if source.get("access_expire"):
+                    # Powens doesn't give us any timezone info
+                    # 'access_expire': '2026-04-12 21:04:01'
+                    auth_expiry_date = source["access_expire"][:10]
+                if source.get("name") and source["name"] in source_name2connection_type:
+                    connection_type = source_name2connection_type[source["name"]]
+
+                source_id2vals[source["id"]] = {
+                    "aggregator_sync_status": status,
+                    "aggregator_sync_status_message": "\n".join(messages) or False,
+                    "aggregator_auth_expiry_date": auth_expiry_date,
+                    "aggregator_last_sync_datetime": source.get("last_update"),
+                    "aggregator_connection_type": connection_type,
+                }
+        for account in res:
+            if (
+                account["aggregator_connection_identifier"]
+                and account["aggregator_connection_identifier"] in source_id2vals
+            ):
+                account.update(
+                    source_id2vals[account["aggregator_connection_identifier"]]
+                )
         return res
 
     @api.model
@@ -173,18 +206,18 @@ class AccountStatementImportApi(models.Model):
             res = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
         except Exception as e:
             ajo._api_import_error_log(
-                result, f"API call on {url} with params={params} failed: {e}"
+                result, f"HTTP GET API call on {url} with params={params} failed: {e}"
             )
             return []
         if res.status_code != 200:
             ajo._api_import_error_log(
                 result,
-                f"API call on {url} with params={params} returned an "
+                f"HTTP GET API call on {url} with params={params} returned an "
                 f"HTTP error code {res.status_code}.",
             )
             return []
         ajo._api_import_info_log(
-            result, f"Successful API call on {url} with params={params}"
+            result, f"Successful HTTP GET API call on {url} with params={params}"
         )
         res_dict = res.json()
         answer_key = api_name.split("/")[-1].replace("_", "")
@@ -201,18 +234,18 @@ class AccountStatementImportApi(models.Model):
                 res_next_page = requests.get(next_url, headers=headers, timeout=TIMEOUT)
             except Exception as e:
                 ajo._api_import_error_log(
-                    result, f"API call on {next_url} failed (page {page}): {e}"
+                    result, f"HTTP GET API call on {next_url} failed (page {page}): {e}"
                 )
                 return []
             if res_next_page.status_code != 200:
                 ajo._api_import_error_log(
                     result,
-                    f"API call on {next_url} returned an "
+                    f"HTTP GET API call on {next_url} returned an "
                     f"HTTP error code {res_next_page.status_code} (page {page}).",
                 )
                 return []
             ajo._api_import_info_log(
-                result, f"Successful API call on {url} (page {page})"
+                result, f"Successful HTTP GET API call on {url} (page {page})"
             )
             res_next_page_dict = res_next_page.json()
             res_list += res_next_page_dict[answer_key]
@@ -231,19 +264,46 @@ class AccountStatementImportApi(models.Model):
             res = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
         except Exception as e:
             ajo._api_import_error_log(
-                result, f"API call on {url} with params={params} failed: {e}"
+                result, f"HTTP GET API call on {url} with params={params} failed: {e}"
             )
-            return []
+            return {}
         if res.status_code != 200:
             ajo._api_import_error_log(
                 result,
-                f"API call on {url} with params={params} returned an "
+                f"HTTP GET API call on {url} with params={params} returned an "
                 f"HTTP error code {res.status_code}.",
             )
-            return []
+            return {}
         ajo._api_import_info_log(
-            result, f"Successful API call on {url} with params={params}"
+            result, f"Successful HTTP GET API call on {url} with params={params}"
         )
+        res_dict = res.json()
+        answer_key = api_name.split("/")[-1].replace("_", "")
+        if answer_key in res_dict:
+            return res_dict[answer_key]
+        return res_dict
+
+    @api.model
+    def _powens_post(self, api_name, headers, json_dict, result):
+        ajo = self.env["account.journal"]
+        url = f"https://{self.powens_hostname}/{POWENS_API_VERSION}/{api_name}"
+        try:
+            res = requests.post(url, headers=headers, json=json_dict, timeout=TIMEOUT)
+        except Exception as e:
+            # I don't write json_dict in the logs because it contains secret
+            ajo._api_import_error_log(
+                result, f"HTTP POST API call on {url} failed: {e}"
+            )
+            return {}
+        if res.status_code != 200:
+            # I don't write json_dict in the logs because it contains secret
+            ajo._api_import_error_log(
+                result,
+                f"HTTP POST API call on {url} returned an "
+                f"HTTP error code {res.status_code}.",
+            )
+            return {}
+        ajo._api_import_info_log(result, f"Successful HTTP POST API call on {url}")
         res_dict = res.json()
         answer_key = api_name.split("/")[-1].replace("_", "")
         if answer_key in res_dict:
@@ -262,7 +322,7 @@ class AccountStatementImportApi(models.Model):
         if path in ("connect", "reconnect"):
             url_params["redirect_uri"] = self.powens_redirect_url
         if path == "reconnect":
-            url_params["connection_id"] = connection_id
+            url_params["connection_id"] = int(connection_id)
         if self.env.user.lang and self.env.user.lang.startswith(POWENS_WEBVIEW_LANGS):
             lang = self.env.user.lang[:2]
         else:
@@ -274,14 +334,34 @@ class AccountStatementImportApi(models.Model):
     def _powens_add_account_get_url(self, company, result, speedy):
         return self._powens_get_url("connect", company, result, speedy)
 
-    def _powens_renew_auth_get_url(self, api_account, company, result, speedy):
-        return self._powens_get_url(
-            "reconnect",
-            company,
-            result,
-            speedy,
-            connection_id=api_account.powens_connection_identifier,
-        )
-
     def _powens_manage_accounts_get_url(self, company, result, speedy):
         return self._powens_get_url("manage", company, result, speedy)
+
+    def _powens_create_user(self, company, result, speedy):
+        ajo = self.env["account.journal"]
+        headers = {
+            "content-type": "application/json",
+        }
+
+        json_dict = {
+            "client_id": speedy["login"],
+            "client_secret": speedy["password"],
+        }
+        res = self._powens_post("auth/init", headers, json_dict, result)
+        if res.get("type") != "permanent" or not res.get("auth_token"):
+            ajo._api_import_error_log(
+                result,
+                f"The API call didn't return a permanent token as expected. "
+                f"Token type returned was '{res.get('type')}'.",
+            )
+            return None
+        if not res.get("id_user"):
+            ajo._api_import_error_log(
+                result,
+                "The API call to create a company user didn't return a user ID as expected.",
+            )
+        company_user_vals = {
+            "identifier": res["id_user"],
+            "powens_token": res["auth_token"],
+        }
+        return company_user_vals

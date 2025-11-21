@@ -28,7 +28,36 @@ class AccountStatementImportApiAccount(models.Model):
     currency_id = fields.Many2one("res.currency", readonly=True)
     active = fields.Boolean(default=True)
     company_id = fields.Many2one("res.company", readonly=True, index=True)
-    auth_expiry_date = fields.Date(readonly=True, string="Auth Expiry")
+    # START aggregator fields
+    is_aggregator = fields.Boolean(related="statement_import_api_id.is_aggregator")
+    aggregator_auth_expiry_date = fields.Date(readonly=True, string="Auth Expiry")
+    aggregator_sync_status = fields.Selection(
+        [
+            ("ok", "OK"),
+            ("warning", "Warning"),
+            ("ko", "Not Working"),
+        ],
+        readonly=True,
+        string="Sync Status",
+    )
+    aggregator_sync_status_message = fields.Text(readonly=True, string="Sync Message")
+    aggregator_last_sync_datetime = fields.Datetime(readonly=True, string="Last Sync")
+    aggregator_connection_identifier = fields.Char(
+        readonly=True,
+        string="Connection ID",
+        help="Technical ID of the connection between the bank statement import "
+        "provider and the bank. If you have several bank accounts at the same bank, "
+        "these bank accounts probably use the same connection ID and have the same "
+        "auth expiry date.",
+    )
+    aggregator_connection_type = fields.Selection(
+        [
+            ("api", "API"),
+            ("scraping", "Scraping"),
+        ],
+        readonly=True,
+        string="Connection Type",
+    )
 
     _sql_constraints = [
         (

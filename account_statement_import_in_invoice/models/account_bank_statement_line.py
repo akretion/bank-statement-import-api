@@ -64,7 +64,9 @@ class AccountBankStatementLine(models.Model):
     in_invoice_expense_description = fields.Char(string="Expense Description")
     in_invoice_force_invoice_date = fields.Date(string="Force Invoice Date")
     in_invoice_card_id = fields.Many2one(
-        "account.bank.statement.card", string="Payment Card"
+        "account.bank.statement.card",
+        string="Payment Card",
+        readonly=True,
     )
     in_invoice_receipt_lost = fields.Boolean(string="Receipt Lost")
     in_invoice_show_button = fields.Boolean(
@@ -91,16 +93,11 @@ class AccountBankStatementLine(models.Model):
         "company_id",
         "in_invoice_expense_categ_id",
         "in_invoice_card_id",
-        "in_invoice_id",
     )
     def _compute_in_invoice_account_id(self):
         for line in self:
             account = False
-            if (
-                line.in_invoice_expense_categ_id
-                and line.company_id
-                and not line.in_invoice_id
-            ):
+            if line.in_invoice_expense_categ_id and line.company_id:
                 if line.in_invoice_card_id:
                     for (
                         card_account

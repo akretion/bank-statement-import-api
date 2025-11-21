@@ -85,6 +85,7 @@ class AccountStatementImportApi(models.Model):
     instructions = fields.Html(compute="_compute_show")
     show_add_account_wizard = fields.Boolean(compute="_compute_show")
     show_manage_accounts_wizard = fields.Boolean(compute="_compute_show")
+    is_aggregator = fields.Boolean(compute="_compute_show")
 
     _sql_constraints = [
         (
@@ -153,6 +154,7 @@ class AccountStatementImportApi(models.Model):
             instructions = False
             show_add_account_wizard = False
             show_manage_accounts_wizard = False
+            is_aggregator = False
             if rec.service:
                 info = service2info[rec.service]
                 show_backward_days = info.get("show_backward_days", True)
@@ -162,11 +164,13 @@ class AccountStatementImportApi(models.Model):
                     "user_company_required", True
                 )  # TODO
                 show_manage_accounts_wizard = info.get("manage_accounts_wizard")
+                is_aggregator = info.get("is_aggregator")
             rec.show_backward_days = show_backward_days
             rec.show_company_user = show_company_user
             rec.instructions = instructions
             rec.show_add_account_wizard = show_add_account_wizard
             rec.show_manage_accounts_wizard = show_manage_accounts_wizard
+            rec.is_aggregator = is_aggregator
 
     @api.depends("service")
     def _compute_company_id(self):
@@ -296,14 +300,15 @@ class AccountStatementImportApi(models.Model):
         self.ensure_one()
         result = {"logs": []}
         speedy = self._prepare_speedy()
+        company = self.company_id or self.env.company
         if not self.service:
             raise UserError(
                 _("Missing service on bank statement import API '%s'.")
                 % self.display_name
             )
-        method_name = f"_update_api_accounts_{self.service}"
+        method_name = f"_update_api_accounts_{speedy['service']}"
         method = getattr(self, method_name)
-        res = method(result, speedy)
+        res = method(company, result, speedy)
         # res is a list of vals of account.statement.import.api.set.identifier.line
         if not res:
             raise UserError(result["logs"][-1][1])
@@ -392,6 +397,16 @@ class AccountStatementImportApi(models.Model):
                 message_list.append(
                     _("%d API bank accounts archived.") % len(identifier2id_orphaned)
                 )
+        action_next = self.env["ir.actions.actions"]._for_xml_id(
+            "account_statement_import_api.account_statement_import_api_action"
+        )
+        action_next.update(
+            {
+                "views": [x for x in action_next["views"] if x and x[1] == "form"],
+                "view_mode": "form",
+                "res_id": self.id,
+            }
+        )
         action = {
             "type": "ir.actions.client",
             "tag": "display_notification",
@@ -399,6 +414,7 @@ class AccountStatementImportApi(models.Model):
                 "type": "success",
                 "title": _("Successful Update"),
                 "message": "\n".join(message_list),
+                "next": action_next,
             },
         }
         return action

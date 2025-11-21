@@ -48,13 +48,17 @@
                     name="statement_import_api_account_id"
                     attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
                 />
-                    <field
-                    name="statement_import_api_last_success"
-                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+            <field
+                    name="statement_import_api_aggregator_auth_expiry_date"
+                    attrs="{'invisible': [('statement_import_api_aggregator_auth_expiry_date', '=', False)]}"
                 />
                     <field
                     name="statement_import_api_start_date"
                     attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'readonly': [('statement_import_api_last_success', '!=', False)], 'required': [('bank_statements_source', '=', 'api'), ('statement_import_api_last_success', '=', False)]}"
+                />
+                    <field
+                    name="statement_import_api_last_success"
+                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
                 />
                     <field name="statement_import_api_service" invisible="1" />
             </xpath>
@@ -100,6 +104,9 @@
             <field name="arch" type="xml">
                     <field name="show_on_dashboard" position="after">
                             <field name="statement_import_api_id" />
+                            <field
+                    name="statement_import_api_aggregator_auth_expiry_date"
+                />
                     </field>
                     <xpath
                 expr="//t[@t-name='JournalManage']//div[hasclass('o_kanban_manage_reconciliation')]//a[@name='open_action_with_context']/.."
@@ -112,7 +119,25 @@
                         name="api_import_bank_statement_lines_button"
                     >Re-sync Now</a>
                         </div>
-                    </xpath>
+                </xpath>
+                <xpath expr="//div[@name='latest_statement']/.." position="after">
+                        <div
+                    class="row"
+                    name="statement_import_api_aggregator_auth_expiry_date"
+                    t-if="record.statement_import_api_aggregator_auth_expiry_date.raw_value"
+                >
+                                    <div class="col overflow-hidden text-start">
+                                        <span
+                            title="Auth Expiry Date"
+                        >Auth Expiry Date</span>
+                                    </div>
+                                    <div class="col-auto text-end">
+                                            <field
+                            name="statement_import_api_aggregator_auth_expiry_date"
+                        />
+                                    </div>
+                                </div>
+                </xpath>
             </field>
     </record>
 

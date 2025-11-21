@@ -6,6 +6,8 @@ import datetime
 import logging
 import sys
 
+import pytz
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools.misc import format_date, format_datetime
@@ -60,6 +62,11 @@ class AccountJournal(models.Model):
     statement_import_api_account_identifier = fields.Char(
         related="statement_import_api_account_id.identifier",
         string="Account Identifier",
+        store=True,
+    )
+    statement_import_api_aggregator_auth_expiry_date = fields.Date(
+        related="statement_import_api_account_id.aggregator_auth_expiry_date",
+        string="Account Auth Expiry",
         store=True,
     )
 
@@ -219,9 +226,11 @@ class AccountJournal(models.Model):
         # Method _statement_line_import_speeddict() is defined in
         # the OCA module account_statement_import_base
         update_hook_speeddict = self._statement_line_import_speeddict()
+        journal_currency = self.currency_id or self.company_id.currency_id
         speedy.update(
             {
-                "journal_currency": self.currency_id or self.company_id.currency_id,
+                "journal_currency": journal_currency,
+                "journal_currency_code": journal_currency.name,
                 "update_hook_speeddict": update_hook_speeddict,
                 "account_identifier": self.statement_import_api_account_identifier,
                 "bank_account_number": self.bank_account_id.sanitized_acc_number,
@@ -254,6 +263,22 @@ class AccountJournal(models.Model):
                 "amount": line_pivot["amount"],
                 "payment_ref": line_pivot["payment_ref"],
             }
+            if line_pivot.get("foreign_currency_amount") and line_pivot.get(
+                "foreign_currency_code"
+            ):
+                foreign_currency_code = line_pivot["foreign_currency_code"].upper()
+                if (
+                    foreign_currency_code != speedy["journal_currency_code"]
+                    and foreign_currency_code in speedy["currency_code2id"]
+                ):
+                    lvals.update(
+                        {
+                            "foreign_currency_id": speedy["currency_code2id"][
+                                foreign_currency_code
+                            ],
+                            "amount_currency": line_pivot["foreign_currency_amount"],
+                        }
+                    )
         return lvals
 
     def _api_import_bank_statement_lines(self, speedy):
@@ -289,6 +314,8 @@ class AccountJournal(models.Model):
         #   'unique_import_id': 'DSIVYIUC1242',  # will be updated by
         #                               _statement_line_import_update_unique_import_id()
         #                                        to the unique_import_id stored by odoo
+        #  'foreign_currency_amount': -68.47,  # amount in foreign currency
+        #  'foreign_currency_code': 'USD',  # foreign currency codo
         # }
 
         method_name = f"_api_import_{speedy['service']}"
@@ -307,12 +334,11 @@ class AccountJournal(models.Model):
                 )
                 search_unique_import_ids.append(pivot_line["unique_import_id"])
             self._api_import_set_existing_lines(search_unique_import_ids, speedy)
-            journal_currency_code = speedy["journal_currency"].name
             self.write({"statement_import_api_last_success": fields.Datetime.now()})
             existing_lines = speedy["existing_lines"]
             for pivot_line in result["lines"]:
                 check_res = self._api_import_check_update_pivot_line(
-                    pivot_line, result, journal_currency_code
+                    pivot_line, result, speedy
                 )
                 if not check_res:
                     continue
@@ -426,9 +452,7 @@ class AccountJournal(models.Model):
         """This method is inherited in account_statement_import_in_invoice_api"""
         self.ensure_one()
 
-    def _api_import_check_update_pivot_line(
-        self, pivot_line, result, journal_currency_code
-    ):
+    def _api_import_check_update_pivot_line(self, pivot_line, result, speedy):
         required_field2type = {
             "date": (datetime.datetime, datetime.date),
             "amount": (float, int),
@@ -469,13 +493,13 @@ class AccountJournal(models.Model):
                 return False
         if (
             pivot_line.get("currency_code")
-            and pivot_line["currency_code"].upper() != journal_currency_code
+            and pivot_line["currency_code"].upper() != speedy["journal_currency_code"]
         ):
             self._api_import_error_log(
                 result,
                 f"Transaction is in currency {pivot_line['currency_code']} "
                 f"whereas the bank journal {self.display_name} is in currency "
-                f"{journal_currency_code} in pivot line {pivot_line}",
+                f"{speedy['journal_currency_code']} in pivot line {pivot_line}",
             )
             return False
         return True
@@ -529,7 +553,7 @@ class AccountJournal(models.Model):
         }
         return action
 
-    def _api_import_timestamp_iso8601_to_date(
+    def _api_import_timestamp_iso8601_to_datetime_aware(
         self, timestamp, speedy, timestamp_tz=False
     ):
         if not timestamp:
@@ -537,13 +561,36 @@ class AccountJournal(models.Model):
         timestamp_dt = datetime.datetime.fromisoformat(timestamp)
         # if timestamp contains TZ info, timestamp_dt is datetime aware
         # if timestamp doesn't contain any TZ info, timestamp_dt is datetime naive
-        #   in this case, we read the TZ from timestamp_tz (if it' false, we consider
+        #   in this case, we read the TZ from timestamp_tz (if it is false, we consider
         #   it is the TZ configured on account.statement.import.api)
         if not timestamp_dt.tzinfo:
             if timestamp_tz:
                 timestamp_dt = timestamp_tz.localize(timestamp_dt)
             else:
                 timestamp_dt = speedy["tz"].localize(timestamp_dt)
+        return timestamp_dt
+
+    def _api_import_timestamp_iso8601_to_datetime(
+        self, timestamp, speedy, timestamp_tz=False
+    ):
+        timestamp_dt = self._api_import_timestamp_iso8601_to_datetime_aware(
+            timestamp, speedy, timestamp_tz=timestamp_tz
+        )
+        if not timestamp_dt:
+            return False
+        # switch to UTC
+        timestamp_dt_utc = timestamp_dt.astimezone(pytz.utc)
+        timestamp_dt_naive = timestamp_dt_utc.replace(tzinfo=None)
+        return timestamp_dt_naive
+
+    def _api_import_timestamp_iso8601_to_date(
+        self, timestamp, speedy, timestamp_tz=False
+    ):
+        timestamp_dt = self._api_import_timestamp_iso8601_to_datetime_aware(
+            timestamp, speedy, timestamp_tz=timestamp_tz
+        )
+        if not timestamp_dt:
+            return False
         # switch to our TZ and convert to date
         timestamp_dt_our_tz = timestamp_dt.astimezone(speedy["tz"])
         date_dt = timestamp_dt_our_tz.date()

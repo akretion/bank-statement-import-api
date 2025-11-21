@@ -8,8 +8,6 @@ import pytz
 
 from odoo import fields, models
 
-# from pprint import pprint
-
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"

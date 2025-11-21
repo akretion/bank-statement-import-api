@@ -61,7 +61,7 @@ class AccountStatementImportApi(models.Model):
         self.ensure_one()
         self._qonto_get_all_pages("bank_accounts", result, speedy)
 
-    def _update_api_accounts_qonto(self, result, speedy):
+    def _update_api_accounts_qonto(self, company, result, speedy):
         self.ensure_one()
         accounts = self._qonto_get_all_pages("bank_accounts", result, speedy)
         res = []
@@ -72,7 +72,7 @@ class AccountStatementImportApi(models.Model):
                     "account_number": account.get("iban"),
                     "bank_name": account.get("bic"),
                     "identifier": account["id"],
-                    "company_id": self.company_id.id,
+                    "company_id": company.id,
                     "currency_code": account.get("currency"),
                 }
             )

@@ -34,6 +34,9 @@ class AccountStatementImportApi(models.Model):
             "password_required": True,
             "user_company_required": True,
             "show_backward_days": True,
+            "manage_accounts_wizard": True,
+            "manage_accounts_wizard_account_required": True,
+            "is_aggregator": True,
             # "instructions": _("TODO Write instructions"),
         }
         return service2info
@@ -80,33 +83,16 @@ class AccountStatementImportApi(models.Model):
                 )
             )
         post_json = {"external_user_id": external_user_identifier}
-        url = f"{BRIDGE_BASE_URL}/v3/aggregation/authorization/token"
-        try:
-            token_res = requests.post(
-                url, headers=headers_token, json=post_json, timeout=TIMEOUT
-            )
-        except Exception as e:
+        token_dict = self._bridge_post(
+            "aggregation/authorization/token", headers_token, result, json=post_json
+        )
+        if not token_dict.get("access_token"):
             ajo._api_import_error_log(
                 result,
-                f"API call on {url} failed: {e}. "
                 f"Could not get a token for company {company.name}.",
             )
             return None
-        if token_res.status_code != 200:
-            ajo._api_import_error_log(
-                result,
-                f"API call on {url} return an HTTP error code "
-                f"{token_res.status_code}. Could not get a token for "
-                f"company {company.name}.",
-            )
-            return None
-        token_dict = token_res.json()
         token = token_dict["access_token"]
-        ajo._api_import_info_log(
-            result,
-            f"Successful API call on {url} to get a new token "
-            f"for company {company.name}",
-        )
         logger.debug(
             "New Bridge API session token %s for company %s (user: %s)",
             token,
@@ -120,9 +106,8 @@ class AccountStatementImportApi(models.Model):
         company = self.company_id or self.env.company
         self._bridge_get_new_token(company, result, speedy)
 
-    def _update_api_accounts_bridge(self, result, speedy):
+    def _update_api_accounts_bridge(self, company, result, speedy):
         self.ensure_one()
-        company = self.company_id or self.env.company
         headers = self._bridge_get_headers(company, result, speedy)
         if not headers:
             return None
@@ -132,23 +117,60 @@ class AccountStatementImportApi(models.Model):
         providers_id2name = {}
         for provider in providers:
             providers_id2name[provider["id"]] = provider["name"]
+        # For Bridge, an "item" is a connection to a bank
+        bridge_items = self._bridge_get_all_pages("aggregation/items", headers, result)
+        item_id2vals = {}
+        for item in bridge_items or []:
+            auth_expiry_date = False
+            last_sync_datetime = False
+            status = "ok"
+            messages = []
+            if item.get("status", 0) > 0:
+                status = "ko"
+                if item.get("status_code_description"):
+                    messages.append(item["status_code_description"])
+                if item.get("status_code_info") and item["status_code_info"] != "ok":
+                    messages.append(
+                        f"Status Code Type: {item['status_code_info']} "
+                        f"(Status Code: {item.get('status')})"
+                    )
+            if item.get("authentication_expires_at"):
+                auth_expiry_date = self.env[
+                    "account.journal"
+                ]._api_import_timestamp_iso8601_to_date(
+                    item["authentication_expires_at"], speedy
+                )
+            if item.get("last_successful_refresh"):
+                last_sync_datetime = self.env[
+                    "account.journal"
+                ]._api_import_timestamp_iso8601_to_datetime(
+                    item["last_successful_refresh"], speedy
+                )
+            item_id2vals[item["id"]] = {
+                "aggregator_auth_expiry_date": auth_expiry_date,
+                "aggregator_last_sync_datetime": last_sync_datetime,
+                "aggregator_sync_status": status,
+                "aggregator_sync_status_message": "\n".join(messages) or False,
+                "aggregator_connection_identifier": str(item["id"]),
+            }
 
         bridge_accounts = self._bridge_get_all_pages(
             "aggregation/accounts", headers, result
         )
         res = []
         for account in bridge_accounts or []:
-            res.append(
-                {
-                    "name": account["name"],
-                    "account_type": account.get("type"),
-                    "account_number": account.get("iban"),
-                    "bank_name": providers_id2name.get(account.get("provider_id")),
-                    "currency_code": account.get("currency_code"),
-                    "identifier": account["id"],
-                    "company_id": company.id,
-                }
-            )
+            vals = {
+                "name": account["name"],
+                "account_type": account.get("type"),
+                "account_number": account.get("iban"),
+                "bank_name": providers_id2name.get(account.get("provider_id")),
+                "currency_code": account.get("currency_code"),
+                "identifier": account["id"],
+                "company_id": company.id,
+            }
+            if account.get("item_id"):
+                vals.update(item_id2vals[account["item_id"]])
+            res.append(vals)
         return res
 
     @api.model
@@ -163,18 +185,18 @@ class AccountStatementImportApi(models.Model):
             res = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
         except Exception as e:
             ajo._api_import_error_log(
-                result, f"API call on {url} with params={params} failed: {e}"
+                result, f"HTTP GET API call on {url} with params={params} failed: {e}"
             )
             return None
         if res.status_code != 200:
             ajo._api_import_error_log(
                 result,
-                f"API call on {url} with params={params} returned an "
+                f"HTTP GET API call on {url} with params={params} returned an "
                 f"HTTP error code {res.status_code}.",
             )
             return None
         ajo._api_import_info_log(
-            result, f"Successful API call on {url} with params={params}"
+            result, f"Successful HTTP GET API call on {url} with params={params}"
         )
         res_dict = res.json()
         res_list = res_dict["resources"]
@@ -205,35 +227,76 @@ class AccountStatementImportApi(models.Model):
             next_uri = res_next_page_dict["pagination"].get("next_uri")
         return res_list
 
-    @api.model  # TODO use for token
-    def _bridge_post(self, api_name, headers, result, params=None):
+    @api.model
+    def _bridge_post(self, api_name, headers, result, json=None):
         ajo = self.env["account.journal"]
         url = f"{BRIDGE_BASE_URL}/{BRIDGE_API_VERSION}/{api_name}"
         try:
-            res = requests.post(url, headers=headers, params=params, timeout=TIMEOUT)
+            res = requests.post(url, headers=headers, json=json, timeout=TIMEOUT)
         except Exception as e:
             ajo._api_import_error_log(
-                result, f"API call on {url} with params={params} failed: {e}"
+                result, f"HTTP POST API call on {url} with json={json} failed: {e}"
             )
             return {}
         if res.status_code != 200:
+            try:
+                error_msg = res.json()["errors"][0]["message"]
+            except Exception:
+                error_msg = ""
             ajo._api_import_error_log(
                 result,
-                f"API call on {url} with params={params} returned an "
-                f"HTTP error code {res.status_code}.",
+                f"HTTP POST API call on {url} with json={json} returned an "
+                f"HTTP error code {res.status_code} with this error "
+                f"message: '{error_msg}'.",
             )
             return {}
         ajo._api_import_info_log(
-            result, f"Successful API call on {url} with params={params}"
+            result, f"Successful HTTP POST API call on {url} with json={json}"
         )
         res_dict = res.json()
         return res_dict
 
     def _bridge_add_account_get_url(self, company, result, speedy):
         headers = self._bridge_get_headers(company, result, speedy)
-        params = {"user_email": "alexis@example.com"}  # TODO
+        user_email = self.env.user.partner_id.email
+        if not user_email:
+            raise UserError(_("Missing e-mail on partner '%s'.", partner.display_name))
+        # TODO understand which email we are supposed to use exactly
+        json = {
+            "user_email": user_email,
+        }
         res_json = self._bridge_post(
-            "aggregation/connect-sessions", headers, result, params=params
+            "aggregation/connect-sessions", headers, result, json=json
+        )
+        url = res_json.get("url")
+        return url
+
+    def _bridge_manage_accounts_get_url(self, api_account, company, result, speedy):
+        headers = self._bridge_get_headers(company, result, speedy)
+        assert api_account
+        if not api_account.aggregator_connection_identifier:
+            raise UserError(
+                _(
+                    "Missing connection ID on API bank account '%s'.",
+                    api_account.display_name,
+                )
+            )
+        try:
+            item_id = int(api_account.aggregator_connection_identifier)
+        except Exception as err:
+            raise UserError(
+                _(
+                    "The connection ID of API bank account '%(api_account)s' is "
+                    "'%(connection_identifier)s', but it should be an integer. "
+                    "Error: %(err)s",
+                    api_account=api_account.display_name,
+                    connection_identifier=api_account.aggregator_connection_identifier,
+                    err=err,
+                )
+            ) from err
+        json = {"item_id": item_id}
+        res_json = self._bridge_post(
+            "aggregation/connect-sessions", headers, result, json=json
         )
         url = res_json.get("url")
         return url

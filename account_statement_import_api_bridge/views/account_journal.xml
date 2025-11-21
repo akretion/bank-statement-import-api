@@ -13,7 +13,7 @@
             ref="account_statement_import_api.view_account_journal_form"
         />
         <field name="arch" type="xml">
-                <field name="statement_import_api_start_date" position="after">
+                <field name="statement_import_api_last_success" position="after">
                     <field
                     name="bridge_preferred_date"
                     attrs="{'invisible': [('statement_import_api_service', '!=', 'bridge')]}"

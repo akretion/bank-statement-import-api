@@ -86,6 +86,8 @@ class AccountJournal(models.Model):
             "amount": trans["amount"]
             * sign,  # 'amount' is in the currency of the bank account
             "currency_code": trans["currency"],  # currency of the bank account
+            "foreign_currency_code": trans["local_currency"],
+            "foreign_currency_amount": trans["local_amount"] * sign,
             "payment_ref": trans["label"],
             "unique_import_id": trans["transaction_id"],
             "attachments": attachments,

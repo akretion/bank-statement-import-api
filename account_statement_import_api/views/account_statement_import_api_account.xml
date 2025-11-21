@@ -10,6 +10,13 @@
                 <field name="model">account.statement.import.api.account</field>
                 <field name="arch" type="xml">
                         <form>
+                                <div
+                    class="alert alert-warning"
+                    role="alert"
+                    attrs="{'invisible': ['|', ('is_aggregator', '=', False), ('aggregator_sync_status_message', '=', False)]}"
+                >
+                  <field name="aggregator_sync_status_message" />
+            </div>
                                 <group name="main">
                                         <field
                         name="statement_import_api_id"
@@ -25,12 +32,33 @@
                     />
                                         <field name="identifier" />
                                         <field
-                        name="auth_expiry_date"
-                        attrs="{'invisible': [('auth_expiry_date', '=', False)]}"
+                        name="aggregator_sync_status"
+                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                        widget="badge"
+                        decoration-success="aggregator_sync_status == 'ok'"
+                        decoration-warning="aggregator_sync_status == 'warning'"
+                        decoration-danger="aggregator_sync_status == 'ko'"
+                    />
+                                        <field
+                        name="aggregator_auth_expiry_date"
+                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                    />
+                                        <field
+                        name="aggregator_last_sync_datetime"
+                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                    />
+                                        <field
+                        name="aggregator_connection_identifier"
+                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                    />
+                                        <field
+                        name="aggregator_connection_type"
+                        attrs="{'invisible': ['|', ('is_aggregator', '=', False), ('aggregator_connection_type', '=', False)]}"
                     />
                                         <field name="company_id" />
                                         <field name="active" />
                                         <field name="service" invisible="1" />
+                                        <field name="is_aggregator" invisible="1" />
                                 </group>
                         </form>
                 </field>
@@ -53,14 +81,30 @@
                     attrs="{'invisible': [('account_type', '=', False)]}"
                     optional="show"
                 />
-                            <field name="identifier" />
-                            <field name="auth_expiry_date" optional="show" />
-                            <button
-                    icon="fa-share"
-                    string="Extend"
-                    name="%(account_statement_import_api.account_statement_import_api_generate_url_action)s"
-                    type="action"
-                    context="{'default_feature': 'renew_auth'}"
+                            <field name="identifier" optional="hide" />
+                            <field
+                    name="aggregator_sync_status"
+                    attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
+                    optional="show"
+                    widget="badge"
+                    decoration-success="aggregator_sync_status == 'ok'"
+                    decoration-warning="aggregator_sync_status == 'warning'"
+                    decoration-danger="aggregator_sync_status == 'ko'"
+                />
+                            <field
+                    name="aggregator_auth_expiry_date"
+                    attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
+                    optional="show"
+                />
+                            <field
+                    name="aggregator_last_sync_datetime"
+                    attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
+                    optional="hide"
+                />
+                            <field
+                    name="aggregator_connection_identifier"
+                    attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
+                    optional="hide"
                 />
                             <field name="company_id" optional="show" />
                             <field name="active" optional="show" />
