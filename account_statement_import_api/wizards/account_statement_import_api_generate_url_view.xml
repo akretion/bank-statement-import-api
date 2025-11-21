@@ -20,13 +20,16 @@
                                                   <field
                         name="statement_import_api_id"
                     />
-                                                  <field name="service" />
+                                                  <field name="feature" />
                                                   <field
-                        name="renew_auth_api_account_id"
-                        attrs="{'invisible': [('feature', '!=', 'renew_auth')], 'required': [('feature', '=', 'renew_auth')]}"
+                        name="manage_api_account_id"
+                        attrs="{'invisible': [('manage_api_account_required', '=', False)], 'required': [('manage_api_account_required', '=', True)]}"
                     />
                                                   <field name="state" invisible="1" />
-                                                  <field name="feature" />
+                                                  <field
+                        name="manage_api_account_required"
+                        invisible="1"
+                    />
                                           </group>
                                           <group name="url" states="url">
                                                   <div
@@ -65,7 +68,7 @@
                         special="cancel"
                         string="Cancel"
                         class="btn-default"
-                        startes="start"
+                        states="start"
                     />
                                           </footer>
                                   </form>

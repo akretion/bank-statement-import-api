@@ -56,7 +56,13 @@
                         context="{'default_feature': 'manage_accounts'}"
                         groups="account.group_account_manager"
                     />
-
+                    <button
+                        name="%(account_statement_import_api_create_user_action)d"
+                        type="action"
+                        string="Create User"
+                        attrs="{'invisible': [('show_company_user', '=', False)]}"
+                        groups="account.group_account_manager"
+                    />
                 </header>
                 <sheet>
                         <div class="oe_button_box" name="button_box">
@@ -82,6 +88,7 @@
                     <field name="company_id" invisible="1" />
                     <field name="show_add_account_wizard" invisible="1" />
                     <field name="show_manage_accounts_wizard" invisible="1" />
+                    <field name="is_aggregator" invisible="1" />
                     <field name="cron_id" />
                     <field name="last_success" />
                 </group>
