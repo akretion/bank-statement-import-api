@@ -310,7 +310,7 @@ class AccountStatementImportApi(models.Model):
             return res_dict[answer_key]
         return res_dict
 
-    def _powens_get_url(self, path, company, result, speedy, connection_id=False):
+    def _powens_get_url(self, path, company, result, speedy):
         headers = self._powens_get_headers(company, result, speedy)
         params = {"type": "singleAccess"}
         code = self._powens_get("auth/token/code", headers, result, params=params)
@@ -319,10 +319,8 @@ class AccountStatementImportApi(models.Model):
             "client_id": self.login,
             "domain": self.powens_hostname,
         }
-        if path in ("connect", "reconnect"):
+        if path == "connect":
             url_params["redirect_uri"] = self.powens_redirect_url
-        if path == "reconnect":
-            url_params["connection_id"] = int(connection_id)
         if self.env.user.lang and self.env.user.lang.startswith(POWENS_WEBVIEW_LANGS):
             lang = self.env.user.lang[:2]
         else:
@@ -336,32 +334,3 @@ class AccountStatementImportApi(models.Model):
 
     def _powens_manage_accounts_get_url(self, company, result, speedy):
         return self._powens_get_url("manage", company, result, speedy)
-
-    def _powens_create_user(self, company, result, speedy):
-        ajo = self.env["account.journal"]
-        headers = {
-            "content-type": "application/json",
-        }
-
-        json_dict = {
-            "client_id": speedy["login"],
-            "client_secret": speedy["password"],
-        }
-        res = self._powens_post("auth/init", headers, json_dict, result)
-        if res.get("type") != "permanent" or not res.get("auth_token"):
-            ajo._api_import_error_log(
-                result,
-                f"The API call didn't return a permanent token as expected. "
-                f"Token type returned was '{res.get('type')}'.",
-            )
-            return None
-        if not res.get("id_user"):
-            ajo._api_import_error_log(
-                result,
-                "The API call to create a company user didn't return a user ID as expected.",
-            )
-        company_user_vals = {
-            "identifier": res["id_user"],
-            "powens_token": res["auth_token"],
-        }
-        return company_user_vals

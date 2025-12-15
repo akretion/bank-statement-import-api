@@ -51,8 +51,8 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
                     company=self.company_id.name,
                 )
             )
-        method = getattr(import_api, method_name)
-        company_user_vals = method(self.company_id, result, speedy)
+        method = getattr(self, method_name)
+        company_user_vals = method(result, speedy)
         for log_type, msg in result["logs"]:
             if log_type == "error":
                 raise UserError(

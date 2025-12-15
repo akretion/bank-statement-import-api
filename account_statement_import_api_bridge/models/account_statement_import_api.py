@@ -41,7 +41,13 @@ class AccountStatementImportApi(models.Model):
         }
         return service2info
 
+    def _prepare_speedy(self):
+        speedy = super()._prepare_speedy()
+        speedy["bridge_version"] = BRIDGE_VERSION
+        return speedy
+
     def _bridge_get_token(self, company, result, speedy):
+        self.ensure_one()
         if not speedy["company_id2token"].get(company.id):
             token = self._bridge_get_new_token(company, result, speedy)
             # at this stage, token can be None
@@ -49,26 +55,28 @@ class AccountStatementImportApi(models.Model):
         return speedy["company_id2token"][company.id]
 
     def _bridge_get_headers(self, company, result, speedy):
+        self.ensure_one()
         token = self._bridge_get_token(company, result, speedy)
         if not token:
             return None
         headers = {
-            "Bridge-Version": BRIDGE_VERSION,
+            "Bridge-Version": speedy["bridge_version"],
             "accept": "application/json",
             "content-type": "application/json",
             "Authorization": "Bearer %s" % token,
-            "Client-Id": self.login,
-            "Client-Secret": self.password,
+            "Client-Id": speedy["login"],
+            "Client-Secret": speedy["password"],
         }
         return headers
 
     def _bridge_get_new_token(self, company, result, speedy):
+        self.ensure_one()
         assert company
         ajo = self.env["account.journal"]
         headers_token = {
-            "Bridge-Version": BRIDGE_VERSION,
-            "Client-Id": self.login,
-            "Client-Secret": self.password,
+            "Bridge-Version": speedy["bridge_version"],
+            "Client-Id": speedy["login"],
+            "Client-Secret": speedy["password"],
             "accept": "application/json",
             "content-type": "application/json",
         }
@@ -238,7 +246,7 @@ class AccountStatementImportApi(models.Model):
                 result, f"HTTP POST API call on {url} with json={json} failed: {e}"
             )
             return {}
-        if res.status_code != 200:
+        if res.status_code not in (200, 201):
             try:
                 error_msg = res.json()["errors"][0]["message"]
             except Exception:
@@ -258,13 +266,14 @@ class AccountStatementImportApi(models.Model):
 
     def _bridge_add_account_get_url(self, company, result, speedy):
         headers = self._bridge_get_headers(company, result, speedy)
-        user_email = self.env.user.partner_id.email
-        if not user_email:
-            raise UserError(_("Missing e-mail on partner '%s'.", partner.display_name))
-        # TODO understand which email we are supposed to use exactly
-        json = {
-            "user_email": user_email,
-        }
+        user_partner = self.env.user.partner_id
+        if not user_partner.email:
+            raise UserError(
+                _("Missing e-mail on partner '%s'.", user_partner.display_name)
+            )
+        # The parameter user_email is not really important... it is just used to
+        # notify the user in case their change the terms of service.
+        json = {"user_email": user_partner.email}
         res_json = self._bridge_post(
             "aggregation/connect-sessions", headers, result, json=json
         )
