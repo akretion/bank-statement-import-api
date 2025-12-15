@@ -12,8 +12,10 @@
     "maintainers": ["alexis-via"],
     "website": "https://github.com/akretion/bank-statement-import-api",
     "depends": ["account_statement_import_api"],
+    "external_dependencies": {"python": ["unidecode"]},
     "data": [
         "views/account_journal.xml",
+        "wizards/account_statement_import_api_create_user_view.xml",
     ],
     "installable": True,
 }
