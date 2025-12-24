@@ -109,7 +109,12 @@
         </group>
         <notebook>
                 <page name="journals" string="Bank Journals">
-                        <field name="journal_ids" nolabel="1" colspan="2" widget="many2many">
+                        <field
+                                name="journal_ids"
+                                nolabel="1"
+                                colspan="2"
+                                widget="many2many"
+                            >
                         <tree>
                         <field name="display_name" />
                         <field name="statement_import_api_account_id" />
