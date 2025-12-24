@@ -10,15 +10,14 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
 
     def _powens_create_user(self, result, speedy):
         ajo = self.env["account.journal"]
-        headers = {
-            "content-type": "application/json",
-        }
-
+        headers = {"content-type": "application/json"}
         json_dict = {
             "client_id": speedy["login"],
             "client_secret": speedy["password"],
         }
-        res = self._powens_post("auth/init", headers, json_dict, result)
+        res = self.statement_import_api_id._powens_post(
+            "auth/init", headers, json_dict, result
+        )
         if res.get("type") != "permanent" or not res.get("auth_token"):
             ajo._api_import_error_log(
                 result,
