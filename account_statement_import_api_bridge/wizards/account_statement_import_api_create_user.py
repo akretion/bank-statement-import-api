@@ -49,7 +49,7 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
         if len(external_user) > 128:
             raise UserError(
                 _(
-                    "Bridge External User has %d caracters. The maxium is 128 caracters.",
+                    "Bridge External User has %d caracters. The maximum is 128 caracters.",
                     len(external_user),
                 )
             )
