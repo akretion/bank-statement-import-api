@@ -124,10 +124,10 @@ class AccountJournal(models.Model):
         }
         return vals
 
-    def _api_prepare_bank_statement_line(
+    def _api_import_prepare_bank_statement_line(
         self, pivot_line, result, speedy, update_mode=False
     ):
-        lvals = super()._api_prepare_bank_statement_line(
+        lvals = super()._api_import_prepare_bank_statement_line(
             pivot_line, result, speedy, update_mode=update_mode
         )
         card_code = pivot_line.get("in_invoice_card_code")
@@ -252,7 +252,7 @@ class AccountJournal(models.Model):
 
     def _api_import_update_existing_line(self, pivot_line, result, speedy):
         res = super()._api_import_update_existing_line(pivot_line, result, speedy)
-        lvals = self._api_prepare_bank_statement_line(
+        lvals = self._api_import_prepare_bank_statement_line(
             pivot_line, result, speedy, update_mode=True
         )
         existing_line = speedy["existing_lines"][pivot_line["unique_import_id"]]

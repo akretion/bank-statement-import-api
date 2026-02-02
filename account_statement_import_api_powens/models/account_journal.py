@@ -74,5 +74,6 @@ class AccountJournal(models.Model):
             "payment_ref": trans["original_wording"],
             "amount": trans["value"],
             "unique_import_id": str(trans["id"]),
+            "transaction_type": trans.get("type"),
         }
         return pivot

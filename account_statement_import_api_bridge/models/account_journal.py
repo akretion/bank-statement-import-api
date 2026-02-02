@@ -75,6 +75,7 @@ class AccountJournal(models.Model):
             "payment_ref": trans["provider_description"],
             "amount": trans["amount"],
             "unique_import_id": str(trans["id"]),
+            "transaction_type": trans.get("operation_type"),
         }
         if trans["future"]:
             self._api_import_info_log(

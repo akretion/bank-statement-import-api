@@ -89,6 +89,7 @@ class AccountJournal(models.Model):
             "foreign_currency_code": trans["local_currency"],
             "foreign_currency_amount": trans["local_amount"] * sign,
             "payment_ref": trans["label"],
+            "transaction_type": trans["operation_type"],
             "unique_import_id": trans["transaction_id"],
             "attachments": attachments,
             "in_invoice_vat_amount": trans["vat_amount"],
