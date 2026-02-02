@@ -26,7 +26,7 @@
                         groups="account.group_account_manager"
                     />
                     <button
-                        name="update_api_accounts"
+                        name="update_api_accounts_button"
                         type="object"
                         string="Get/Update API Bank Accounts"
                         class="btn-primary"

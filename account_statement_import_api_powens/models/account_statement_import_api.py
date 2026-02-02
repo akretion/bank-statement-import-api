@@ -152,15 +152,11 @@ class AccountStatementImportApi(models.Model):
                 }
             )
             connection_ids.add(account["id_connection"])
-        source_name2connection_type = {
-            "openapi": "api",
-            "directaccess": "scraping",
-        }
         for connection_id in connection_ids:
             api_name = f"users/{user_id}/connections/{connection_id}/sources"
             sources = self._powens_get(api_name, headers, result)
             for source in sources:
-                auth_expiry_date = connection_type = False
+                auth_expiry_date = False
                 status = "ok"
                 messages = []
                 if source.get("state"):
@@ -174,15 +170,12 @@ class AccountStatementImportApi(models.Model):
                     # Powens doesn't give us any timezone info
                     # 'access_expire': '2026-04-12 21:04:01'
                     auth_expiry_date = source["access_expire"][:10]
-                if source.get("name") and source["name"] in source_name2connection_type:
-                    connection_type = source_name2connection_type[source["name"]]
 
                 source_id2vals[source["id"]] = {
                     "aggregator_sync_status": status,
                     "aggregator_sync_status_message": "\n".join(messages) or False,
                     "aggregator_auth_expiry_date": auth_expiry_date,
                     "aggregator_last_sync_datetime": source.get("last_update"),
-                    "aggregator_connection_type": connection_type,
                 }
         for account in res:
             if (
