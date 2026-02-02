@@ -51,10 +51,6 @@
                         name="aggregator_connection_identifier"
                         attrs="{'invisible': [('is_aggregator', '=', False)]}"
                     />
-                                        <field
-                        name="aggregator_connection_type"
-                        attrs="{'invisible': ['|', ('is_aggregator', '=', False), ('aggregator_connection_type', '=', False)]}"
-                    />
                                         <field name="company_id" />
                                         <field name="active" />
                                         <field name="service" invisible="1" />

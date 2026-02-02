@@ -50,14 +50,6 @@ class AccountStatementImportApiAccount(models.Model):
         "these bank accounts probably use the same connection ID and have the same "
         "auth expiry date.",
     )
-    aggregator_connection_type = fields.Selection(
-        [
-            ("api", "API"),
-            ("scraping", "Scraping"),
-        ],
-        readonly=True,
-        string="Connection Type",
-    )
 
     _sql_constraints = [
         (
