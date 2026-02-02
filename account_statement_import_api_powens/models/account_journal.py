@@ -75,5 +75,6 @@ class AccountJournal(models.Model):
             "amount": trans["value"],
             "unique_import_id": str(trans["id"]),
             "transaction_type": trans.get("type"),
+            "to_delete": bool(trans["deleted"]),
         }
         return pivot

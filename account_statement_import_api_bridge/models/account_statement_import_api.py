@@ -37,6 +37,7 @@ class AccountStatementImportApi(models.Model):
             "manage_accounts_wizard": True,
             "manage_accounts_wizard_account_required": True,
             "is_aggregator": True,
+            "last_success_source": "last_update_dt",
             # "instructions": _("TODO Write instructions"),
         }
         return service2info

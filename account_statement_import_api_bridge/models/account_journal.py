@@ -69,6 +69,9 @@ class AccountJournal(models.Model):
         # 'date' is the only field that is always set
         if not date:
             date = trans["date"]
+        last_update_dt = self._api_import_timestamp_iso8601_to_datetime(
+            trans["updated_at"], speedy
+        )
         pivot = {
             "currency_code": trans["currency_code"],
             "date": date,
@@ -76,6 +79,8 @@ class AccountJournal(models.Model):
             "amount": trans["amount"],
             "unique_import_id": str(trans["id"]),
             "transaction_type": trans.get("operation_type"),
+            "last_update_dt": last_update_dt,
+            "to_delete": trans["deleted"],
         }
         if trans["future"]:
             self._api_import_info_log(
@@ -83,14 +88,6 @@ class AccountJournal(models.Model):
                 f"Skipped transaction dated {pivot['date']} "
                 f"amount {pivot['amount']} label '{pivot['payment_ref']}' "
                 f"which has future flag",
-            )
-            return False
-        if trans["deleted"]:
-            self._api_import_warning_log(
-                result,
-                f"Skipped transaction dated {pivot['date']} "
-                f"amount {pivot['amount']} label '{pivot['payment_ref']}' "
-                f"which has the deleted flag. It should never happen.",
             )
             return False
         return pivot
