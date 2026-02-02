@@ -316,8 +316,16 @@ class AccountJournal(models.Model):
         #   'unique_import_id': 'DSIVYIUC1242',  # will be updated by
         #                               _statement_line_import_update_unique_import_id()
         #                                        to the unique_import_id stored by odoo
-        #  'foreign_currency_amount': -68.47,  # amount in foreign currency
-        #  'foreign_currency_code': 'USD',  # foreign currency codo
+        #   'foreign_currency_amount': -68.47,  # amount in foreign currency
+        #   'foreign_currency_code': 'USD',  # foreign currency code
+        #   'last_update_dt': datetime.datetime(2026, 2, 2, 16, 31, 29, 483518),  # last
+        #      # update datetime (datetime naive in UTC): used to set
+        #      # statement_import_api_last_success if
+        #      # speedy['service_info'].get('last_success_source') == "last_update_dt"
+        #      # The field is required in this case.
+        #   'to_delete': True,  # if set to True (very rare), it means we should delete
+        #      # the bank statement line. If it hasn't been reconciled yet it odoo, we
+        #      # deleted it ; otherwise, we set a big warning.
         # }
 
         method_name = f"_api_import_{speedy['service']}"
@@ -328,15 +336,27 @@ class AccountJournal(models.Model):
         if result["lines"] and not any(
             [log_type == "error" for log_type, msg in result["logs"]]
         ):
+            last_success_source = speedy["service_info"].get("last_success_source")
             search_unique_import_ids = []
+            if last_success_source == "last_update_dt":
+                last_success_dt = self.statement_import_api_last_success
+            else:
+                last_success_dt = fields.Datetime.now()
             for pivot_line in result["lines"]:
                 # Update pivot_line['unique_import_id'] to have the "full" value
                 self._statement_line_import_update_unique_import_id(
                     pivot_line, self.bank_account_id.sanitized_acc_number
                 )
                 search_unique_import_ids.append(pivot_line["unique_import_id"])
+                if last_success_source == "last_update_dt":
+                    if not last_success_dt or (
+                        last_success_dt
+                        and pivot_line["last_update_dt"] > last_success_dt
+                    ):
+                        last_success_dt = pivot_line["last_update_dt"]
+
             self._api_import_set_existing_lines(search_unique_import_ids, speedy)
-            self.write({"statement_import_api_last_success": fields.Datetime.now()})
+            self.write({"statement_import_api_last_success": last_success_dt})
             existing_lines = speedy["existing_lines"]
             for pivot_line in result["lines"]:
                 check_res = self._api_import_check_update_pivot_line(
@@ -357,6 +377,32 @@ class AccountJournal(models.Model):
                     )
                 elif pivot_line["unique_import_id"] in existing_lines:
                     existing_line = existing_lines[pivot_line["unique_import_id"]]
+                    if pivot_line["to_delete"]:
+                        if existing_line["is_reconciled"]:
+                            self._api_import_error_log(
+                                result,
+                                f"Existing reconciled line ID "
+                                f"{existing_line['id']} dated {existing_line['date']} "
+                                f"amount {existing_line['amount']} "
+                                f"label '{existing_line['payment_ref']}' is "
+                                "marked as 'to_delete', but odoo can't delete it "
+                                "because it is already reconciled. You must handle "
+                                "it manually.",
+                            )
+                        else:
+                            self._api_import_warning_log(
+                                result,
+                                f"Deleted existing unreconciled line ID "
+                                f"{existing_line['id']} dated {existing_line['date']} "
+                                f"amount {existing_line['amount']} "
+                                f"label '{existing_line['payment_ref']}' because "
+                                "it is marked as 'to_delete'",
+                            )
+                            bank_statement_line = self.env[
+                                "account.bank.statement.line"
+                            ].browse(existing_line["id"])
+                            bank_statement_line.unlink()
+                        continue
                     if existing_line["is_reconciled"]:
                         self._api_import_info_log(
                             result,
@@ -378,6 +424,15 @@ class AccountJournal(models.Model):
                             f"label '{existing_line['payment_ref']}'",
                         )
                 else:  # New bank statement line to create
+                    if pivot_line.get("to_delete"):
+                        self._api_import_info_log(
+                            result,
+                            f"Skipped line dated {pivot_line['date']} "
+                            f"amount {pivot_line['amount']} label "
+                            f"'{pivot_line['payment_ref']}' because it is marked "
+                            "as 'to_delete' and it was not in Odoo yet.",
+                        )
+                        continue
                     lvals = self._api_import_prepare_bank_statement_line(
                         pivot_line, result, speedy
                     )
