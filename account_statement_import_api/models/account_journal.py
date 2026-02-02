@@ -249,7 +249,7 @@ class AccountJournal(models.Model):
         for line in existing_lines_read:
             self._api_import_prepare_existing_line(line, speedy)
 
-    def _api_prepare_bank_statement_line(
+    def _api_import_prepare_bank_statement_line(
         self, line_pivot, result, speedy, update_mode=False
     ):
         self.ensure_one()
@@ -262,6 +262,7 @@ class AccountJournal(models.Model):
                 "date": line_pivot["date"],
                 "amount": line_pivot["amount"],
                 "payment_ref": line_pivot["payment_ref"],
+                "transaction_type": line_pivot.get("transaction_type"),
             }
             if line_pivot.get("foreign_currency_amount") and line_pivot.get(
                 "foreign_currency_code"
@@ -311,6 +312,7 @@ class AccountJournal(models.Model):
         #                              Will allow the generic code below to check that
         #                              it is the currency of the journal
         #   'payment_ref': 'VIR SEPA ODOO COMMUNITY ASSOCIATION',
+        #   'transaction_type': 'transfer',  # char field
         #   'unique_import_id': 'DSIVYIUC1242',  # will be updated by
         #                               _statement_line_import_update_unique_import_id()
         #                                        to the unique_import_id stored by odoo
@@ -376,7 +378,7 @@ class AccountJournal(models.Model):
                             f"label '{existing_line['payment_ref']}'",
                         )
                 else:  # New bank statement line to create
-                    lvals = self._api_prepare_bank_statement_line(
+                    lvals = self._api_import_prepare_bank_statement_line(
                         pivot_line, result, speedy
                     )
                     # The method _statement_line_import_update_hook() is defined
