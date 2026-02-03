@@ -256,6 +256,7 @@ class AccountStatementImportApi(models.Model):
         speedy = self._prepare_speedy()
         for journal in self.journal_ids:
             journal._api_import_bank_statement_lines(speedy)
+        self._aggregator_update_sync_status(speedy)
         logger.info("End of bank statement import API %s", self.name)
 
     def test_api(self):
@@ -296,16 +297,65 @@ class AccountStatementImportApi(models.Model):
         }
         return action
 
+    def _aggregator_update_sync_status(self, speedy, restrict_api_account=False):
+        self.ensure_one()
+        if not speedy["service_info"].get("is_aggregator"):
+            return
+        logger.info(
+            "Start update of sync status on statement import API %s "
+            "with restrict_api_account=%s",
+            self.display_name,
+            restrict_api_account,
+        )
+        result = {"logs": [], "connection_id2vals": {}}
+        method_name = f"_update_sync_status_{speedy['service']}"
+        if not hasattr(self, method_name):
+            logger.warning("There is no method %s on %s", method_name, self._name)
+            return
+        method = getattr(self, method_name)
+        # group API accounts per company
+        company2api_accounts = {}
+        connection_id2api_accounts = {}
+        if restrict_api_account:
+            api_accounts = restrict_api_account
+        else:
+            api_accounts = self.active_api_account_ids
+        for api_account in api_accounts:
+            if api_account.company_id not in company2api_accounts:
+                company2api_accounts[api_account.company_id] = api_account
+            else:
+                company2api_accounts[api_account.company_id] |= api_account
+            connection_id = api_account.aggregator_connection_identifier
+            if connection_id:
+                if connection_id in connection_id2api_accounts:
+                    connection_id2api_accounts[connection_id] |= api_account
+                else:
+                    connection_id2api_accounts[connection_id] = api_account
+        connection_id2vals = method(list(company2api_accounts.keys()), result, speedy)
+        for connection_id, api_accounts in connection_id2api_accounts.items():
+            if connection_id in connection_id2vals:
+                api_accounts.write(connection_id2vals[connection_id])
+                logger.info(
+                    "Sync status of API accounts IDs %s updated",
+                    api_accounts.ids,
+                )
+            else:
+                logger.warning(
+                    "Connection identifier %s of API account IDs %s "
+                    "not retrieved by API",
+                    connection_id,
+                    api_accounts.ids,
+                )
+        logger.info(
+            "Update of sync status on statement import API %s finished",
+            self.display_name,
+        )
+
     def update_api_accounts(self):
         self.ensure_one()
         result = {"logs": []}
         speedy = self._prepare_speedy()
         company = self.company_id or self.env.company
-        if not self.service:
-            raise UserError(
-                _("Missing service on bank statement import API '%s'.")
-                % self.display_name
-            )
         method_name = f"_update_api_accounts_{speedy['service']}"
         method = getattr(self, method_name)
         res = method(company, result, speedy)
