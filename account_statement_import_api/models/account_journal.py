@@ -377,7 +377,7 @@ class AccountJournal(models.Model):
                     )
                 elif pivot_line["unique_import_id"] in existing_lines:
                     existing_line = existing_lines[pivot_line["unique_import_id"]]
-                    if pivot_line["to_delete"]:
+                    if pivot_line.get("to_delete"):
                         if existing_line["is_reconciled"]:
                             self._api_import_error_log(
                                 result,
@@ -573,6 +573,9 @@ class AccountJournal(models.Model):
             )
         speedy = self.statement_import_api_id._prepare_speedy()
         log = self._api_import_bank_statement_lines(speedy)
+        self.statement_import_api_id._aggregator_update_sync_status(
+            speedy, restrict_api_account=self.statement_import_api_account_id
+        )
         if log.status == "failure":
             title = _("Sync Failed")
             message = (

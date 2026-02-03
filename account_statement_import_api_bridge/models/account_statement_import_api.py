@@ -115,6 +115,55 @@ class AccountStatementImportApi(models.Model):
         company = self.company_id or self.env.company
         self._bridge_get_new_token(company, result, speedy)
 
+    def _update_sync_status_bridge(self, company_list, result, speedy):
+        connection_id2vals = {}
+        for company in company_list:
+            headers = self._bridge_get_headers(company, result, speedy)
+            if not headers:
+                return connection_id2vals
+            bridge_items = self._bridge_get_all_pages(
+                "aggregation/items", headers, result
+            )
+
+            for item in bridge_items or []:
+                auth_expiry_date = False
+                last_sync_datetime = False
+                status = "ok"
+                messages = []
+                if item.get("status", 0) > 0:
+                    status = "ko"
+                    if item.get("status_code_description"):
+                        messages.append(item["status_code_description"])
+                    if (
+                        item.get("status_code_info")
+                        and item["status_code_info"] != "ok"
+                    ):
+                        messages.append(
+                            f"Status Code Type: {item['status_code_info']} "
+                            f"(Status Code: {item.get('status')})"
+                        )
+                if item.get("authentication_expires_at"):
+                    auth_expiry_date = self.env[
+                        "account.journal"
+                    ]._api_import_timestamp_iso8601_to_date(
+                        item["authentication_expires_at"], speedy
+                    )
+                if item.get("last_successful_refresh"):
+                    last_sync_datetime = self.env[
+                        "account.journal"
+                    ]._api_import_timestamp_iso8601_to_datetime(
+                        item["last_successful_refresh"], speedy
+                    )
+                connection_id = str(item["id"])
+                connection_id2vals[connection_id] = {
+                    "aggregator_auth_expiry_date": auth_expiry_date,
+                    "aggregator_last_sync_datetime": last_sync_datetime,
+                    "aggregator_sync_status": status,
+                    "aggregator_sync_status_message": "\n".join(messages) or False,
+                    "aggregator_connection_identifier": connection_id,
+                }
+        return connection_id2vals
+
     def _update_api_accounts_bridge(self, company, result, speedy):
         self.ensure_one()
         headers = self._bridge_get_headers(company, result, speedy)
@@ -127,59 +176,26 @@ class AccountStatementImportApi(models.Model):
         for provider in providers:
             providers_id2name[provider["id"]] = provider["name"]
         # For Bridge, an "item" is a connection to a bank
-        bridge_items = self._bridge_get_all_pages("aggregation/items", headers, result)
-        item_id2vals = {}
-        for item in bridge_items or []:
-            auth_expiry_date = False
-            last_sync_datetime = False
-            status = "ok"
-            messages = []
-            if item.get("status", 0) > 0:
-                status = "ko"
-                if item.get("status_code_description"):
-                    messages.append(item["status_code_description"])
-                if item.get("status_code_info") and item["status_code_info"] != "ok":
-                    messages.append(
-                        f"Status Code Type: {item['status_code_info']} "
-                        f"(Status Code: {item.get('status')})"
-                    )
-            if item.get("authentication_expires_at"):
-                auth_expiry_date = self.env[
-                    "account.journal"
-                ]._api_import_timestamp_iso8601_to_date(
-                    item["authentication_expires_at"], speedy
-                )
-            if item.get("last_successful_refresh"):
-                last_sync_datetime = self.env[
-                    "account.journal"
-                ]._api_import_timestamp_iso8601_to_datetime(
-                    item["last_successful_refresh"], speedy
-                )
-            item_id2vals[item["id"]] = {
-                "aggregator_auth_expiry_date": auth_expiry_date,
-                "aggregator_last_sync_datetime": last_sync_datetime,
-                "aggregator_sync_status": status,
-                "aggregator_sync_status_message": "\n".join(messages) or False,
-                "aggregator_connection_identifier": str(item["id"]),
-            }
+        connection_id2vals = self._update_sync_status_bridge([company], result, speedy)
 
         bridge_accounts = self._bridge_get_all_pages(
             "aggregation/accounts", headers, result
         )
         res = []
         for account in bridge_accounts or []:
-            vals = {
-                "name": account["name"],
-                "account_type": account.get("type"),
-                "account_number": account.get("iban"),
-                "bank_name": providers_id2name.get(account.get("provider_id")),
-                "currency_code": account.get("currency_code"),
-                "identifier": account["id"],
-                "company_id": company.id,
-            }
-            if account.get("item_id"):
-                vals.update(item_id2vals[account["item_id"]])
-            res.append(vals)
+            if account['data_access'] == "enabled":
+                vals = {
+                    "name": account["name"],
+                    "account_type": account.get("type"),
+                    "account_number": account.get("iban"),
+                    "bank_name": providers_id2name.get(account.get("provider_id")),
+                    "currency_code": account.get("currency_code"),
+                    "identifier": account["id"],
+                    "company_id": company.id,
+                }
+                if account.get("item_id"):
+                    vals.update(connection_id2vals[str(account["item_id"])])
+                res.append(vals)
         return res
 
     @api.model
@@ -304,7 +320,10 @@ class AccountStatementImportApi(models.Model):
                     err=err,
                 )
             ) from err
-        json = {"item_id": item_id}
+        json = {
+            "item_id": item_id,
+#            "force_reauthentication": True,
+            }
         res_json = self._bridge_post(
             "aggregation/connect-sessions", headers, result, json=json
         )
