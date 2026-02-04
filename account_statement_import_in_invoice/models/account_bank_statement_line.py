@@ -157,8 +157,10 @@ class AccountBankStatementLine(models.Model):
                 < 0
             ):
                 raise ValidationError(
-                    _("The VAT rate (%s %%) must be positive.")
-                    % line.in_invoice_vat_rate
+                    _(
+                        "The VAT rate (%s %%) must be positive.",
+                        line.in_invoice_vat_rate,
+                    )
                 )
 
     def in_invoice_create_disabled(self):
@@ -309,9 +311,9 @@ class AccountBankStatementLine(models.Model):
                 raise UserError(
                     _(
                         "No partner on the bank statement line and no misc partner "
-                        "on the accounting configuration page of company '%s'."
+                        "on the accounting configuration page of company '%s'.",
+                        self.company_id.name,
                     )
-                    % self.company_id.name
                 )
         partner = partner.with_company(self.company_id.id)
         vat_compare = self.company_currency_id.compare_amounts(
@@ -320,9 +322,11 @@ class AccountBankStatementLine(models.Model):
         assert vat_compare >= 0
         if vat_compare > 0 and not self.in_invoice_tax_ids:
             raise UserError(
-                _("The VAT amount is not null (%s), so you must select a tax.")
-                % format_amount(
-                    self.env, self.in_invoice_vat_amount, self.company_currency_id
+                _(
+                    "The VAT amount is not null (%s), so you must select a tax.",
+                    format_amount(
+                        self.env, self.in_invoice_vat_amount, self.company_currency_id
+                    ),
                 )
             )
         self.company_currency_id.compare_amounts(self.amount, 0)
@@ -342,7 +346,7 @@ class AccountBankStatementLine(models.Model):
         )
         if not journal:
             raise UserError(
-                _("No purchase journal in company '%s'.") % self.company_id.name
+                _("No purchase journal in company '%s'.", self.company_id.name)
             )
         today = fields.Date.context_today(self)
         if (
@@ -350,8 +354,10 @@ class AccountBankStatementLine(models.Model):
             and self.in_invoice_force_invoice_date > today
         ):
             raise UserError(
-                _("The Force Invoice Date (%s) is in the future!")
-                % format_date(self.env, self.in_invoice_force_invoice_date)
+                _(
+                    "The Force Invoice Date (%s) is in the future!",
+                    format_date(self.env, self.in_invoice_force_invoice_date),
+                )
             )
         vals = {
             "move_type": move_type,

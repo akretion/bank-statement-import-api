@@ -580,38 +580,38 @@ class AccountJournal(models.Model):
             raise UserError(
                 _(
                     "Journal '%s' is not configured to import bank statements "
-                    "via API."
+                    "via API.",
+                    self.display_name,
                 )
-                % self.display_name
             )
         speedy = import_api._prepare_speedy()
         log = self._api_import_bank_statement_lines(speedy)
         import_api._connector_status_update(speedy)
         if log.status == "failure":
             title = _("Sync Failed")
-            message = (
-                _("See error log on Statement Import API '%s'.")
-                % log.statement_import_api_id.display_name
+            message = _(
+                "See error log on Statement Import API '%s'.",
+                log.statement_import_api_id.display_name,
             )
             ptype = "danger"
         else:
             title = _("Successful Sync")
             if log.status == "success_warn":
                 ptype = "warning"
-                message = (
-                    _("Sync with warning(s), cf last log on Statement Import API '%s'.")
-                    % log.statement_import_api_id.display_name
+                message = _(
+                    "Sync with warning(s), cf last log on Statement Import API '%s'.",
+                    log.statement_import_api_id.display_name,
                 )
             else:
                 ptype = "success"
                 if log.new_line_count > 1:
-                    message = _("%s bank statement lines created.") % log.new_line_count
+                    message = _("%s bank statement lines created.", log.new_line_count)
                 elif log.new_line_count == 1:
                     message = _("1 bank statement line created.")
                 else:
                     message = _("No new bank statement lines.")
                 if log.updated_line_count:
-                    message += " " + _("%s updated.") % log.updated_line_count
+                    message += " " + _("%s updated.", log.updated_line_count)
 
         action = {
             "type": "ir.actions.client",
