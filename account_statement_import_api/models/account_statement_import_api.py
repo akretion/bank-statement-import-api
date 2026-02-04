@@ -123,21 +123,25 @@ class AccountStatementImportApi(models.Model):
         for rec in self:
             if rec.service:
                 if rec.service not in service2info:
-                    raise ValidationError(_("Service '%s' is unknown.") % rec.service)
+                    raise ValidationError(_("Service '%s' is unknown.", rec.service))
                 info = service2info[rec.service]
                 if info.get("company_required") and not rec.company_id:
                     raise ValidationError(
-                        _("Company is required for service '%s'.") % info["name"]
+                        _("Company is required for service '%s'.", info["name"])
                     )
                 if info.get("login_required") and not rec.login:
                     raise ValidationError(
-                        _("Login or Client ID is required for service '%s'.")
-                        % info["name"]
+                        _(
+                            "Login or Client ID is required for service '%s'.",
+                            info["name"],
+                        )
                     )
                 if info.get("password_required") and not rec.password:
                     raise ValidationError(
-                        _("Password or Client Secret is required for service '%s'.")
-                        % info["name"]
+                        _(
+                            "Password or Client Secret is required for service '%s'.",
+                            info["name"],
+                        )
                     )
 
     @api.depends("journal_ids.statement_import_api_last_success")
@@ -555,9 +559,12 @@ class AccountStatementImportApi(models.Model):
         if companies_missing_user:
             raise UserError(
                 _(
-                    "Missing per-company user identifier for the following companies:\n%s."
-                )
-                % "\n".join(
-                    [f"- {company.display_name}" for company in companies_missing_user]
+                    "Missing per-company user identifier for the following companies:\n%s.",
+                    "\n".join(
+                        [
+                            f"- {company.display_name}"
+                            for company in companies_missing_user
+                        ]
+                    ),
                 )
             )
