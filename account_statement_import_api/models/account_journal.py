@@ -64,10 +64,22 @@ class AccountJournal(models.Model):
         string="Account Identifier",
         store=True,
     )
-    statement_import_api_aggregator_auth_expiry_date = fields.Date(
-        related="statement_import_api_account_id.aggregator_auth_expiry_date",
+    statement_import_api_connector_id = fields.Many2one(
+        related="statement_import_api_account_id.connector_id",
+        store=True,
+    )
+    statement_import_api_connector_auth_expiry_date = fields.Date(
+        related="statement_import_api_account_id.connector_id.auth_expiry_date",
         string="Account Auth Expiry",
         store=True,
+    )
+    statement_import_api_connector_sync_status = fields.Selection(
+        related="statement_import_api_account_id.connector_id.sync_status",
+        string="Sync Status",
+        store=True,
+    )
+    statement_import_api_connector_auth_expiry_warn_type = fields.Selection(
+        related="statement_import_api_account_id.connector_id.auth_expiry_warn_type",
     )
 
     def __get_bank_statements_available_sources(self):
@@ -563,7 +575,8 @@ class AccountJournal(models.Model):
 
     def api_import_bank_statement_lines_button(self):
         self.ensure_one()
-        if not self.statement_import_api_id:
+        import_api = self.statement_import_api_id
+        if not import_api:
             raise UserError(
                 _(
                     "Journal '%s' is not configured to import bank statements "
@@ -571,11 +584,9 @@ class AccountJournal(models.Model):
                 )
                 % self.display_name
             )
-        speedy = self.statement_import_api_id._prepare_speedy()
+        speedy = import_api._prepare_speedy()
         log = self._api_import_bank_statement_lines(speedy)
-        self.statement_import_api_id._aggregator_update_sync_status(
-            speedy, restrict_api_account=self.statement_import_api_account_id
-        )
+        import_api._connector_status_update(speedy)
         if log.status == "failure":
             title = _("Sync Failed")
             message = (

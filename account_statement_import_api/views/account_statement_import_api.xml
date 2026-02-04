@@ -124,6 +124,34 @@
                 </field>
         </page>
         <page
+                            name="connectors"
+                            string="Bank Connectors"
+                            attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                        >
+                <group name="connectors-main">
+                        <field name="connector_ids" nolabel="1" colspan="2" />
+                </group>
+        </page>
+
+            <page name="api_accounts" string="API Bank Accounts">
+                <group name="active_api_accounts" string="Active API accounts">
+                        <field
+                                    name="active_api_account_ids"
+                                    nolabel="1"
+                                    colspan="2"
+                                    context="{'tree_view_ref': 'account_statement_import_api.account_statement_import_api_account_parent_list'}"
+                                />
+                </group>
+                <group name="inactive_api_accounts" string="Inactive API accounts">
+                        <field
+                                    name="inactive_api_account_ids"
+                                    nolabel="1"
+                                    colspan="2"
+                                    context="{'tree_view_ref': 'account_statement_import_api.account_statement_import_api_account_parent_list'}"
+                                />
+                </group>
+        </page>
+        <page
                             name="company-users"
                             string="Per-Company Users"
                             attrs="{'invisible': [('show_company_user', '=', False)]}"
@@ -135,18 +163,7 @@
                         </tree>
                 </field>
         </page>
-            <page name="api_accounts" string="API Bank Accounts">
-                <group name="active_api_accounts" string="Active API accounts">
-                        <field name="active_api_account_ids" nolabel="1" colspan="2" />
-                </group>
-                <group name="inactive_api_accounts" string="Inactive API accounts">
-                        <field
-                                    name="inactive_api_account_ids"
-                                    nolabel="1"
-                                    colspan="2"
-                                />
-                </group>
-                </page>
+
                 <page name="logs" string="Logs">
                     <field name="log_ids" nolabel="1" colspan="2" />
                 </page>

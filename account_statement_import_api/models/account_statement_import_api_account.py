@@ -14,6 +14,7 @@ class AccountStatementImportApiAccount(models.Model):
         "account.statement.import.api",
         ondelete="cascade",
         string="Statement Import API",
+        required=True,
     )
     service = fields.Selection(related="statement_import_api_id.service", store=True)
     identifier = fields.Char(
@@ -30,34 +31,11 @@ class AccountStatementImportApiAccount(models.Model):
     company_id = fields.Many2one("res.company", readonly=True, index=True)
     # START aggregator fields
     is_aggregator = fields.Boolean(related="statement_import_api_id.is_aggregator")
-    aggregator_auth_expiry_date = fields.Date(readonly=True, string="Auth Expiry")
-    aggregator_sync_status = fields.Selection(
-        [
-            ("ok", "OK"),
-            ("warning", "Warning"),
-            ("ko", "Not Working"),
-        ],
-        readonly=True,
-        string="Sync Status",
+    connector_id = fields.Many2one(
+        "account.statement.import.api.connector",
+        ondelete="restrict",
+        string="Bank Connector",
     )
-    aggregator_sync_status_message = fields.Text(readonly=True, string="Sync Message")
-    aggregator_last_sync_datetime = fields.Datetime(readonly=True, string="Last Sync")
-    aggregator_connection_identifier = fields.Char(
-        readonly=True,
-        string="Connection ID",
-        help="Technical ID of the connection between the bank statement import "
-        "provider and the bank. If you have several bank accounts at the same bank, "
-        "these bank accounts probably use the same connection ID and have the same "
-        "auth expiry date.",
-    )
-
-    _sql_constraints = [
-        (
-            "statement_import_api_identifier_unique",
-            "unique(statement_import_api_id, identifier)",
-            "This identifier already exists for this statement import API.",
-        )
-    ]
 
     def name_get(self):
         res = []
