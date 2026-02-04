@@ -32,30 +32,51 @@ class AccountStatementImportApiGenerateUrl(models.TransientModel):
         [
             ("add_account", "Add Account"),
             ("manage_accounts", "Manage Accounts"),
+            ("renew_auth", "Renew Auth"),
         ],
         required=True,
         readonly=True,
     )
-    manage_api_account_required = fields.Boolean()
-    manage_api_account_id = fields.Many2one(
-        "account.statement.import.api.account",
-        string="API Bank Account",
+    connector_id = fields.Many2one(
+        "account.statement.import.api.connector",
+        string="Bank Connector",
         domain="[('statement_import_api_id', '=', statement_import_api_id)]",
     )
+    connector_required = fields.Boolean()
 
     @api.model
     def default_get(self, fields_list):
         res = super().default_get(fields_list)
-        assert self._context.get("active_model") == "account.statement.import.api"
-        assert res.get("feature") in ("add_account", "manage_accounts")
-        import_api_id = self._context.get("active_id")
-        import_api = self.env["account.statement.import.api"].browse(import_api_id)
+        assert res.get("feature") in ("add_account", "manage_accounts", "renew_auth")
+        if self._context.get("active_model") == "account.statement.import.api":
+            import_api_id = self._context.get("active_id")
+            import_api = self.env["account.statement.import.api"].browse(import_api_id)
+        elif (
+            self._context.get("active_model")
+            == "account.statement.import.api.connector"
+        ):
+            connector_id = self._context.get("active_id")
+            res["connector_id"] = connector_id
+            connector = self.env["account.statement.import.api.connector"].browse(
+                connector_id
+            )
+            import_api = connector.statement_import_api_id
+            import_api_id = import_api.id
+        elif self._context.get("active_model") == "account.journal":
+            journal_id = self._context.get("active_id")
+            journal = self.env["account.journal"].browse(journal_id)
+            connector = journal.statement_import_api_account_id.connector_id
+            res["connector_id"] = connector.id
+            import_api = journal.statement_import_api_id
+            import_api_id = import_api.id
         if res.get("feature") == "manage_accounts":
-            res["manage_api_account_required"] = (
+            res["connector_required"] = (
                 self.env["account.statement.import.api"]
                 ._get_service_info()[import_api.service]
-                .get("manage_accounts_wizard_account_required")
+                .get("manage_accounts_wizard_connector_required")
             )
+        elif res.get("feature") == "renew_auth":
+            res["connector_required"] = True
         res.update(
             {
                 "company_id": self.env.company.id,
@@ -72,10 +93,10 @@ class AccountStatementImportApiGenerateUrl(models.TransientModel):
         speedy = import_api._prepare_speedy()
         result = {"logs": []}
         method = getattr(import_api, method_name)
-        if self.feature == "manage_accounts" and self.manage_api_account_required:
-            if not self.manage_api_account_id:
-                raise UserError(_("You must select an API Bank Account."))
-            url = method(self.manage_api_account_id, self.company_id, result, speedy)
+        if self.connector_required:
+            if not self.connector_id:
+                raise UserError(_("You must select a Bank Connector."))
+            url = method(self.connector_id, self.company_id, result, speedy)
         else:
             url = method(self.company_id, result, speedy)
         for log_type, msg in result["logs"]:

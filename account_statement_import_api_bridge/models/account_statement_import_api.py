@@ -35,7 +35,7 @@ class AccountStatementImportApi(models.Model):
             "user_company_required": True,
             "show_backward_days": True,
             "manage_accounts_wizard": True,
-            "manage_accounts_wizard_account_required": True,
+            "manage_accounts_wizard_connector_required": True,
             "is_aggregator": True,
             "last_success_source": "last_update_dt",
             # "instructions": _("TODO Write instructions"),
@@ -291,35 +291,35 @@ class AccountStatementImportApi(models.Model):
         url = res_json.get("url")
         return url
 
-    def _bridge_manage_accounts_get_url(self, api_account, company, result, speedy):
+    def _bridge_manage_accounts_get_url(
+        self, connector, company, result, speedy, force_reauthentication=False
+    ):
         headers = self._bridge_get_headers(company, result, speedy)
-        assert api_account
-        if not api_account.aggregator_connection_identifier:
-            raise UserError(
-                _(
-                    "Missing connection ID on API bank account '%s'.",
-                    api_account.display_name,
-                )
-            )
+        assert connector
         try:
-            item_id = int(api_account.aggregator_connection_identifier)
+            item_id = int(connector.identifier)
         except Exception as err:
             raise UserError(
                 _(
-                    "The connection ID of API bank account '%(api_account)s' is "
-                    "'%(connection_identifier)s', but it should be an integer. "
+                    "The identifier of Bank connector '%(connector)s' is "
+                    "'%(identifier)s', but it should be an integer. "
                     "Error: %(err)s",
-                    api_account=api_account.display_name,
-                    connection_identifier=api_account.aggregator_connection_identifier,
+                    connector=connector.display_name,
+                    identifier=connector.identifier,
                     err=err,
                 )
             ) from err
         json = {
             "item_id": item_id,
-            #            "force_reauthentication": True,
+            "force_reauthentication": force_reauthentication,
         }
         res_json = self._bridge_post(
             "aggregation/connect-sessions", headers, result, json=json
         )
         url = res_json.get("url")
         return url
+
+    def _bridge_renew_auth_get_url(self, connector, company, result, speedy):
+        return self._bridge_manage_accounts_get_url(
+            connector, company, result, speedy, force_reauthentication=True
+        )

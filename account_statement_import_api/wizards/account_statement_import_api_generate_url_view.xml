@@ -22,12 +22,12 @@
                     />
                                                   <field name="feature" />
                                                   <field
-                        name="manage_api_account_id"
-                        attrs="{'invisible': [('manage_api_account_required', '=', False)], 'required': [('manage_api_account_required', '=', True)]}"
+                        name="connector_id"
+                        attrs="{'invisible': [('feature', 'not in', ('manage_accounts', 'renew_auth'))], 'required': [('connector_required', '=', True)]}"
                     />
                                                   <field name="state" invisible="1" />
                                                   <field
-                        name="manage_api_account_required"
+                        name="connector_required"
                         invisible="1"
                     />
                                           </group>
