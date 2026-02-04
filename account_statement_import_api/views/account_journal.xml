@@ -49,8 +49,19 @@
                     attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
                 />
             <field
-                    name="statement_import_api_aggregator_auth_expiry_date"
-                    attrs="{'invisible': [('statement_import_api_aggregator_auth_expiry_date', '=', False)]}"
+                    name="statement_import_api_connector_id"
+                    attrs="{'invisible': [('statement_import_api_connector_id', '=', False)]}"
+                />
+            <field
+                    name="statement_import_api_connector_auth_expiry_date"
+                    attrs="{'invisible': [('statement_import_api_connector_auth_expiry_date', '=', False)]}"
+                    widget="badge"
+                    decoration-warning="statement_import_api_connector_auth_expiry_warn_type == 'warning'"
+                    decoration-danger="statement_import_api_connector_auth_expiry_warn_type == 'danger'"
+                />
+            <field
+                    name="statement_import_api_connector_auth_expiry_warn_type"
+                    invisible="1"
                 />
                     <field
                     name="statement_import_api_start_date"
@@ -104,8 +115,12 @@
             <field name="arch" type="xml">
                     <field name="show_on_dashboard" position="after">
                             <field name="statement_import_api_id" />
+                            <field name="statement_import_api_connector_id" />
                             <field
-                    name="statement_import_api_aggregator_auth_expiry_date"
+                    name="statement_import_api_connector_auth_expiry_date"
+                />
+                            <field
+                    name="statement_import_api_connector_auth_expiry_warn_type"
                 />
                     </field>
                     <xpath
@@ -123,20 +138,44 @@
                 <xpath expr="//div[@name='latest_statement']/.." position="after">
                         <div
                     class="row"
-                    name="statement_import_api_aggregator_auth_expiry_date"
-                    t-if="record.statement_import_api_aggregator_auth_expiry_date.raw_value"
+                    name="statement_import_api_connector_sync_status"
+                    t-if="record.statement_import_api_connector_id.raw_value"
                 >
                                     <div class="col overflow-hidden text-start">
                                         <span
-                            title="Auth Expiry Date"
-                        >Auth Expiry Date</span>
+                            title="Bank Connector"
+                        >Bank Connector Status</span>
                                     </div>
                                     <div class="col-auto text-end">
                                             <field
-                            name="statement_import_api_aggregator_auth_expiry_date"
+                            name="statement_import_api_connector_sync_status"
+                            widget="badge"
+                            decoration-success="statement_import_api_connector_sync_status == 'ok'"
+                            decoration-warning="statement_import_api_connector_sync_status == 'warning'"
+                            decoration-danger="statement_import_api_connector_sync_status == 'ko'"
+                        />
+                                    </div>
+                            </div>
+                        <div
+                    class="row"
+                    name="statement_import_api_connector_auth_expiry_date"
+                    t-if="record.statement_import_api_connector_auth_expiry_date.raw_value and record.statement_import_api_connector_auth_expiry_warn_type.raw_value"
+                >
+                                    <div class="col overflow-hidden text-start">
+                                        <span
+                            title="Bank Connector"
+                        >Bank Connector Expiry</span>
+                                    </div>
+                                    <div class="col-auto text-end">
+                                            <field
+                            name="statement_import_api_connector_auth_expiry_date"
+                            widget="badge"
+                            decoration-warning="statement_import_api_connector_auth_expiry_warn_type == 'warning'"
+                            decoration-danger="statement_import_api_connector_auth_expiry_warn_type == 'danger'"
                         />
                                     </div>
                                 </div>
+
                 </xpath>
             </field>
     </record>

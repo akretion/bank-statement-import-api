@@ -10,13 +10,6 @@
                 <field name="model">account.statement.import.api.account</field>
                 <field name="arch" type="xml">
                         <form>
-                                <div
-                    class="alert alert-warning"
-                    role="alert"
-                    attrs="{'invisible': ['|', ('is_aggregator', '=', False), ('aggregator_sync_status_message', '=', False)]}"
-                >
-                  <field name="aggregator_sync_status_message" />
-            </div>
                                 <group name="main">
                                         <field
                         name="statement_import_api_id"
@@ -27,30 +20,15 @@
                                         <field name="bank_name" />
                                         <field name="currency_id" />
                                         <field
+                        name="connector_id"
+                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                    />
+                                        <field
                         name="account_type"
                         attrs="{'invisible': [('account_type', '=', False)]}"
                     />
+
                                         <field name="identifier" />
-                                        <field
-                        name="aggregator_sync_status"
-                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
-                        widget="badge"
-                        decoration-success="aggregator_sync_status == 'ok'"
-                        decoration-warning="aggregator_sync_status == 'warning'"
-                        decoration-danger="aggregator_sync_status == 'ko'"
-                    />
-                                        <field
-                        name="aggregator_auth_expiry_date"
-                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
-                    />
-                                        <field
-                        name="aggregator_last_sync_datetime"
-                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
-                    />
-                                        <field
-                        name="aggregator_connection_identifier"
-                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
-                    />
                                         <field name="company_id" />
                                         <field name="active" />
                                         <field name="service" invisible="1" />
@@ -60,7 +38,37 @@
                 </field>
         </record>
 
-    <record id="account_statement_import_api_account_list" model="ir.ui.view">
+    <record id="account_statement_import_api_account_parent_list" model="ir.ui.view">
+            <field name="model">account.statement.import.api.account</field>
+            <field name="priority">100</field>
+                <field name="arch" type="xml">
+                        <tree create="0" decoration-muted="not active">
+                            <field
+                    name="statement_import_api_id"
+                    invisible="not context.get('account_statement_import_api_account')"
+                />
+                            <field name="name" />
+                            <field name="account_number" />
+                            <field name="bank_name" />
+                            <field name="currency_id" optional="show" />
+                            <field
+                    name="connector_id"
+                    attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
+                />
+                            <field
+                    name="account_type"
+                    attrs="{'invisible': [('account_type', '=', False)]}"
+                    optional="show"
+                />
+
+                            <field name="identifier" optional="hide" />
+                            <field name="company_id" optional="show" />
+                            <field name="active" optional="show" />
+                        </tree>
+                </field>
+        </record>
+
+        <record id="account_statement_import_api_account_list" model="ir.ui.view">
                 <field name="model">account.statement.import.api.account</field>
                 <field name="arch" type="xml">
                         <tree create="0" decoration-muted="not active">
@@ -73,35 +81,16 @@
                             <field name="bank_name" />
                             <field name="currency_id" optional="show" />
                             <field
+                    name="connector_id"
+                    invisible="not context.get('account_statement_import_api_account')"
+                />
+                            <field
                     name="account_type"
                     attrs="{'invisible': [('account_type', '=', False)]}"
                     optional="show"
                 />
+
                             <field name="identifier" optional="hide" />
-                            <field
-                    name="aggregator_sync_status"
-                    attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
-                    optional="show"
-                    widget="badge"
-                    decoration-success="aggregator_sync_status == 'ok'"
-                    decoration-warning="aggregator_sync_status == 'warning'"
-                    decoration-danger="aggregator_sync_status == 'ko'"
-                />
-                            <field
-                    name="aggregator_auth_expiry_date"
-                    attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
-                    optional="show"
-                />
-                            <field
-                    name="aggregator_last_sync_datetime"
-                    attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
-                    optional="hide"
-                />
-                            <field
-                    name="aggregator_connection_identifier"
-                    attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
-                    optional="hide"
-                />
                             <field name="company_id" optional="show" />
                             <field name="active" optional="show" />
                         </tree>

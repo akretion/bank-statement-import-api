@@ -76,6 +76,11 @@ class AccountStatementImportApi(models.Model):
         string="Inactive API Bank Accounts",
         domain=[("active", "=", False)],
     )
+    connector_ids = fields.One2many(
+        "account.statement.import.api.connector",
+        "statement_import_api_id",
+        string="Bank Connectors",
+    )
     company_user_ids = fields.One2many(
         "account.statement.import.api.company.user",
         "statement_import_api_id",
@@ -256,7 +261,7 @@ class AccountStatementImportApi(models.Model):
         speedy = self._prepare_speedy()
         for journal in self.journal_ids:
             journal._api_import_bank_statement_lines(speedy)
-        self._aggregator_update_sync_status(speedy)
+        self._connector_status_update(speedy)
         logger.info("End of bank statement import API %s", self.name)
 
     def test_api(self):
@@ -297,57 +302,48 @@ class AccountStatementImportApi(models.Model):
         }
         return action
 
-    def _aggregator_update_sync_status(self, speedy, restrict_api_account=False):
+    def _get_connector_ident2vals(self, speedy):
         self.ensure_one()
         if not speedy["service_info"].get("is_aggregator"):
-            return
-        logger.info(
-            "Start update of sync status on statement import API %s "
-            "with restrict_api_account=%s",
-            self.display_name,
-            restrict_api_account,
-        )
-        result = {"logs": [], "connection_id2vals": {}}
+            return {}
+        result = {"logs": [], "connector_identifier2vals": {}}
         method_name = f"_update_sync_status_{speedy['service']}"
         if not hasattr(self, method_name):
             logger.warning("There is no method %s on %s", method_name, self._name)
             return
         method = getattr(self, method_name)
-        # group API accounts per company
-        company2api_accounts = {}
-        connection_id2api_accounts = {}
-        if restrict_api_account:
-            api_accounts = restrict_api_account
-        else:
-            api_accounts = self.active_api_account_ids
-        for api_account in api_accounts:
-            if api_account.company_id not in company2api_accounts:
-                company2api_accounts[api_account.company_id] = api_account
-            else:
-                company2api_accounts[api_account.company_id] |= api_account
-            connection_id = api_account.aggregator_connection_identifier
-            if connection_id:
-                if connection_id in connection_id2api_accounts:
-                    connection_id2api_accounts[connection_id] |= api_account
-                else:
-                    connection_id2api_accounts[connection_id] = api_account
-        connection_id2vals = method(list(company2api_accounts.keys()), result, speedy)
-        for connection_id, api_accounts in connection_id2api_accounts.items():
-            if connection_id in connection_id2vals:
-                api_accounts.write(connection_id2vals[connection_id])
+        connector_ident2vals = method(result, speedy)
+        return connector_ident2vals
+
+    def _connector_status_update(self, speedy):
+        self.ensure_one()
+        if not speedy["service_info"].get("is_aggregator"):
+            return
+        if not self.connector_ids:
+            return
+        logger.info(
+            "Start connector status update on statement import API %s",
+            self.display_name,
+        )
+        connector_ident2vals = self._get_connector_ident2vals(speedy)
+        for connector in self.connector_ids:
+            if connector.identifier in connector_ident2vals:
+                connector.write(connector_ident2vals[connector.identifier])
                 logger.info(
-                    "Sync status of API accounts IDs %s updated",
-                    api_accounts.ids,
+                    "Connector %s of bank statement import API %s updated",
+                    connector.display_name,
+                    self.display_name,
                 )
             else:
                 logger.warning(
-                    "Connection identifier %s of API account IDs %s "
-                    "not retrieved by API",
-                    connection_id,
-                    api_accounts.ids,
+                    "Identifier %s of connector %s of bank statement "
+                    "import API %s not retrieved by API",
+                    connector.identifier,
+                    connector.display_name,
+                    self.display_name,
                 )
         logger.info(
-            "Update of sync status on statement import API %s finished",
+            "Connector status update on statement import API %s finished",
             self.display_name,
         )
 
@@ -358,31 +354,51 @@ class AccountStatementImportApi(models.Model):
         company = self.company_id or self.env.company
         method_name = f"_update_api_accounts_{speedy['service']}"
         method = getattr(self, method_name)
-        res = method(company, result, speedy)
-        # res is a list of vals of account.statement.import.api.set.identifier.line
-        if not res:
+        account_ident2vals = method(company, result, speedy)
+        if not account_ident2vals:
             raise UserError(result["logs"][-1][1])
         api_acc_obj = self.env["account.statement.import.api.account"]
         existing_identifiers_read = api_acc_obj.with_context(
             active_test=False
         ).search_read([("statement_import_api_id", "=", self.id)], ["identifier"])
         identifier2id = {x["identifier"]: x["id"] for x in existing_identifiers_read}
-        identifier2id_orphaned = dict(identifier2id)
+        dict(identifier2id)
         to_create_vals_list = []
-        to_update_id2vals = {}
-        for vals in res:
+        # 1. clean-up, check and replace currency_code by currency_id
+        for account_ident, vals in account_ident2vals.items():
             # clean-up vals
             for key, value in vals.items():
                 if value and isinstance(value, str):
                     vals[key] = value.strip()
             if vals.get("account_number") and isinstance(vals["account_number"], str):
                 vals["account_number"] = vals["account_number"].replace(" ", "")
-            if not vals.get("identifier"):
+            if not account_ident:
                 raise UserError(
                     _(
-                        "Missing identifier for API bank account %s. This should never happen."
+                        "Missing identifier for API bank account %s. This should never happen.",
+                        vals,
                     )
-                    % vals
+                )
+            if not isinstance(account_ident, str):
+                raise UserError(
+                    _(
+                        "Account identifier %(ident)s for API bank account %(vals)s "
+                        "must be a string.",
+                        ident=account_ident,
+                        vals=vals,
+                    )
+                )
+            connector_identifier = vals.get("connector_identifier")
+            if connector_identifier and not isinstance(connector_identifier, str):
+                raise UserError(
+                    _(
+                        "The field 'connector_identifier' %(connector_identifier)s "
+                        "for API bank account vals=%(vals)s ident=%(account_ident)s "
+                        "must be a string.",
+                        connector_identifier=connector_identifier,
+                        vals=vals,
+                        account_ident=account_ident,
+                    )
                 )
             if "currency_code" in vals:
                 currency_code = vals.pop("currency_code")
@@ -390,63 +406,122 @@ class AccountStatementImportApi(models.Model):
                     currency_code = currency_code.upper()
                     if currency_code in speedy["currency_code2id"]:
                         vals["currency_id"] = speedy["currency_code2id"][currency_code]
-            if isinstance(vals["identifier"], int):
-                vals["identifier"] = str(vals["identifier"])
             if not vals.get("name"):
                 raise UserError(
                     _(
-                        "Missing 'name' for API bank account %s. This should never happen."
+                        "Missing 'name' for API bank account %s. This should never happen.",
+                        vals,
                     )
-                    % vals
                 )
-            if vals["identifier"] in identifier2id_orphaned:
-                identifier2id_orphaned.pop(vals["identifier"])
-            if vals["identifier"] in identifier2id:
-                vals["active"] = True
-                to_update_id2vals[identifier2id[vals["identifier"]]] = vals
+        # 2. Update and orphan
+        write_count = 0
+        archive_count = 0
+        for api_account in self.active_api_account_ids:
+            if api_account.identifier in account_ident2vals:
+                vals = account_ident2vals[api_account.identifier]
+                vals.pop("connector_identifier")
+                if (
+                    api_account.account_number
+                    and api_account.account_number != vals.get("account_number")
+                ):
+                    raise UserError(
+                        _(
+                            "API bank account '%(api_account)s' has account number "
+                            "'%(cur_account_number)s', but the provider now has a "
+                            "different account number '%(new_account_number)s'. "
+                            "This should never happen.",
+                            api_account=api_account.display_name,
+                            cur_account_number=api_account.account_number,
+                            new_account_number=vals.get("account_number"),
+                        )
+                    )
+                api_account.write(vals)
+                logger.info(
+                    "API account %s ID %s updated",
+                    api_account.display_name,
+                    api_account.id,
+                )
+                account_ident2vals.pop(api_account.identifier)
+                write_count += 1
             else:
-                to_create_vals_list.append(dict(vals, statement_import_api_id=self.id))
-                logger.info(
-                    "Identifier %s doesn't exist on statement import API ID %s. "
-                    "Will be created.",
-                    vals["identifier"],
-                    self.id,
-                )
+                api_account.write({"active": False})
+                logger.info("API account %s archived", api_account.display_name)
+                archive_count += 1
+
+        # 3. Create
         message_list = []
-        if to_create_vals_list:
-            new_api_bank_accounts = api_acc_obj.create(to_create_vals_list)
-            logger.info(
-                "%d API bank account(s) created on statement import API ID %s",
-                len(new_api_bank_accounts),
-                self.id,
+        if account_ident2vals:
+            to_create_vals_list = []
+            connector_ident2vals = self._get_connector_ident2vals(speedy)
+            conn_obj = self.env["account.statement.import.api.connector"]
+            connector_sr = conn_obj.search_read(
+                [("statement_import_api_id", "=", self.id)], ["identifier"]
             )
-            message_list.append(
-                _("%d API bank accounts created.") % len(to_create_vals_list)
-            )
-        if to_update_id2vals:
-            for to_update_id, vals in to_update_id2vals.items():
-                to_update_api_bank_account = api_acc_obj.browse(to_update_id)
-                to_update_api_bank_account.write(vals)
-            message_list.append(
-                _("%d API bank accounts updated.") % len(to_update_id2vals)
-            )
-        if identifier2id_orphaned:
-            to_archive_api_bank_accounts = api_acc_obj.search(
-                [
-                    ("id", "in", list(identifier2id_orphaned.values())),
-                    ("active", "=", True),
-                ]
-            )
-            if to_archive_api_bank_accounts:
-                to_archive_api_bank_accounts.write({"active": False})
+            connector_ident2id = {x["identifier"]: x["id"] for x in connector_sr}
+            for account_ident, vals in account_ident2vals.items():
+                if "connector_identifier" in vals:
+                    connector_identifier = vals.pop("connector_identifier")
+                    if not connector_identifier:
+                        logger.warning(
+                            "connector_identifier is empty in vals=%s "
+                            "on statement import API %s",
+                            vals,
+                            self.display_name,
+                        )
+                    else:
+                        if connector_identifier not in connector_ident2id:
+                            if connector_identifier in connector_ident2vals:
+                                name = vals.get("bank_name")
+                                if not name:
+                                    name = f"{connector_identifier} TODO rename"
+                                connector = conn_obj.create(
+                                    dict(
+                                        connector_ident2vals[connector_identifier],
+                                        identifier=connector_identifier,
+                                        statement_import_api_id=self.id,
+                                        name=name,
+                                    )
+                                )
+                                logger.info(
+                                    "Connector %s ID %s created",
+                                    connector.display_name,
+                                    connector.id,
+                                )
+                                connector_ident2id[connector_identifier] = connector.id
+                                vals["connector_id"] = connector.id
+                            else:
+                                logger.warning(
+                                    "connector_identifier %s is not in connector_ident2vals",
+                                    connector_identifier,
+                                )
+                        else:
+                            vals["connector_id"] = connector_ident2id[
+                                connector_identifier
+                            ]
+                vals.update(
+                    {
+                        "identifier": account_ident,
+                        "statement_import_api_id": self.id,
+                    }
+                )
+                to_create_vals_list.append(vals)
+            if to_create_vals_list:
+                self.env["account.statement.import.api.account"].create(
+                    to_create_vals_list
+                )
                 logger.info(
-                    "%d API bank account(s) archived on statement import API ID %s",
-                    len(to_archive_api_bank_accounts),
-                    self.id,
+                    "%d API bank account(s) created on statement import API %s",
+                    len(to_create_vals_list),
+                    self.display_name,
                 )
                 message_list.append(
-                    _("%d API bank accounts archived.") % len(identifier2id_orphaned)
+                    _("%d API bank accounts created.", len(to_create_vals_list))
                 )
+
+        if write_count:
+            message_list.append(_("%d API bank accounts updated.", write_count))
+        if archive_count:
+            message_list.append(_("%d API bank accounts archived.", archive_count))
         action_next = self.env["ir.actions.actions"]._for_xml_id(
             "account_statement_import_api.account_statement_import_api_action"
         )
