@@ -87,11 +87,11 @@ class AccountStatementImportApiConnector(models.Model):
                 delay = (rec.auth_expiry_date - today).days
                 expire_str = False
                 if delay < 0:
-                    expire_str = _("Expired ❌")
+                    expire_str = _("⚠ Expired")
                 elif delay == 0:
-                    expire_str = _("Expire today ⚠")
+                    expire_str = _("⚠ Expire today")
                 elif delay < 15:
-                    expire_str = _("Expire in %d days ⚠", delay)
+                    expire_str = _("⚠ Expire in %d days", delay)
                 if expire_str:
                     dname = " ".join([dname, expire_str])
             res.append((rec.id, dname))

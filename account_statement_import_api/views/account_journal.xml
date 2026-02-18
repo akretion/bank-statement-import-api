@@ -37,7 +37,7 @@
                     <button
                         name="api_import_bank_statement_lines_button"
                         type="object"
-                        string=" Run Now"
+                        string="Run Now"
                         help="Download bank statement lines via the API"
                         class="btn-link mb-1 px-0"
                         icon="fa-refresh"
@@ -52,13 +52,31 @@
                     name="statement_import_api_connector_id"
                     attrs="{'invisible': [('statement_import_api_connector_id', '=', False)]}"
                 />
-            <field
+            <label
+                    for="statement_import_api_connector_auth_expiry_date"
+                    attrs="{'invisible': [('statement_import_api_connector_auth_expiry_date', '=', False)]}"
+                />
+            <div
                     name="statement_import_api_connector_auth_expiry_date"
                     attrs="{'invisible': [('statement_import_api_connector_auth_expiry_date', '=', False)]}"
-                    widget="badge"
-                    decoration-warning="statement_import_api_connector_auth_expiry_warn_type == 'warning'"
-                    decoration-danger="statement_import_api_connector_auth_expiry_warn_type == 'danger'"
-                />
+                    class="o_row"
+                >
+            <field
+                        name="statement_import_api_connector_auth_expiry_date"
+                        widget="badge"
+                        decoration-warning="statement_import_api_connector_auth_expiry_warn_type == 'warning'"
+                        decoration-danger="statement_import_api_connector_auth_expiry_warn_type == 'danger'"
+                    />
+                                                    <button
+                        name="%(account_statement_import_api_generate_url_action)d"
+                        type="action"
+                        context="{'default_feature': 'renew_auth'}"
+                        string="Extend"
+                        class="btn-link mb-1 px-0"
+                        icon="fa-refresh"
+                    />
+
+    </div>
             <field
                     name="statement_import_api_connector_auth_expiry_warn_type"
                     invisible="1"
@@ -172,6 +190,13 @@
                             widget="badge"
                             decoration-warning="statement_import_api_connector_auth_expiry_warn_type == 'warning'"
                             decoration-danger="statement_import_api_connector_auth_expiry_warn_type == 'danger'"
+                        />
+                                                    <button
+                            name="%(account_statement_import_api_generate_url_action)d"
+                            type="action"
+                            context="{'default_feature': 'renew_auth'}"
+                            string="Extend"
+                            icon="fa-refresh"
                         />
                                     </div>
                                 </div>
