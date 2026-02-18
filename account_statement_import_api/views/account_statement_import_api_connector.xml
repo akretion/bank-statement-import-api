@@ -10,6 +10,14 @@
                 <field name="model">account.statement.import.api.connector</field>
                 <field name="arch" type="xml">
                         <form>
+                                <header>
+                            <button
+                        name="%(account_statement_import_api_generate_url_action)d"
+                        type="action"
+                        context="{'default_feature': 'renew_auth'}"
+                        string="Extend Authentication"
+                    />
+                                </header>
                                 <div
                     class="alert alert-warning"
                     role="alert"
@@ -86,7 +94,7 @@
                     decoration-warning="sync_status == 'warning'"
                     decoration-danger="sync_status == 'ko'"
                 />
-                            <field name="sync_status_message" optional="hide" />
+                            <field name="sync_status_message" optional="show" />
                             <field
                     name="auth_expiry_date"
                     optional="show"
@@ -98,7 +106,7 @@
                     name="%(account_statement_import_api_generate_url_action)d"
                     type="action"
                     context="{'default_feature': 'renew_auth'}"
-                    string="Renew Auth"
+                    string="Extend Authentication"
                     icon="fa-refresh"
                 />
                             <field name="auth_expiry_warn_type" invisible="1" />
