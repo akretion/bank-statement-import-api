@@ -6,7 +6,7 @@ import logging
 
 import pytz
 
-from odoo import _, api, fields, models
+from odoo import _, api, fields, models, tools
 from odoo.exceptions import UserError, ValidationError
 
 from odoo.addons.base.models.res_partner import _tz_get
@@ -90,6 +90,8 @@ class AccountStatementImportApi(models.Model):
     instructions = fields.Html(compute="_compute_show")
     show_add_account_wizard = fields.Boolean(compute="_compute_show")
     show_manage_accounts_wizard = fields.Boolean(compute="_compute_show")
+    show_login = fields.Boolean(compute="_compute_show")
+    show_password = fields.Boolean(compute="_compute_show")
     is_aggregator = fields.Boolean(compute="_compute_show")
 
     _sql_constraints = [
@@ -129,14 +131,14 @@ class AccountStatementImportApi(models.Model):
                     raise ValidationError(
                         _("Company is required for service '%s'.", info["name"])
                     )
-                if info.get("login_required") and not rec.login:
+                if info.get("login") == "field" and not rec.login:
                     raise ValidationError(
                         _(
                             "Login or Client ID is required for service '%s'.",
                             info["name"],
                         )
                     )
-                if info.get("password_required") and not rec.password:
+                if info.get("password") == "field" and not rec.password:
                     raise ValidationError(
                         _(
                             "Password or Client Secret is required for service '%s'.",
@@ -164,6 +166,8 @@ class AccountStatementImportApi(models.Model):
             show_add_account_wizard = False
             show_manage_accounts_wizard = False
             is_aggregator = False
+            show_login = False
+            show_password = False
             if rec.service:
                 info = service2info[rec.service]
                 show_backward_days = info.get("show_backward_days", True)
@@ -174,12 +178,16 @@ class AccountStatementImportApi(models.Model):
                 )  # TODO
                 show_manage_accounts_wizard = info.get("manage_accounts_wizard")
                 is_aggregator = info.get("is_aggregator")
+                show_login = info.get("login") == "field"
+                show_password = info.get("password") == "field"
             rec.show_backward_days = show_backward_days
             rec.show_company_user = show_company_user
             rec.instructions = instructions
             rec.show_add_account_wizard = show_add_account_wizard
             rec.show_manage_accounts_wizard = show_manage_accounts_wizard
             rec.is_aggregator = is_aggregator
+            rec.show_login = show_login
+            rec.show_password = show_password
 
     @api.depends("service")
     def _compute_company_id(self):
@@ -241,13 +249,19 @@ class AccountStatementImportApi(models.Model):
         speedy = {
             "statement_import_api_id": self.id,
             "currency_code2id": currency_code2id,
-            "login": self.sudo().login,
-            "password": self.sudo().password,
             "tz": self.tz and pytz.timezone(self.tz) or pytz.utc,
             "service": self.service,
             "service_info": self._get_service_info()[self.service],
             "backward_days": self.backward_days,
+            "login": self.sudo().login,
+            "password": self.sudo().password,
         }
+        for cred in ('login', 'password'):
+            if speedy["service_info"].get(cred) == "config_file":
+                cred_key = f"account_statement_import_api_{self.service}_{cred}"
+                speedy[cred] = tools.config.get(cred_key)
+                if not speedy[cred]:
+                    raise UserError(_("Missing key '%(cred_key)s' in the Odoo server configuration file.", cred_key=cred_key))
         if speedy["service_info"].get("user_company_required"):
             self._check_company_user_identifier()
             speedy["company_id2token"] = {}
@@ -257,6 +271,7 @@ class AccountStatementImportApi(models.Model):
                 speedy["company_id2user_identifier"][
                     company_id
                 ] = company_user.identifier
+
         return speedy
 
     def run_import(self):

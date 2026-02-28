@@ -24,8 +24,8 @@ class AccountStatementImportApi(models.Model):
         service2info["qonto"] = {
             "name": "Qonto",
             "company_required": True,
-            "login_required": True,
-            "password_required": True,
+            "login": "field",
+            "password": "field",
             "user_company_required": False,
             "show_backward_days": False,
             "instructions": _(

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <!--
-  Copyright 2025 Akretion France (http://www.akretion.com/)
+  Copyright 2025 Akretion France (https://www.akretion.com/)
   @author: Alexis de Lattre <alexis.delattre@akretion.com>
   License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 -->
@@ -93,12 +93,14 @@
                     <field name="last_success" />
                 </group>
                 <group name="main-right">
-                    <field name="login" />
-                    <field name="password" password="1" />
+                    <field name="login" attrs="{'invisible': [('show_login', '=', False)], 'required': [('show_login', '=', True)]}"/>
+                    <field name="password" password="1" attrs="{'invisible': [('show_password', '=', False)], 'required': [('show_password', '=', True)]}"/>
                     <field
                                 name="backward_days"
                                 attrs="{'invisible': [('show_backward_days', '=', False)]}"
                             />
+                    <field name="show_login" invisible="1" />
+                    <field name="show_password" invisible="1" />
                     <field name="show_backward_days" invisible="1" />
                     <field name="show_company_user" invisible="1" />
                     <field name="tz" />

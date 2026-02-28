@@ -30,8 +30,8 @@ class AccountStatementImportApi(models.Model):
         service2info["bridge"] = {
             "name": "BridgeAPI.io",
             "company_required": False,
-            "login_required": True,
-            "password_required": True,
+            "login": "config_file",
+            "password": "config_file",
             "user_company_required": True,
             "show_backward_days": True,
             "manage_accounts_wizard": True,
