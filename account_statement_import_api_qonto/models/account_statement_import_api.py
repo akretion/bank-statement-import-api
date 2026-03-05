@@ -64,19 +64,16 @@ class AccountStatementImportApi(models.Model):
     def _update_api_accounts_qonto(self, company, result, speedy):
         self.ensure_one()
         accounts = self._qonto_get_all_pages("bank_accounts", result, speedy)
-        res = []
+        account_ident2vals = {}
         for account in accounts:
-            res.append(
-                {
-                    "name": account["name"],
-                    "account_number": account.get("iban"),
-                    "bank_name": account.get("bic"),
-                    "identifier": account["id"],
-                    "company_id": company.id,
-                    "currency_code": account.get("currency"),
-                }
-            )
-        return res
+            account_ident2vals[str(account["id"])] = {
+                "name": account["name"],
+                "account_number": account.get("iban"),
+                "bank_name": account.get("bic"),
+                "company_id": company.id,
+                "currency_code": account.get("currency"),
+            }
+        return account_ident2vals
 
     @api.model
     def _qonto_get_all_pages(self, api_name, result, speedy, params=None):
