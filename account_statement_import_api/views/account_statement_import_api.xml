@@ -93,8 +93,15 @@
                     <field name="last_success" />
                 </group>
                 <group name="main-right">
-                    <field name="login" attrs="{'invisible': [('show_login', '=', False)], 'required': [('show_login', '=', True)]}"/>
-                    <field name="password" password="1" attrs="{'invisible': [('show_password', '=', False)], 'required': [('show_password', '=', True)]}"/>
+                    <field
+                                name="login"
+                                attrs="{'invisible': [('show_login', '=', False)], 'required': [('show_login', '=', True)]}"
+                            />
+                    <field
+                                name="password"
+                                password="1"
+                                attrs="{'invisible': [('show_password', '=', False)], 'required': [('show_password', '=', True)]}"
+                            />
                     <field
                                 name="backward_days"
                                 attrs="{'invisible': [('show_backward_days', '=', False)]}"

@@ -256,12 +256,17 @@ class AccountStatementImportApi(models.Model):
             "login": self.sudo().login,
             "password": self.sudo().password,
         }
-        for cred in ('login', 'password'):
+        for cred in ("login", "password"):
             if speedy["service_info"].get(cred) == "config_file":
                 cred_key = f"account_statement_import_api_{self.service}_{cred}"
                 speedy[cred] = tools.config.get(cred_key)
                 if not speedy[cred]:
-                    raise UserError(_("Missing key '%(cred_key)s' in the Odoo server configuration file.", cred_key=cred_key))
+                    raise UserError(
+                        _(
+                            "Missing key '%(cred_key)s' in the Odoo server configuration file.",
+                            cred_key=cred_key,
+                        )
+                    )
         if speedy["service_info"].get("user_company_required"):
             self._check_company_user_identifier()
             speedy["company_id2token"] = {}
@@ -376,12 +381,6 @@ class AccountStatementImportApi(models.Model):
         account_ident2vals = method(company, result, speedy)
         if not account_ident2vals:
             raise UserError(result["logs"][-1][1])
-        api_acc_obj = self.env["account.statement.import.api.account"]
-        existing_identifiers_read = api_acc_obj.with_context(
-            active_test=False
-        ).search_read([("statement_import_api_id", "=", self.id)], ["identifier"])
-        identifier2id = {x["identifier"]: x["id"] for x in existing_identifiers_read}
-        dict(identifier2id)
         to_create_vals_list = []
         # 1. clean-up, check and replace currency_code by currency_id
         for account_ident, vals in account_ident2vals.items():
