@@ -240,10 +240,10 @@ class AccountStatementImportApi(models.Model):
 
     def _prepare_speedy(self):
         self.ensure_one()
-        currencies_read = (
-            self.env["res.currency"]
-            .with_context(active_test=False)
-            .search_read([], ["name"])
+        # don't fetch inactive currencies, because we cannot create a bank statement
+        # line with an inactive currency (it raises an error)
+        currencies_read = self.env["res.currency"].search_read(
+            [("active", "=", True)], ["name"]
         )
         currency_code2id = {x["name"]: x["id"] for x in currencies_read}
         speedy = {
