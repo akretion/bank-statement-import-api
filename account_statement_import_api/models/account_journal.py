@@ -280,18 +280,28 @@ class AccountJournal(models.Model):
                 "foreign_currency_code"
             ):
                 foreign_currency_code = line_pivot["foreign_currency_code"].upper()
-                if (
-                    foreign_currency_code != speedy["journal_currency_code"]
-                    and foreign_currency_code in speedy["currency_code2id"]
-                ):
-                    lvals.update(
-                        {
-                            "foreign_currency_id": speedy["currency_code2id"][
-                                foreign_currency_code
-                            ],
-                            "amount_currency": line_pivot["foreign_currency_amount"],
-                        }
-                    )
+                if foreign_currency_code != speedy["journal_currency_code"]:
+                    if foreign_currency_code in speedy["currency_code2id"]:
+                        lvals.update(
+                            {
+                                "foreign_currency_id": speedy["currency_code2id"][
+                                    foreign_currency_code
+                                ],
+                                "amount_currency": line_pivot[
+                                    "foreign_currency_amount"
+                                ],
+                            }
+                        )
+                    else:
+                        msg = (
+                            f"Currency {foreign_currency_code} is inactive or "
+                            f"doesn't exist in Odoo. Found on transaction "
+                            f"dated {lvals['date']} amount {lvals['amount']} "
+                            f"label '{lvals['payment_ref']}. Transaction imported without "
+                            f"the amount in foreign currency "
+                            f"{line_pivot['foreign_currency_amount']}."
+                        )
+                        self._api_import_warning_log(result, msg)
         return lvals
 
     def _api_import_bank_statement_lines(self, speedy):
