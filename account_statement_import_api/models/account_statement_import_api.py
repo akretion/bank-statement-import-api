@@ -437,7 +437,8 @@ class AccountStatementImportApi(models.Model):
         for api_account in self.active_api_account_ids:
             if api_account.identifier in account_ident2vals:
                 vals = account_ident2vals[api_account.identifier]
-                vals.pop("connector_identifier")
+                if "connector_identifier" in vals:
+                    vals.pop("connector_identifier")
                 if (
                     api_account.account_number
                     and api_account.account_number != vals.get("account_number")
