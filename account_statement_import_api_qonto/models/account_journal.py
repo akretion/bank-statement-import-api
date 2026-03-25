@@ -79,6 +79,17 @@ class AccountJournal(models.Model):
                     "filename": attach["file_name"],
                 }
             )
+        expense_categ_code = trans["category"]
+        if expense_categ_code in (
+            "atm",
+            "treasury_and_interco",
+            "sales",
+            "other_income",
+            "refund",
+            "fallback",
+            "pending",
+        ):
+            expense_categ_code = False
         pivot = {
             "date": self._api_import_timestamp_iso8601_to_date(
                 trans["settled_at"], speedy
@@ -96,7 +107,7 @@ class AccountJournal(models.Model):
             "in_invoice_vat_rate": vat_rate,
             "in_invoice_expense_description": trans["note"],
             "in_invoice_card_code": trans["card_last_digits"],
-            "in_invoice_expense_categ_code": trans["category"],
+            "in_invoice_expense_categ_code": expense_categ_code,
             "in_invoice_force_invoice_date": self._api_import_timestamp_iso8601_to_date(
                 trans["emitted_at"][:10], speedy
             ),
