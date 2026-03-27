@@ -4,7 +4,7 @@
 
 {
     "name": "Account Statement Import API Bridge",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.1.0",
     "category": "Accounting",
     "license": "AGPL-3",
     "summary": "Use BridgeAPI.io to download bank statement lines",
@@ -15,6 +15,7 @@
     "external_dependencies": {"python": ["unidecode"]},
     "data": [
         "views/account_journal.xml",
+        "views/account_statement_import_api.xml",
         "wizards/account_statement_import_api_create_user_view.xml",
     ],
     "installable": True,

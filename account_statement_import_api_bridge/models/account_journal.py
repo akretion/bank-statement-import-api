@@ -50,7 +50,7 @@ class AccountJournal(models.Model):
             )
 
         transactions = import_api._bridge_get_all_pages(
-            "aggregation/transactions", headers, result, params
+            "aggregation/transactions", headers, result, speedy, params
         )
         if transactions:
             for trans in transactions:

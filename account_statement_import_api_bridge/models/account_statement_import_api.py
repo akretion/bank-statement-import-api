@@ -44,7 +44,15 @@ class AccountStatementImportApi(models.Model):
 
     def _prepare_speedy(self):
         speedy = super()._prepare_speedy()
-        speedy["bridge_version"] = BRIDGE_VERSION
+        url = self.env["ir.config_parameter"].sudo().get_param("bridge_api.base_url")
+        if url:
+            url = url.strip()
+            if url.endswith("/"):
+                url = url[:-1]
+        else:
+            url = BRIDGE_BASE_URL
+        speedy["bridge_base_url"] = url
+        speedy["bridge_max_page_limit"] = BRIDGE_MAX_PAGE_LIMIT
         return speedy
 
     def _bridge_get_token(self, company, result, speedy):
@@ -55,45 +63,47 @@ class AccountStatementImportApi(models.Model):
             speedy["company_id2token"][company.id] = token
         return speedy["company_id2token"][company.id]
 
+    def _bridge_get_headers_no_token(self, speedy):
+        headers = {
+            "Bridge-Version": BRIDGE_VERSION,
+            "accept": "application/json",
+            "content-type": "application/json",
+            "Client-Id": speedy["login"],
+            "Client-Secret": speedy["password"],
+        }
+        return headers
+
     def _bridge_get_headers(self, company, result, speedy):
         self.ensure_one()
         token = self._bridge_get_token(company, result, speedy)
         if not token:
             return None
-        headers = {
-            "Bridge-Version": speedy["bridge_version"],
-            "accept": "application/json",
-            "content-type": "application/json",
-            "Authorization": "Bearer %s" % token,
-            "Client-Id": speedy["login"],
-            "Client-Secret": speedy["password"],
-        }
+        headers = self._bridge_get_headers_no_token(speedy)
+        headers["Authorization"] = f"Bearer {token}"
         return headers
 
     def _bridge_get_new_token(self, company, result, speedy):
         self.ensure_one()
         assert company
         ajo = self.env["account.journal"]
-        headers_token = {
-            "Bridge-Version": speedy["bridge_version"],
-            "Client-Id": speedy["login"],
-            "Client-Secret": speedy["password"],
-            "accept": "application/json",
-            "content-type": "application/json",
-        }
-        external_user_identifier = speedy["company_id2user_identifier"].get(company.id)
-        if not external_user_identifier:
+        headers_token = self._bridge_get_headers_no_token(speedy)
+        user_uuid = speedy["company_id2user_identifier"].get(company.id)
+        if not user_uuid:
             raise UserError(
                 _(
                     "On bank statement import API '%(import_api)s', "
-                    "missing Bridge External User Identifier for company '%(company)s'.",
+                    "missing Bridge User UUID for company '%(company)s'.",
                     import_api=self.display_name,
                     company=company.display_name,
                 )
             )
-        post_json = {"external_user_id": external_user_identifier}
+        post_json = {"user_uuid": user_uuid}
         token_dict = self._bridge_post(
-            "aggregation/authorization/token", headers_token, result, json=post_json
+            "aggregation/authorization/token",
+            headers_token,
+            result,
+            speedy,
+            json=post_json,
         )
         if not token_dict.get("access_token"):
             ajo._api_import_error_log(
@@ -103,10 +113,10 @@ class AccountStatementImportApi(models.Model):
             return None
         token = token_dict["access_token"]
         logger.debug(
-            "New Bridge API session token %s for company %s (user: %s)",
+            "New Bridge API session token %s for company %s (user UUID: %s)",
             token,
             company.name,
-            external_user_identifier,
+            user_uuid,
         )
         return token
 
@@ -122,7 +132,7 @@ class AccountStatementImportApi(models.Model):
             if not headers:
                 return connector_ident2vals
             bridge_items = self._bridge_get_all_pages(
-                "aggregation/items", headers, result
+                "aggregation/items", headers, result, speedy
             )
 
             for item in bridge_items or []:
@@ -168,7 +178,7 @@ class AccountStatementImportApi(models.Model):
         headers = self._bridge_get_headers(company, result, speedy)
         if not headers:
             return None
-        providers = self._bridge_get_all_pages("providers", headers, result)
+        providers = self._bridge_get_all_pages("providers", headers, result, speedy)
         if providers is None:
             return None
         providers_id2name = {}
@@ -176,7 +186,7 @@ class AccountStatementImportApi(models.Model):
             providers_id2name[provider["id"]] = provider["name"]
 
         bridge_accounts = self._bridge_get_all_pages(
-            "aggregation/accounts", headers, result
+            "aggregation/accounts", headers, result, speedy
         )
         account_ident2vals = {}
         for account in bridge_accounts or []:
@@ -193,13 +203,13 @@ class AccountStatementImportApi(models.Model):
         return account_ident2vals
 
     @api.model
-    def _bridge_get_all_pages(self, api_name, headers, result, params=None):
+    def _bridge_get_all_pages(self, api_name, headers, result, speedy, params=None):
         ajo = self.env["account.journal"]
-        url = f"{BRIDGE_BASE_URL}/{BRIDGE_API_VERSION}/{api_name}"
+        url = f"{speedy['bridge_base_url']}/{BRIDGE_API_VERSION}/{api_name}"
         if params is None:
             params = {}
         if not params.get("limit"):
-            params["limit"] = BRIDGE_MAX_PAGE_LIMIT
+            params["limit"] = speedy["bridge_max_page_limit"]
         try:
             res = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
         except Exception as e:
@@ -223,7 +233,7 @@ class AccountStatementImportApi(models.Model):
         page = 1
         while next_uri:
             page += 1
-            url = f"{BRIDGE_BASE_URL}{next_uri}"
+            url = f"{speedy['bridge_base_url']}{next_uri}"
             try:
                 res_next_page = requests.get(url, headers=headers, timeout=TIMEOUT)
             except Exception as e:
@@ -247,9 +257,9 @@ class AccountStatementImportApi(models.Model):
         return res_list
 
     @api.model
-    def _bridge_post(self, api_name, headers, result, json=None):
+    def _bridge_post(self, api_name, headers, result, speedy, json=None):
         ajo = self.env["account.journal"]
-        url = f"{BRIDGE_BASE_URL}/{BRIDGE_API_VERSION}/{api_name}"
+        url = f"{speedy['bridge_base_url']}/{BRIDGE_API_VERSION}/{api_name}"
         try:
             res = requests.post(url, headers=headers, json=json, timeout=TIMEOUT)
         except Exception as e:
@@ -261,7 +271,7 @@ class AccountStatementImportApi(models.Model):
             try:
                 error_msg = res.json()["errors"][0]["message"]
             except Exception:
-                error_msg = ""
+                error_msg = res.text
             ajo._api_import_error_log(
                 result,
                 f"HTTP POST API call on {url} with json={json} returned an "
@@ -275,6 +285,32 @@ class AccountStatementImportApi(models.Model):
         res_dict = res.json()
         return res_dict
 
+    @api.model
+    def _bridge_del(self, api_name, headers, result, speedy):
+        ajo = self.env["account.journal"]
+        url = f"{speedy['bridge_base_url']}/{BRIDGE_API_VERSION}/{api_name}"
+        try:
+            res = requests.delete(url, headers=headers, timeout=TIMEOUT)
+        except Exception as e:
+            ajo._api_import_error_log(
+                result, f"HTTP DELETE API call on {url} failed: {e}"
+            )
+            return False
+        if res.status_code != 204:
+            try:
+                error_msg = res.json()["errors"][0]["message"]
+            except Exception:
+                error_msg = res.text
+            ajo._api_import_error_log(
+                result,
+                f"HTTP DELETE API call on {url} returned an "
+                f"HTTP error code {res.status_code} with this error "
+                f"message: '{error_msg}'.",
+            )
+            return False
+        ajo._api_import_info_log(result, f"Successful HTTP DELETE API call on {url}")
+        return True
+
     def _bridge_add_account_get_url(self, company, result, speedy):
         headers = self._bridge_get_headers(company, result, speedy)
         user_partner = self.env.user.partner_id
@@ -286,7 +322,7 @@ class AccountStatementImportApi(models.Model):
         # notify the user in case their change the terms of service.
         json = {"user_email": user_partner.email}
         res_json = self._bridge_post(
-            "aggregation/connect-sessions", headers, result, json=json
+            "aggregation/connect-sessions", headers, result, speedy, json=json
         )
         url = res_json.get("url")
         return url
@@ -314,7 +350,7 @@ class AccountStatementImportApi(models.Model):
             "force_reauthentication": force_reauthentication,
         }
         res_json = self._bridge_post(
-            "aggregation/connect-sessions", headers, result, json=json
+            "aggregation/connect-sessions", headers, result, speedy, json=json
         )
         url = res_json.get("url")
         return url

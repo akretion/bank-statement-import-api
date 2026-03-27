@@ -166,9 +166,16 @@
                             attrs="{'invisible': [('show_company_user', '=', False)]}"
                         >
                 <field name="company_user_ids" nolabel="1" colspan="2">
-                        <tree editable="bottom">
+                        <tree editable="bottom" delete="0">
                                 <field name="company_id" />
                                 <field name="identifier" />
+                                <button
+                                        name="%(account_statement_import_api_delete_user_action)d"
+                                        type="action"
+                                        string="Delete"
+                                        context="{'default_company_user_id': active_id}"
+                                        groups="account.group_account_manager"
+                                    />
                         </tree>
                 </field>
         </page>
