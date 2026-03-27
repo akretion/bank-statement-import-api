@@ -40,6 +40,10 @@
                                         <field name="name" />
                                         <field name="identifier" />
                                         <field
+                        name="company_id"
+                        groups="base.group_multi_company"
+                    />
+                                        <field
                         name="sync_status"
                         widget="badge"
                         decoration-success="sync_status == 'ok'"
@@ -87,6 +91,11 @@
                 />
                             <field name="name" />
                             <field name="identifier" optional="hide" />
+                            <field
+                    name="company_id"
+                    groups="base.group_multi_company"
+                    optional="show"
+                />
                             <field
                     name="sync_status"
                     widget="badge"

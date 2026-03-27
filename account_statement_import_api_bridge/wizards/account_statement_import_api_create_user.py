@@ -78,15 +78,9 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
                 )
 
         post_json = {"external_user_id": external_user}
-        headers = {
-            "Bridge-Version": speedy["bridge_version"],
-            "Client-Id": speedy["login"],
-            "Client-Secret": speedy["password"],
-            "accept": "application/json",
-            "content-type": "application/json",
-        }
+        headers = self.statement_import_api_id._bridge_get_headers_no_token(speedy)
         res = self.env["account.statement.import.api"]._bridge_post(
-            "aggregation/users", headers, result, json=post_json
+            "aggregation/users", headers, result, speedy, json=post_json
         )
         if not res.get("external_user_id"):
             ajo._api_import_error_log(
@@ -94,7 +88,11 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
                 "The API call to create a company user didn't return the expected result.",
             )
             return None
+        # res has 'uuid' and 'external_user_id'
+        # on 25/3/2026, we switch from external_user_id to uuid
+        assert res["external_user_id"] == external_user
         company_user_vals = {
-            "identifier": res["external_user_id"],
+            "identifier": res["uuid"],
+            "bridge_external_identifier": external_user,
         }
         return company_user_vals

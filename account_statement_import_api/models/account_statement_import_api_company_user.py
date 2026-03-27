@@ -12,7 +12,7 @@ class AccountStatementImportApiCompanyUser(models.Model):
     statement_import_api_id = fields.Many2one(
         "account.statement.import.api",
         ondelete="cascade",
-        string="Statement Import API",
+        string="Bank Statement Import API",
         required=True,
     )
     identifier = fields.Char(required=True)

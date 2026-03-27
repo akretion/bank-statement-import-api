@@ -349,6 +349,7 @@ class AccountStatementImportApi(models.Model):
             "Start connector status update on statement import API %s",
             self.display_name,
         )
+        # TODO Loop per company ? Token for each user
         connector_ident2vals = self._get_connector_ident2vals(speedy)
         for connector in self.connector_ids:
             if connector.identifier in connector_ident2vals:
@@ -499,6 +500,7 @@ class AccountStatementImportApi(models.Model):
                                         identifier=connector_identifier,
                                         statement_import_api_id=self.id,
                                         name=name,
+                                        company_id=company.id,
                                     )
                                 )
                                 logger.info(
@@ -521,6 +523,7 @@ class AccountStatementImportApi(models.Model):
                     {
                         "identifier": account_ident,
                         "statement_import_api_id": self.id,
+                        "company_id": company.id,
                     }
                 )
                 to_create_vals_list.append(vals)
