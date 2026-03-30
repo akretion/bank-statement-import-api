@@ -55,11 +55,8 @@ class AccountStatementImportApiConnector(models.Model):
             "unique(statement_import_api_id, identifier)",
             "This identifier already exists for this statement import API.",
         ),
-        (
-            "statement_import_api_name_unique",
-            "unique(statement_import_api_id, name)",
-            "This name is already used for this statement import API.",
-        ),
+        # no unicity on (statement_import_api_id, name) because
+        # the connector is created by code and we don't want to block that
     ]
 
     def _compute_auth_expiry_warn_type(self):
