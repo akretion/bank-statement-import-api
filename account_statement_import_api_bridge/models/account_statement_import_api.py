@@ -131,6 +131,10 @@ class AccountStatementImportApi(models.Model):
             headers = self._bridge_get_headers(user_company.company_id, result, speedy)
             if not headers:
                 return connector_ident2vals
+            logger.info(
+                "Get BridgeAPI connector status for company %s",
+                user_company.company_id.display_name,
+            )
             bridge_items = self._bridge_get_all_pages(
                 "aggregation/items", headers, result, speedy
             )

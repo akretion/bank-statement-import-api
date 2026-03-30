@@ -28,7 +28,9 @@ class AccountStatementImportApiAccount(models.Model):
     account_type = fields.Char()
     currency_id = fields.Many2one("res.currency", readonly=True)
     active = fields.Boolean(default=True)
-    company_id = fields.Many2one("res.company", readonly=True, index=True)
+    company_id = fields.Many2one(
+        "res.company", required=True, readonly=True, index=True
+    )
     # START aggregator fields
     is_aggregator = fields.Boolean(related="statement_import_api_id.is_aggregator")
     connector_id = fields.Many2one(

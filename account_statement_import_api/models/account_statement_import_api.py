@@ -209,7 +209,7 @@ class AccountStatementImportApi(models.Model):
             ]
         )
         assert len(model) == 1
-        name = f"Bank Statement API: {self.name}"
+        name = f"Bank Statement Import API: {self.name}"
         if self.company_id:
             name = f"{name} (company {self.company_id.name})"
         vals = {
@@ -221,7 +221,7 @@ class AccountStatementImportApi(models.Model):
             "numbercall": -1,  # remove when porting in v18
             "model_id": model.id,
             "state": "code",
-            "code": "model.cron_run(%s)" % self.id,
+            "code": f"model.cron_run({self.id})",
         }
         return vals
 
@@ -349,26 +349,24 @@ class AccountStatementImportApi(models.Model):
             "Start connector status update on statement import API %s",
             self.display_name,
         )
-        # TODO Loop per company ? Token for each user
         connector_ident2vals = self._get_connector_ident2vals(speedy)
         for connector in self.connector_ids:
             if connector.identifier in connector_ident2vals:
                 connector.write(connector_ident2vals[connector.identifier])
                 logger.info(
-                    "Connector %s of bank statement import API %s updated",
+                    "Connector %s in company %s updated",
                     connector.display_name,
-                    self.display_name,
+                    connector.company_id.display_name,
                 )
             else:
                 logger.warning(
-                    "Identifier %s of connector %s of bank statement "
-                    "import API %s not retrieved by API",
+                    "Identifier %s of connector %s in company %s not retrieved by API",
                     connector.identifier,
                     connector.display_name,
-                    self.display_name,
+                    connector.company_id.display_name,
                 )
         logger.info(
-            "Connector status update on statement import API %s finished",
+            "End of connector status update on statement import API %s",
             self.display_name,
         )
 
@@ -570,7 +568,8 @@ class AccountStatementImportApi(models.Model):
         self.ensure_one()
         companies_missing_user = set()
         for journal in self.journal_ids:
-            companies_missing_user.add(journal.company_id)
+            if journal.statement_import_api_account_id:
+                companies_missing_user.add(journal.company_id)
         for company_user in self.company_user_ids:
             if company_user.company_id in companies_missing_user:
                 companies_missing_user.remove(company_user.company_id)
