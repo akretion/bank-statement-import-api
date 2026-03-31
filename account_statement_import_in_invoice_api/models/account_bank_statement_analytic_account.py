@@ -24,14 +24,15 @@ class AccountBankStatementAnalyticAccount(models.Model):
     )
     name = fields.Char(required=True, string="Label")
     service = fields.Selection(related="statement_import_api_id.service", store=True)
-    parent_name = fields.Char(required=True, index=True, string="Parent label")
+    parent_name = fields.Char(required=True, index=True, string="Parent Label")
     analytic_account_id = fields.Many2one(
         "account.analytic.account",
-        string="Account analytic",
         domain="[('company_id', 'in', [False, company_id])]",
     )
     active = fields.Boolean(default=True)
-    company_id = fields.Many2one(comodel_name="res.company", required=True)
+    company_id = fields.Many2one(
+        comodel_name="res.company", required=True, readonly=True
+    )
 
     _sql_constraints = [
         (
@@ -40,3 +41,12 @@ class AccountBankStatementAnalyticAccount(models.Model):
             "This identifier already exists for this service and this company.",
         )
     ]
+
+    def name_get(self):
+        res = []
+        for rec in self:
+            name = rec.name
+            if rec.parent_name:
+                name = f"[{rec.parent_name}] {name}"
+            res.append((rec.id, name))
+        return res

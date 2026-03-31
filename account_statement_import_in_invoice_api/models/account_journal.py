@@ -153,32 +153,42 @@ class AccountJournal(models.Model):
                     f"Expense category code '{expcateg_code}' doesn't exist "
                     f"for service {speedy['service']}",
                 )
-        analyticaccount_idents = pivot_line.get("in_invoice_analytic_account_idents")
-        analytic_account_ids = []
-        for analyticaccount_ident in analyticaccount_idents:
-            if analyticaccount_ident in speedy["analyticaccount_ident2id"]:
-                analytic_account_ids.append(
-                    speedy["analyticaccount_ident2id"][analyticaccount_ident]["id"]
+        bs_analytic_account_idents = pivot_line.get(
+            "in_invoice_analytic_account_idents"
+        )
+        bs_analytic_account_ids = []
+        company_id = self.company_id.id
+        bs_ana_account_company_ident2vals = speedy[
+            "bs_analytic_account_company_ident2vals"
+        ]
+        for bs_analytic_account_ident in bs_analytic_account_idents:
+            company_ident_key = (company_id, bs_analytic_account_ident)
+            if company_ident_key in bs_ana_account_company_ident2vals:
+                bs_analytic_account_ids.append(
+                    bs_ana_account_company_ident2vals[company_ident_key]["id"]
                 )
-                if not speedy["analyticaccount_ident2id"][analyticaccount_ident][
-                    "account_id"
+                if not bs_ana_account_company_ident2vals[company_ident_key][
+                    "analytic_account_id"
                 ]:
-                    account_name = speedy["analyticaccount_ident2id"][
-                        analyticaccount_ident
-                    ]["name"]
+                    analytic_account_dname = bs_ana_account_company_ident2vals[
+                        company_ident_key
+                    ]["display_name"]
                     self._api_import_warning_log(
                         result,
-                        f"Analytic account '{account_name}' is not "
+                        f"Analytic account '{analytic_account_dname}' is not "
                         f"mapped for service {speedy['service']}",
                     )
             else:
                 self._api_import_warning_log(
                     result,
-                    f"Analytic account identifier '{analyticaccount_ident}' doesn't "
-                    f"exist for service {speedy['service']}",
+                    f"Analytic account identifier '{bs_analytic_account_ident}' doesn't "
+                    f"exist in company {self.company_id.display_name} "
+                    f"for service {speedy['service']}",
                 )
 
-        lvals["in_invoice_analytic_account_ids"] = [Command.set(analytic_account_ids)]
+        lvals["in_invoice_bank_statement_analytic_account_ids"] = [
+            Command.set(bs_analytic_account_ids)
+        ]
         # for the moment, we consider that autoliq taxes are set by country-specific modules
         # that inherit this method
         in_invoice_tax_ids = []

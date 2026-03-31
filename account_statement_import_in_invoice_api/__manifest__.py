@@ -13,6 +13,7 @@
     "maintainers": ["alexis-via"],
     "website": "https://github.com/akretion/bank-statement-import-api",
     "depends": ["account_statement_import_api", "account_statement_import_in_invoice"],
+    "external_dependencies": {"python": ["unidecode"]},
     "data": [
         "security/ir.model.access.csv",
         "views/account_bank_statement_analytic_account.xml",

@@ -4,6 +4,8 @@
 
 import logging
 
+from unidecode import unidecode
+
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
@@ -34,25 +36,32 @@ class AccountStatementImportApi(models.Model):
         )
         expcateg_code2id = {x["code"]: x["id"] for x in exp_categ_read}
         speedy["expcateg_code2id"] = expcateg_code2id
-        analytic_account_read = (
+        bs_analytic_account_read = (
             self.env["account.bank.statement.analytic.account"]
             .with_context(active_test=False)
             .search_read(
                 [("statement_import_api_id", "=", self.id)],
-                ["identifier", "analytic_account_id", "name"],
+                [
+                    "identifier",
+                    "company_id",
+                    "analytic_account_id",
+                    "name",
+                    "display_name",
+                ],
             )
         )
-        analyticaccount_ident2id = {
-            x["identifier"]: {
+        bs_ana_acc_company_ident2vals = {
+            (x["company_id"][0], x["identifier"]): {
                 "id": x["id"],
-                "account_id": x["analytic_account_id"]
+                "analytic_account_id": x["analytic_account_id"]
                 and x["analytic_account_id"][0]
                 or False,
                 "name": x["name"],
+                "display_name": x["display_name"],
             }
-            for x in analytic_account_read
+            for x in bs_analytic_account_read
         }
-        speedy["analyticaccount_ident2id"] = analyticaccount_ident2id
+        speedy["bs_analytic_account_company_ident2vals"] = bs_ana_acc_company_ident2vals
         return speedy
 
     def update_api_analytic_accounts(self):
@@ -132,11 +141,19 @@ class AccountStatementImportApi(models.Model):
         message_list = []
         if account_ident2vals:
             to_create_vals_list = []
+            ana_accounts = self.env["account.analytic.account"].search_read(
+                [("company_id", "in", (False, company.id))], ["name"]
+            )
+            ana_account_name2id = {
+                unidecode(x["name"].strip().lower()): x["id"] for x in ana_accounts
+            }
             for account_ident, vals in account_ident2vals.items():
+                simplified_name = unidecode(vals["name"].strip().lower())
                 vals.update(
                     {
                         "identifier": account_ident,
                         "statement_import_api_id": self.id,
+                        "analytic_account_id": ana_account_name2id.get(simplified_name),
                     }
                 )
                 to_create_vals_list.append(vals)
@@ -189,7 +206,8 @@ class AccountStatementImportApi(models.Model):
 
     def action_view_analytic_account(self):
         action = self.env["ir.actions.actions"]._for_xml_id(
-            "account_statement_import_in_invoice_api.account_bank_statement_analytic_account_action"
+            "account_statement_import_in_invoice_api."
+            "account_bank_statement_analytic_account_action"
         )
         action["context"] = {"active_test": True}
         action["domain"] = [("statement_import_api_id", "=", self.id)]
