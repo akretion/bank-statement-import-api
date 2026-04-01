@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Copyright 2025 Akretion France (https://www.akretion.com/)
+  @author: Alexis de Lattre <alexis.delattre@akretion.com>
+  License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+-->
+<odoo>
+
+    <record id="bank_statement_line_form_add_view" model="ir.ui.view">
+        <field name="model">account.bank.statement.line</field>
+        <field
+            name="inherit_id"
+            ref="account_reconcile_oca.bank_statement_line_form_add_view"
+        />
+        <field name="arch" type="xml">
+            <field name="in_invoice_analytic_distribution" position="before">
+                <field
+                    name="in_invoice_bank_statement_analytic_account_ids"
+                    widget="many2many_tags"
+                />
+            </field>
+        </field>
+    </record>
+
+    <!-- This is the view used on the right side of the bank statement reconcile interface -->
+    <record id="bank_statement_line_form_reconcile_view" model="ir.ui.view">
+        <field name="model">account.bank.statement.line</field>
+        <field
+            name="inherit_id"
+            ref="account_reconcile_oca.bank_statement_line_form_reconcile_view"
+        />
+        <field name="arch" type="xml">
+            <group name="in_invoice_group" position="before">
+                <div
+                    class="alert alert-warning"
+                    role="alert"
+                    attrs="{'invisible': [('warn_message', '=', False)]}"
+                >
+                    <field name="warn_message" />
+                </div>
+            </group>
+            <field name="in_invoice_analytic_distribution" position="before">
+                <field
+                    name="in_invoice_bank_statement_analytic_account_ids"
+                    invisible="1"
+                />
+            </field>
+        </field>
+    </record>
+
+    <record id="account_bank_statement_line_form" model="ir.ui.view">
+        <field name="model">account.bank.statement.line</field>
+        <field
+            name="inherit_id"
+            ref="account_statement_base.account_bank_statement_line_form"
+        />
+        <field name="arch" type="xml">
+            <field name="in_invoice_analytic_distribution" position="before">
+                <field
+                    name="in_invoice_bank_statement_analytic_account_ids"
+                    widget="many2many_tags"
+                />
+            </field>
+        </field>
+    </record>
+
+</odoo>

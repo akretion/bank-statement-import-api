@@ -42,12 +42,9 @@ class AccountJournal(models.Model):
                 since_iso = f"{since_iso[:-6]}Z"
             params = {"last_update": since_iso}
         else:
-            min_date = self.statement_import_api_start_date - timedelta(
-                import_api.backward_days
-            )
             params = {
                 "filter": "date",  # by default, it filters on "application_date"
-                "min_date": min_date,
+                "min_date": self.statement_import_api_start_date,
             }
         user_id = speedy["company_id2user_identifier"][company.id]
         api_name = (

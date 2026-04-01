@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+
+    <record id="account_statement_import_api_form" model="ir.ui.view">
+        <field name="model">account.statement.import.api</field>
+        <field
+            name="inherit_id"
+            ref="account_statement_import_api.account_statement_import_api_form"
+        />
+        <field name="arch" type="xml">
+            <button name="update_api_accounts" position="after">
+                <button
+                    name="update_api_analytic_accounts"
+                    type="object"
+                    string="Get/Update Bank Stat. Analytic Accounts"
+                    class="btn-primary"
+                    groups="account.group_account_manager"
+                    attrs="{'invisible': [('show_analytic_button', '!=', True)]}"
+                />
+            </button>
+            <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
+                <button
+                    class="oe_stat_button"
+                    name="action_view_analytic_account"
+                    type="object"
+                    groups="analytic.group_analytic_accounting"
+                    attrs="{'invisible': [('show_analytic_button', '!=', True)]}"
+                    icon="fa-tags"
+                >
+                    <field
+                        string="Analytic Accounts"
+                        name="bank_statement_analytic_account_count"
+                        widget="statinfo"
+                    />
+                </button>
+                <button
+                    class="oe_stat_button"
+                    name="action_view_categ_expense"
+                    type="object"
+                    icon="fa-folder-open"
+                    attrs="{'invisible': [('bank_statement_expense_categ_count', '=', 0)]}"
+                >
+                    <field
+                        string="Expense Categories"
+                        name="bank_statement_expense_categ_count"
+                        widget="statinfo"
+                    />
+                </button>
+            </xpath>
+            <group name="main-left" position="inside">
+                <field name="show_analytic_button" invisible="1" />
+            </group>
+        </field>
+    </record>
+
+</odoo>

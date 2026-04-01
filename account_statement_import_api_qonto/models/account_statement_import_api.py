@@ -27,7 +27,7 @@ class AccountStatementImportApi(models.Model):
             "login": "field",
             "password": "field",
             "user_company_required": False,
-            "show_backward_days": False,
+            "show_analytic_button": True,
             "instructions": _(
                 "<p>Go to the web interface of your "
                 '<a href="https://qonto.com/">Qonto</a> account. '
@@ -72,6 +72,25 @@ class AccountStatementImportApi(models.Model):
                 "bank_name": account.get("bic"),
                 "company_id": company.id,
                 "currency_code": account.get("currency"),
+            }
+        return account_ident2vals
+
+    def _update_api_analytic_accounts_qonto(self, company, result, speedy):
+        self.ensure_one()
+        accounts = self._qonto_get_all_pages("labels", result, speedy)
+        parent_accounts = {}
+        child_accounts = []
+        for account in accounts:
+            if account.get("parent_id"):
+                child_accounts.append(account)
+            else:
+                parent_accounts[account["id"]] = account["name"]
+        account_ident2vals = {}
+        for account in child_accounts:
+            account_ident2vals[str(account["id"])] = {
+                "name": account["name"],
+                "parent_name": parent_accounts.get(account.get("parent_id")),
+                "company_id": company.id,
             }
         return account_ident2vals
 
