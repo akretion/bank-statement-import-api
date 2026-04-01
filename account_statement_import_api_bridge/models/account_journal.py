@@ -45,9 +45,7 @@ class AccountJournal(models.Model):
                 since_iso = f"{since_iso[:-6]}Z"
             params["since"] = since_iso
         else:
-            params["min_date"] = self.statement_import_api_start_date - timedelta(
-                import_api.backward_days
-            )
+            params["min_date"] = self.statement_import_api_start_date
 
         transactions = import_api._bridge_get_all_pages(
             "aggregation/transactions", headers, result, speedy, params

@@ -102,13 +102,8 @@
                                 password="1"
                                 attrs="{'invisible': [('show_password', '=', False)], 'required': [('show_password', '=', True)]}"
                             />
-                    <field
-                                name="backward_days"
-                                attrs="{'invisible': [('show_backward_days', '=', False)]}"
-                            />
                     <field name="show_login" invisible="1" />
                     <field name="show_password" invisible="1" />
-                    <field name="show_backward_days" invisible="1" />
                     <field name="show_company_user" invisible="1" />
                     <field name="tz" />
                 </group>

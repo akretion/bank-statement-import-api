@@ -50,8 +50,6 @@ class AccountStatementImportApi(models.Model):
         string="Password or Client Secret", groups="base.group_system"
     )
     last_success = fields.Datetime(compute="_compute_last_success")
-    backward_days = fields.Integer()  # API-specific module should show/hide it
-    show_backward_days = fields.Boolean(compute="_compute_show")
     cron_id = fields.Many2one("ir.cron", string="Scheduled Action", readonly=True)
     log_ids = fields.One2many(
         "account.statement.import.api.log",
@@ -99,11 +97,6 @@ class AccountStatementImportApi(models.Model):
             "name_company_uniq",
             "unique(name, company_id)",
             "A bank statement import API already exists with that name is this company.",
-        ),
-        (
-            "backward_days_positive",
-            "CHECK(backward_days >= 0)",
-            "Backward days must be positive or null.",
         ),
     ]
 
@@ -160,7 +153,6 @@ class AccountStatementImportApi(models.Model):
     def _compute_show(self):
         service2info = self._get_service_info()
         for rec in self:
-            show_backward_days = True
             show_company_user = True
             instructions = False
             show_add_account_wizard = False
@@ -170,7 +162,6 @@ class AccountStatementImportApi(models.Model):
             show_password = False
             if rec.service:
                 info = service2info[rec.service]
-                show_backward_days = info.get("show_backward_days", True)
                 show_company_user = info.get("user_company_required", True)
                 instructions = info.get("instructions")
                 show_add_account_wizard = info.get(
@@ -180,7 +171,6 @@ class AccountStatementImportApi(models.Model):
                 is_aggregator = info.get("is_aggregator")
                 show_login = info.get("login") == "field"
                 show_password = info.get("password") == "field"
-            rec.show_backward_days = show_backward_days
             rec.show_company_user = show_company_user
             rec.instructions = instructions
             rec.show_add_account_wizard = show_add_account_wizard
@@ -252,7 +242,6 @@ class AccountStatementImportApi(models.Model):
             "tz": self.tz and pytz.timezone(self.tz) or pytz.utc,
             "service": self.service,
             "service_info": self._get_service_info()[self.service],
-            "backward_days": self.backward_days,
             "login": self.sudo().login,
             "password": self.sudo().password,
         }
