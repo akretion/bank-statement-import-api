@@ -27,7 +27,6 @@ class AccountStatementImportApi(models.Model):
             "login": "field",
             "password": "field",
             "user_company_required": False,
-            "show_backward_days": False,
             "show_analytic_button": True,
             "instructions": _(
                 "<p>Go to the web interface of your "

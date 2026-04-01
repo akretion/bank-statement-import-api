@@ -16,6 +16,19 @@ class AccountStatementImportApi(models.Model):
     _inherit = "account.statement.import.api"
 
     show_analytic_button = fields.Boolean(compute="_compute_show_analytic")
+    bank_statement_analytic_account_ids = fields.One2many(
+        "account.bank.statement.analytic.account",
+        "statement_import_api_id",
+        string="Bank Statement Analytic Accounts",
+    )
+    bank_statement_analytic_account_count = fields.Integer(
+        compute="_compute_bank_statement_analytic_account_count",
+        string="Number of Bank Statement Analytic Accounts",
+    )
+    bank_statement_expense_categ_count = fields.Integer(
+        compute="_compute_bank_statement_expense_categ_count",
+        string="Number of Bank Statement Expense Categories",
+    )
 
     @api.depends("service")
     def _compute_show_analytic(self):
@@ -26,6 +39,27 @@ class AccountStatementImportApi(models.Model):
                 info = service2info[record.service]
                 show_analytic_button = info.get("show_analytic_button", False)
             record.show_analytic_button = show_analytic_button
+
+    def _compute_bank_statement_analytic_account_count(self):
+        rg_res = self.env["account.bank.statement.analytic.account"].read_group(
+            [("statement_import_api_id", "in", self.ids)],
+            ["statement_import_api_id"],
+            ["statement_import_api_id"],
+        )
+        mapped_data = {
+            x["statement_import_api_id"][0]: x["statement_import_api_id_count"]
+            for x in rg_res
+        }
+        for rec in self:
+            rec.bank_statement_analytic_account_count = mapped_data.get(rec.id, 0)
+
+    def _compute_bank_statement_expense_categ_count(self):
+        rg_res = self.env["account.bank.statement.expense.categ"].read_group(
+            [("service", "!=", False)], ["service"], ["service"]
+        )
+        service2count = {x["service"]: x["service_count"] for x in rg_res}
+        for rec in self:
+            rec.bank_statement_expense_categ_count = service2count.get(rec.service, 0)
 
     def _prepare_speedy(self):
         speedy = super()._prepare_speedy()

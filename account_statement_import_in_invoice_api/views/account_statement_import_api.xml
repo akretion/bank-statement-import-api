@@ -24,18 +24,27 @@
                     name="action_view_analytic_account"
                     type="object"
                     groups="analytic.group_analytic_accounting"
-                    string="Analytic Accounts"
                     attrs="{'invisible': [('show_analytic_button', '!=', True)]}"
                     icon="fa-tags"
                 >
+                    <field
+                        string="Analytic Accounts"
+                        name="bank_statement_analytic_account_count"
+                        widget="statinfo"
+                    />
                 </button>
                 <button
                     class="oe_stat_button"
                     name="action_view_categ_expense"
                     type="object"
-                    string="Expense Categories"
                     icon="fa-folder-open"
+                    attrs="{'invisible': [('bank_statement_expense_categ_count', '=', 0)]}"
                 >
+                    <field
+                        string="Expense Categories"
+                        name="bank_statement_expense_categ_count"
+                        widget="statinfo"
+                    />
                 </button>
             </xpath>
             <group name="main-left" position="inside">

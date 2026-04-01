@@ -33,7 +33,6 @@ class AccountStatementImportApi(models.Model):
             "login": "config_file",
             "password": "config_file",
             "user_company_required": True,
-            "show_backward_days": True,
             "manage_accounts_wizard": True,
             "manage_accounts_wizard_connector_required": True,
             "is_aggregator": True,
