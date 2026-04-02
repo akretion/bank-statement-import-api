@@ -21,14 +21,6 @@ class AccountJournal(models.Model):
     def _api_import_qonto(self, result, speedy):
         self.ensure_one()
         lines = []
-        if self.bank_account_id.acc_type != "iban":
-            self._api_import_error_log(
-                result,
-                f"Bank account {self.bank_account_id.acc_number} is not "
-                f"an IBAN (account type is '{self.bank_account_id.acc_type}').",
-            )
-            return
-
         if self.statement_import_api_last_success:
             # rewind 1h, just in case
             from_dt = self.statement_import_api_last_success - timedelta(hours=1)
@@ -42,12 +34,8 @@ class AccountJournal(models.Model):
             "status": ["completed"],
             "updated_at_from": from_dt_aware.isoformat(),
             "includes[]": ["vat_details", "attachments"],
+            "bank_account_id": self.statement_import_api_account_identifier,
         }
-        # TODO: when transition is finished, we should always use params['bank_account_id']
-        if self.statement_import_api_account_identifier:
-            params["bank_account_id"] = self.statement_import_api_account_identifier
-        else:
-            params["iban"] = self.bank_account_id.sanitized_acc_number
         transactions = self.statement_import_api_id._qonto_get_all_pages(
             "transactions", result, speedy, params=params
         )

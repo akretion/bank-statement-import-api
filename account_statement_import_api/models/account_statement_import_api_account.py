@@ -2,7 +2,7 @@
 # @author: Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import fields, models
+from odoo import _, fields, models
 
 
 class AccountStatementImportApiAccount(models.Model):
@@ -17,6 +17,9 @@ class AccountStatementImportApiAccount(models.Model):
         required=True,
     )
     service = fields.Selection(related="statement_import_api_id.service", store=True)
+    company_id = fields.Many2one(
+        related="statement_import_api_id.company_id", store=True
+    )
     identifier = fields.Char(
         required=True,
         readonly=True,
@@ -28,9 +31,6 @@ class AccountStatementImportApiAccount(models.Model):
     account_type = fields.Char()
     currency_id = fields.Many2one("res.currency", readonly=True)
     active = fields.Boolean(default=True)
-    company_id = fields.Many2one(
-        "res.company", required=True, readonly=True, index=True
-    )
     # START aggregator fields
     is_aggregator = fields.Boolean(related="statement_import_api_id.is_aggregator")
     connector_id = fields.Many2one(
@@ -38,9 +38,13 @@ class AccountStatementImportApiAccount(models.Model):
         ondelete="restrict",
         string="Bank Connector",
     )
+    journal_ids = fields.One2many(
+        "account.journal", "statement_import_api_account_id", string="Journals"
+    )
 
     def name_get(self):
         res = []
+        inactive = _("inactive")
         for rec in self:
             name = rec.name
             if rec.bank_name and rec.account_number:
@@ -51,5 +55,7 @@ class AccountStatementImportApiAccount(models.Model):
                 name = f"{name} - {rec.account_number}"
             if rec.currency_id:
                 name = f"{name} ({rec.currency_id.name})"
+            if not rec.active:
+                name = f"[⚠ {inactive}] {name}"
             res.append((rec.id, name))
         return res

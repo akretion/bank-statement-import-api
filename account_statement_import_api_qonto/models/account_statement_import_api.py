@@ -23,10 +23,8 @@ class AccountStatementImportApi(models.Model):
         service2info = super()._get_service_info()
         service2info["qonto"] = {
             "name": "Qonto",
-            "company_required": True,
             "login": "field",
             "password": "field",
-            "user_company_required": False,
             "show_analytic_button": True,
             "instructions": _(
                 "<p>Go to the web interface of your "
@@ -61,7 +59,7 @@ class AccountStatementImportApi(models.Model):
         self.ensure_one()
         self._qonto_get_all_pages("bank_accounts", result, speedy)
 
-    def _update_api_accounts_qonto(self, company, result, speedy):
+    def _qonto_update_api_accounts(self, result, speedy):
         self.ensure_one()
         accounts = self._qonto_get_all_pages("bank_accounts", result, speedy)
         account_ident2vals = {}
@@ -70,12 +68,11 @@ class AccountStatementImportApi(models.Model):
                 "name": account["name"],
                 "account_number": account.get("iban"),
                 "bank_name": account.get("bic"),
-                "company_id": company.id,
                 "currency_code": account.get("currency"),
             }
         return account_ident2vals
 
-    def _update_api_analytic_accounts_qonto(self, company, result, speedy):
+    def _qonto_update_api_analytic_accounts(self, result, speedy):
         self.ensure_one()
         accounts = self._qonto_get_all_pages("labels", result, speedy)
         parent_accounts = {}
@@ -90,7 +87,6 @@ class AccountStatementImportApi(models.Model):
             account_ident2vals[str(account["id"])] = {
                 "name": account["name"],
                 "parent_name": parent_accounts.get(account.get("parent_id")),
-                "company_id": company.id,
             }
         return account_ident2vals
 

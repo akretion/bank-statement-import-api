@@ -24,16 +24,19 @@
                     </h1>
             </div>
                             <group name="main">
-                                    <field name="service" />
+                                    <field name="parent_name" />
+                                    <field name="statement_import_api_id" />
                                     <field
                             name="identifier"
                             string="Identifier (do not modify)"
                         />
-                                    <field name="parent_name" />
                                     <field name="analytic_account_id" />
                                     <field name="active" invisible="1" />
-                                    <field name="company_id" />
-                                    <field name="statement_import_api_id" />
+                                    <field name="company_id" invisible="1" />
+                                    <field
+                            name="company_id"
+                            groups="base.group_multi_company"
+                        />
                             </group>
                     </sheet>
                     </form>
@@ -43,14 +46,17 @@
         <record id="account_bank_statement_analytic_account_list" model="ir.ui.view">
                 <field name="model">account.bank.statement.analytic.account</field>
                 <field name="arch" type="xml">
-                        <tree>
+                        <tree decoration-warning="not analytic_account_id">
                                 <field name="name" decoration-bf="1" />
                                     <field name="parent_name" />
-                                    <field name="service" />
-                                    <field name="identifier" />
-                                    <field name="analytic_account_id" />
                                     <field name="statement_import_api_id" />
-                                    <field name="company_id" />
+                                    <field name="service" optional="hide" />
+                                    <field name="identifier" optional="show" />
+                                    <field name="analytic_account_id" />
+                                    <field
+                    name="company_id"
+                    groups="base.group_multi_company"
+                />
                     </tree>
                 </field>
         </record>
@@ -59,9 +65,24 @@
                 <field name="model">account.bank.statement.analytic.account</field>
                 <field name="arch" type="xml">
                     <search>
-                        <field name="name" string="Label" />
-                        <field name="parent_name" string="Parent label" />
+                        <field
+                    name="name"
+                    string="Label or Parent Label"
+                    filter_domain="['|', ('name', 'ilike' self), ('parent_name', 'ilike', self)]"
+                />
                         <separator />
+                        <filter
+                    string="Not Configured"
+                    name="no_analytic_account"
+                    domain="[('analytic_account_id', '=', False)]"
+                />
+                        <filter
+                    string="Fuly Configured"
+                    name="analytic_account"
+                    domain="[('analytic_account_id', '!=', False)]"
+                />
+
+                    <separator />
                         <filter
                     string="Archived"
                     name="inactive"
@@ -80,7 +101,7 @@
                     />
                             <filter
                         name="statement_api_groupby"
-                        string="Statement import api"
+                        string="Statement Import API"
                         context="{'group_by': 'statement_import_api_id'}"
                     />
                         </group>

@@ -16,7 +16,6 @@
                           <field name="arch" type="xml">
                                   <form>
                                           <group name="main">
-                                                  <field name="company_id" />
                                                   <field
                         name="statement_import_api_id"
                     />

@@ -20,10 +20,9 @@ def migrate(env, version):
     bridge_import_apis = api_obj.search([("service", "=", "bridge")])
     for bridge_import_api in bridge_import_apis:
         speedy = bridge_import_api._prepare_speedy()
-        headers = bridge_import_api._bridge_get_headers_no_token(speedy)
         result = {"logs": []}
         users_res = api_obj._bridge_get_all_pages(
-            "aggregation/users", headers, result, speedy
+            "aggregation/users", speedy["bridge_headers_no_token"], result, speedy
         )
         external_user_id2uuid = {}
         for entry in users_res:

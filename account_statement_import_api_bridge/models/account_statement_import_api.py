@@ -23,19 +23,28 @@ class AccountStatementImportApi(models.Model):
     _inherit = "account.statement.import.api"
 
     service = fields.Selection(ondelete={"bridge": "cascade"})
+    bridge_external_user_identifier = fields.Char(
+        string="Bridge API External User Identifier", readonly=True, copy=False
+    )
+
+    _sql_constraints = [
+        (
+            "bridge_external_user_identifier_unique",
+            "unique(bridge_external_user_identifier)",
+            "This Bridge API external identifier is already used on other "
+            "bank statement import API.",
+        ),
+    ]
 
     @api.model
     def _get_service_info(self):
         service2info = super()._get_service_info()
         service2info["bridge"] = {
             "name": "BridgeAPI.io",
-            "company_required": False,
             "login": "config_file",
             "password": "config_file",
-            "user_company_required": True,
-            "manage_accounts_wizard": True,
-            "manage_accounts_wizard_connector_required": True,
             "is_aggregator": True,
+            "manage_accounts_wizard_connector_required": True,
             "last_success_source": "last_update_dt",
             # "instructions": _("TODO Write instructions"),
         }
@@ -43,59 +52,54 @@ class AccountStatementImportApi(models.Model):
 
     def _prepare_speedy(self):
         speedy = super()._prepare_speedy()
-        url = self.env["ir.config_parameter"].sudo().get_param("bridge_api.base_url")
-        if url:
-            url = url.strip()
-            if url.endswith("/"):
-                url = url[:-1]
-        else:
-            url = BRIDGE_BASE_URL
-        speedy["bridge_base_url"] = url
-        speedy["bridge_max_page_limit"] = BRIDGE_MAX_PAGE_LIMIT
+        if self.service == "bridge":
+            url = (
+                self.env["ir.config_parameter"].sudo().get_param("bridge_api.base_url")
+            )
+            if url:
+                url = url.strip()
+                if url.endswith("/"):
+                    url = url[:-1]
+            else:
+                url = BRIDGE_BASE_URL
+            headers_no_token = {
+                "Bridge-Version": BRIDGE_VERSION,
+                "accept": "application/json",
+                "content-type": "application/json",
+                "Client-Id": speedy["login"],
+                "Client-Secret": speedy["password"],
+            }
+            speedy.update(
+                {
+                    "bridge_base_url": url,
+                    "bridge_max_page_limit": BRIDGE_MAX_PAGE_LIMIT,
+                    "bridge_headers_no_token": headers_no_token,
+                }
+            )
         return speedy
 
-    def _bridge_get_token(self, company, result, speedy):
+    def _bridge_get_token(self, result, speedy):
         self.ensure_one()
-        if not speedy["company_id2token"].get(company.id):
-            token = self._bridge_get_new_token(company, result, speedy)
+        if not speedy.get("bridge_token"):
+            token = self._bridge_get_new_token(result, speedy)
             # at this stage, token can be None
-            speedy["company_id2token"][company.id] = token
-        return speedy["company_id2token"][company.id]
+            speedy["bridge_token"] = token
+        return speedy["bridge_token"]
 
-    def _bridge_get_headers_no_token(self, speedy):
-        headers = {
-            "Bridge-Version": BRIDGE_VERSION,
-            "accept": "application/json",
-            "content-type": "application/json",
-            "Client-Id": speedy["login"],
-            "Client-Secret": speedy["password"],
-        }
-        return headers
-
-    def _bridge_get_headers(self, company, result, speedy):
+    def _bridge_get_headers(self, result, speedy):
         self.ensure_one()
-        token = self._bridge_get_token(company, result, speedy)
+        token = self._bridge_get_token(result, speedy)
         if not token:
             return None
-        headers = self._bridge_get_headers_no_token(speedy)
+        headers = speedy["bridge_headers_no_token"]
         headers["Authorization"] = f"Bearer {token}"
         return headers
 
-    def _bridge_get_new_token(self, company, result, speedy):
+    def _bridge_get_new_token(self, result, speedy):
         self.ensure_one()
-        assert company
         ajo = self.env["account.journal"]
-        headers_token = self._bridge_get_headers_no_token(speedy)
-        user_uuid = speedy["company_id2user_identifier"].get(company.id)
-        if not user_uuid:
-            raise UserError(
-                _(
-                    "On bank statement import API '%(import_api)s', "
-                    "missing Bridge User UUID for company '%(company)s'.",
-                    import_api=self.display_name,
-                    company=company.display_name,
-                )
-            )
+        headers_token = speedy["bridge_headers_no_token"]
+        user_uuid = self.user_identifier
         post_json = {"user_uuid": user_uuid}
         token_dict = self._bridge_post(
             "aggregation/authorization/token",
@@ -105,80 +109,72 @@ class AccountStatementImportApi(models.Model):
             json=post_json,
         )
         if not token_dict.get("access_token"):
-            ajo._api_import_error_log(
-                result,
-                f"Could not get a token for company {company.name}.",
-            )
+            ajo._api_import_error_log(result, "Could not get a token.")
             return None
         token = token_dict["access_token"]
         logger.debug(
-            "New Bridge API session token %s for company %s (user UUID: %s)",
+            "New Bridge API session token %s (user UUID: %s)",
             token,
-            company.name,
             user_uuid,
         )
         return token
 
     def _bridge_test_api(self, result, speedy):
         self.ensure_one()
-        company = self.company_id or self.env.company
-        self._bridge_get_new_token(company, result, speedy)
+        self._bridge_get_new_token(result, speedy)
 
-    def _update_sync_status_bridge(self, result, speedy):
+    def _bridge_update_sync_status(self, result, speedy):
+        self.ensure_one()
         connector_ident2vals = {}
-        for user_company in self.company_user_ids:
-            headers = self._bridge_get_headers(user_company.company_id, result, speedy)
-            if not headers:
-                return connector_ident2vals
-            logger.info(
-                "Get BridgeAPI connector status for company %s",
-                user_company.company_id.display_name,
-            )
-            bridge_items = self._bridge_get_all_pages(
-                "aggregation/items", headers, result, speedy
-            )
-
-            for item in bridge_items or []:
-                auth_expiry_date = False
-                last_sync_datetime = False
-                status = "ok"
-                messages = []
-                if item.get("status", 0) > 0:
-                    status = "ko"
-                    if item.get("status_code_description"):
-                        messages.append(item["status_code_description"])
-                    if (
-                        item.get("status_code_info")
-                        and item["status_code_info"] != "ok"
-                    ):
-                        messages.append(
-                            f"Status Code Type: {item['status_code_info']} "
-                            f"(Status Code: {item.get('status')})"
-                        )
-                if item.get("authentication_expires_at"):
-                    auth_expiry_date = self.env[
-                        "account.journal"
-                    ]._api_import_timestamp_iso8601_to_date(
-                        item["authentication_expires_at"], speedy
+        headers = self._bridge_get_headers(result, speedy)
+        if not headers:
+            return connector_ident2vals
+        logger.info(
+            "Get BridgeAPI connector status for Statement import API %s company %s",
+            self.display_name,
+            self.company_id.display_name,
+        )
+        bridge_items = self._bridge_get_all_pages(
+            "aggregation/items", headers, result, speedy
+        )
+        for item in bridge_items or []:
+            auth_expiry_date = False
+            last_sync_datetime = False
+            status = "ok"
+            messages = []
+            if item.get("status", 0) > 0:
+                status = "ko"
+                if item.get("status_code_description"):
+                    messages.append(item["status_code_description"])
+                if item.get("status_code_info") and item["status_code_info"] != "ok":
+                    messages.append(
+                        f"Status Code Type: {item['status_code_info']} "
+                        f"(Status Code: {item.get('status')})"
                     )
-                if item.get("last_successful_refresh"):
-                    last_sync_datetime = self.env[
-                        "account.journal"
-                    ]._api_import_timestamp_iso8601_to_datetime(
-                        item["last_successful_refresh"], speedy
-                    )
-                connection_id = str(item["id"])
-                connector_ident2vals[connection_id] = {
-                    "auth_expiry_date": auth_expiry_date,
-                    "last_sync_datetime": last_sync_datetime,
-                    "sync_status": status,
-                    "sync_status_message": "\n".join(messages) or False,
-                }
+            if item.get("authentication_expires_at"):
+                auth_expiry_date = self.env[
+                    "account.journal"
+                ]._api_import_timestamp_iso8601_to_date(
+                    item["authentication_expires_at"], speedy
+                )
+            if item.get("last_successful_refresh"):
+                last_sync_datetime = self.env[
+                    "account.journal"
+                ]._api_import_timestamp_iso8601_to_datetime(
+                    item["last_successful_refresh"], speedy
+                )
+            connection_id = str(item["id"])
+            connector_ident2vals[connection_id] = {
+                "auth_expiry_date": auth_expiry_date,
+                "last_sync_datetime": last_sync_datetime,
+                "sync_status": status,
+                "sync_status_message": "\n".join(messages) or False,
+            }
         return connector_ident2vals
 
-    def _update_api_accounts_bridge(self, company, result, speedy):
+    def _bridge_update_api_accounts(self, result, speedy):
         self.ensure_one()
-        headers = self._bridge_get_headers(company, result, speedy)
+        headers = self._bridge_get_headers(result, speedy)
         if not headers:
             return None
         providers = self._bridge_get_all_pages("providers", headers, result, speedy)
@@ -200,7 +196,6 @@ class AccountStatementImportApi(models.Model):
                     "account_number": account.get("iban"),
                     "bank_name": providers_id2name.get(account.get("provider_id")),
                     "currency_code": account.get("currency_code"),
-                    "company_id": company.id,
                     "connector_identifier": str(account["item_id"]),
                 }
         return account_ident2vals
@@ -220,6 +215,7 @@ class AccountStatementImportApi(models.Model):
                 result, f"HTTP GET API call on {url} with params={params} failed: {e}"
             )
             return None
+        logger.debug("Headers of the answer from Bridge: %s", res.headers)
         if res.status_code != 200:
             ajo._api_import_error_log(
                 result,
@@ -270,6 +266,7 @@ class AccountStatementImportApi(models.Model):
                 result, f"HTTP POST API call on {url} with json={json} failed: {e}"
             )
             return {}
+        logger.debug("Headers of the answer from Bridge: %s", res.headers)
         if res.status_code not in (200, 201):
             try:
                 error_msg = res.json()["errors"][0]["message"]
@@ -299,6 +296,7 @@ class AccountStatementImportApi(models.Model):
                 result, f"HTTP DELETE API call on {url} failed: {e}"
             )
             return False
+        logger.debug("Headers of the answer from Bridge: %s", res.headers)
         if res.status_code != 204:
             try:
                 error_msg = res.json()["errors"][0]["message"]
@@ -314,8 +312,9 @@ class AccountStatementImportApi(models.Model):
         ajo._api_import_info_log(result, f"Successful HTTP DELETE API call on {url}")
         return True
 
-    def _bridge_add_account_get_url(self, company, result, speedy):
-        headers = self._bridge_get_headers(company, result, speedy)
+    def _bridge_add_account_get_url(self, result, speedy):
+        self.ensure_one()
+        headers = self._bridge_get_headers(result, speedy)
         user_partner = self.env.user.partner_id
         if not user_partner.email:
             raise UserError(
@@ -331,9 +330,10 @@ class AccountStatementImportApi(models.Model):
         return url
 
     def _bridge_manage_accounts_get_url(
-        self, connector, company, result, speedy, force_reauthentication=False
+        self, connector, result, speedy, force_reauthentication=False
     ):
-        headers = self._bridge_get_headers(company, result, speedy)
+        self.ensure_one()
+        headers = self._bridge_get_headers(result, speedy)
         assert connector
         try:
             item_id = int(connector.identifier)
@@ -360,5 +360,19 @@ class AccountStatementImportApi(models.Model):
 
     def _bridge_renew_auth_get_url(self, connector, company, result, speedy):
         return self._bridge_manage_accounts_get_url(
-            connector, company, result, speedy, force_reauthentication=True
+            connector, result, speedy, force_reauthentication=True
         )
+
+    def _bridge_delete_user(self, result, speedy):
+        self.ensure_one()
+        url_path = f"aggregation/users/{self.user_identifier}"
+        res = self._bridge_del(
+            url_path, speedy["bridge_headers_no_token"], result, speedy
+        )
+        return res
+
+    def _prepare_delete_user(self):
+        vals = super()._prepare_delete_user()
+        if self.service == "bridge":
+            vals["bridge_external_user_identifier"] = False
+        return vals

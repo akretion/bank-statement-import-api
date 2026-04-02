@@ -37,7 +37,7 @@ class AccountStatementImportApi(models.Model):
             show_analytic_button = False
             if record.service:
                 info = service2info[record.service]
-                show_analytic_button = info.get("show_analytic_button", False)
+                show_analytic_button = info.get("show_analytic_button")
             record.show_analytic_button = show_analytic_button
 
     def _compute_bank_statement_analytic_account_count(self):
@@ -70,6 +70,8 @@ class AccountStatementImportApi(models.Model):
         )
         expcateg_code2id = {x["code"]: x["id"] for x in exp_categ_read}
         speedy["expcateg_code2id"] = expcateg_code2id
+        if not speedy["service_info"].get("show_analytic_button"):
+            return speedy
         bs_analytic_account_read = (
             self.env["account.bank.statement.analytic.account"]
             .with_context(active_test=False)
@@ -77,15 +79,14 @@ class AccountStatementImportApi(models.Model):
                 [("statement_import_api_id", "=", self.id)],
                 [
                     "identifier",
-                    "company_id",
                     "analytic_account_id",
                     "name",
                     "display_name",
                 ],
             )
         )
-        bs_ana_acc_company_ident2vals = {
-            (x["company_id"][0], x["identifier"]): {
+        bs_ana_acc_ident2vals = {
+            x["identifier"]: {
                 "id": x["id"],
                 "analytic_account_id": x["analytic_account_id"]
                 and x["analytic_account_id"][0]
@@ -95,17 +96,16 @@ class AccountStatementImportApi(models.Model):
             }
             for x in bs_analytic_account_read
         }
-        speedy["bs_analytic_account_company_ident2vals"] = bs_ana_acc_company_ident2vals
+        speedy["bs_analytic_account_ident2vals"] = bs_ana_acc_ident2vals
         return speedy
 
     def update_api_analytic_accounts(self):
         self.ensure_one()
         result = {"logs": []}
         speedy = self._prepare_speedy()
-        company = self.company_id or self.env.company
-        method_name = f"_update_api_analytic_accounts_{speedy['service']}"
+        method_name = f"_{self.service}_update_api_analytic_accounts"
         method = getattr(self, method_name)
-        account_ident2vals = method(company, result, speedy)
+        account_ident2vals = method(result, speedy)
         if not account_ident2vals:
             raise UserError(result["logs"][-1][1])
         to_create_vals_list = []
@@ -151,23 +151,24 @@ class AccountStatementImportApi(models.Model):
         # 2. Update and orphan
         write_count = 0
         archive_count = 0
-        for api_account in self.env["account.bank.statement.analytic.account"].search(
-            [("statement_import_api_id", "=", self.id)]
-        ):
-            if api_account.identifier in account_ident2vals:
-                vals = account_ident2vals[api_account.identifier]
-                api_account.write(vals)
+        for bs_ana_account in self.env[
+            "account.bank.statement.analytic.account"
+        ].search([("statement_import_api_id", "=", self.id)]):
+            if bs_ana_account.identifier in account_ident2vals:
+                vals = account_ident2vals[bs_ana_account.identifier]
+                bs_ana_account.write(vals)
                 logger.info(
-                    "API analytic account %s ID %s updated",
-                    api_account.display_name,
-                    api_account.id,
+                    "Bank statement analytic account %s ID %s updated",
+                    bs_ana_account.display_name,
+                    bs_ana_account.id,
                 )
-                account_ident2vals.pop(api_account.identifier)
+                account_ident2vals.pop(bs_ana_account.identifier)
                 write_count += 1
             else:
-                api_account.write({"active": False})
+                bs_ana_account.write({"active": False})
                 logger.info(
-                    "API analytic account %s archived", api_account.display_name
+                    "Bank statement analytic account %s archived",
+                    bs_ana_account.display_name,
                 )
                 archive_count += 1
 
@@ -176,7 +177,7 @@ class AccountStatementImportApi(models.Model):
         if account_ident2vals:
             to_create_vals_list = []
             ana_accounts = self.env["account.analytic.account"].search_read(
-                [("company_id", "in", (False, company.id))], ["name"]
+                [("company_id", "in", (False, self.company_id.id))], ["name"]
             )
             ana_account_name2id = {
                 unidecode(x["name"].strip().lower()): x["id"] for x in ana_accounts

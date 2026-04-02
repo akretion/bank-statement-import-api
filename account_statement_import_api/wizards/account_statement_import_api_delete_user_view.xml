@@ -17,17 +17,12 @@
                                   <form>
                                           <group name="main">
                                                   <field
-                        name="company_user_id"
-                        required="1"
-                    />
-                                                  <field name="company_id" />
-                                                  <field
                         name="statement_import_api_id"
                     />
                                           </group>
                                           <div id="help">
                                                   <p><strong
-                        >If you confirm, Odoo will delete all the API bank account of this bank statement import API in the related company and you will not be able to do anything with this provider in the related company.</strong></p>
+                        >If you confirm, Odoo will delete all the API bank accounts and connectors of this bank statement import API and you will not be able to call the API of this provider any more.</strong></p>
                                           </div>
                                           <footer>
                                                   <button

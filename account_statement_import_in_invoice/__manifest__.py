@@ -18,6 +18,7 @@
         "views/account_bank_statement_expense_categ.xml",
         "views/account_bank_statement_card.xml",
         "views/account_bank_statement_line.xml",
+        "views/account_journal.xml",
         "views/ir_attachment.xml",
         "wizards/res_config_settings_view.xml",
     ],

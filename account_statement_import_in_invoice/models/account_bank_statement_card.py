@@ -48,8 +48,8 @@ class AccountBankStatementCard(models.Model):
             "A card already exists in this journal with the same code.",
         ),
         (
-            "name_unique",
-            "unique(name)",
-            "This label is already used on another card.",
+            "name_company_unique",
+            "unique(name, company_id)",
+            "This label is already used on another card in this company.",
         ),
     ]

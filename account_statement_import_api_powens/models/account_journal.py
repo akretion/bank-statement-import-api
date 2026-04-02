@@ -24,7 +24,6 @@ class AccountJournal(models.Model):
 
     def _api_import_powens(self, result, speedy):
         self.ensure_one()
-        speedy["powens_preferred_date"] = self.powens_preferred_date
         import_api = self.statement_import_api_id
         company = self.company_id
         headers = import_api._powens_get_headers(company, result, speedy)
@@ -46,9 +45,10 @@ class AccountJournal(models.Model):
                 "filter": "date",  # by default, it filters on "application_date"
                 "min_date": self.statement_import_api_start_date,
             }
-        user_id = speedy["company_id2user_identifier"][company.id]
+        user_id = import_api.user_identifier
         api_name = (
-            f"users/{user_id}/accounts/{speedy['account_identifier']}/transactions"
+            f"users/{user_id}/accounts/"
+            f"{self.statement_import_api_account_identifier}/transactions"
         )
         transactions = import_api._powens_get_all_pages(
             api_name, headers, result, params
@@ -59,11 +59,11 @@ class AccountJournal(models.Model):
                 result["lines"].append(pivot)
 
     def _api_import_powens_prepare_pivot_line(self, trans, result, speedy):
-        assert str(trans["id_account"]) == speedy["account_identifier"]
+        assert str(trans["id_account"]) == self.statement_import_api_account_identifier
         assert trans["active"]
         date = False
-        if speedy["powens_preferred_date"]:
-            date = trans.get(speedy["powens_preferred_date"])
+        if self.powens_preferred_date:
+            date = trans.get(self.powens_preferred_date)
         if not date:
             date = trans["date"]
         pivot = {

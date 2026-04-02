@@ -22,16 +22,11 @@
                     name="powens_redirect_url"
                     attrs="{'invisible': [('service', '!=', 'powens')], 'required': [('service', '=', 'powens')]}"
                 />
-            </field>
-            <xpath
-                expr="//field[@name='company_user_ids']/tree/field[@name='identifier']"
-                position="after"
-            >
                 <field
                     name="powens_token"
-                    attrs="{'column_invisible': [('parent.service', '!=', 'powens')]}"
+                    attrs="{'invisible': [('service', '!=', 'powens')]}"
                 />
-            </xpath>
+            </field>
         </field>
     </record>
 

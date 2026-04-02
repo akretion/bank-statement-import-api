@@ -28,7 +28,7 @@ class AccountStatementImportApiLog(models.Model):
         ondelete="cascade",
     )
     company_id = fields.Many2one(
-        "res.company", related="journal_id.company_id", store=True
+        related="statement_import_api_id.company_id", store=True
     )
     logs = fields.Html(readonly=True)
     status = fields.Selection(

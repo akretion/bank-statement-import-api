@@ -13,15 +13,12 @@
             ref="account_statement_import_api.account_statement_import_api_form"
         />
         <field name="arch" type="xml">
-            <xpath
-                expr="//field[@name='company_user_ids']/tree/field[@name='identifier']"
-                position="after"
-            >
+            <field name="user_identifier" position="after">
                 <field
-                    name="bridge_external_identifier"
-                    attrs="{'column_invisible': [('parent.service', '!=', 'bridge')]}"
+                    name="bridge_external_user_identifier"
+                    attrs="{'invisible': [('service', '!=', 'bridge')]}"
                 />
-            </xpath>
+            </field>
         </field>
     </record>
 

@@ -29,6 +29,10 @@ class AccountJournal(models.Model):
         "Statement Import API",
         check_company=True,
         tracking=True,
+        compute="_compute_statement_import_api_id",
+        store=True,
+        readonly=False,
+        prefetch=True,
     )
     statement_import_api_service = fields.Selection(
         related="statement_import_api_id.service", store=True
@@ -48,16 +52,15 @@ class AccountJournal(models.Model):
     )
     statement_import_api_account_id = fields.Many2one(
         "account.statement.import.api.account",
-        ondelete="restrict",
         string="API Bank Account",
+        check_company=True,
         copy=False,
         tracking=True,
         compute="_compute_statement_import_api_account_id",
         store=True,
         readonly=False,
         prefetch=True,
-        domain="[('statement_import_api_id', '=', statement_import_api_id), "
-        "('company_id', 'in', (False, company_id))]",
+        domain="[('statement_import_api_id', '=', statement_import_api_id)]",
     )
     statement_import_api_account_identifier = fields.Char(
         related="statement_import_api_account_id.identifier",
@@ -82,19 +85,33 @@ class AccountJournal(models.Model):
         related="statement_import_api_account_id.connector_id.auth_expiry_warn_type",
     )
 
+    _sql_constraints = [
+        (
+            "statement_import_api_account_uniq",
+            "unique(statement_import_api_account_id)",
+            "This API bank account is already selected on another journal.",
+        )
+    ]
+
     def __get_bank_statements_available_sources(self):
         res = super().__get_bank_statements_available_sources()
         res.insert(0, ("api", _("API")))
         return res
 
-    @api.depends("type", "statement_import_api_id")
+    @api.depends("type", "bank_statements_source")
+    def _compute_statement_import_api_id(self):
+        for journal in self:
+            if journal.type != "bank" or journal.bank_statements_source != "api":
+                journal.statement_import_api_id = False
+
+    @api.depends("statement_import_api_id")
     def _compute_statement_import_api_account_id(self):
         for journal in self:
+            statement_import_api_account_id = False
             if (
-                journal.type == "bank"
-                and journal.statement_import_api_id
-                and journal.bank_account_id
+                journal.statement_import_api_id
                 and not journal.statement_import_api_account_id
+                and journal.bank_account_id
             ):
                 acc_number = journal.bank_account_id.sanitized_acc_number
                 for api_account in journal.statement_import_api_id.api_account_ids:
@@ -102,12 +119,12 @@ class AccountJournal(models.Model):
                         api_account.account_number
                         and api_account.account_number == acc_number
                     ):
-                        journal.statement_import_api_account_id = api_account.id
+                        statement_import_api_account_id = api_account.id
                         break
+            journal.statement_import_api_account_id = statement_import_api_account_id
 
     @api.constrains(
         "statement_import_api_id",
-        "bank_account_id",
         "currency_id",
         "statement_import_api_account_id",
         "statement_import_api_start_date",
@@ -116,21 +133,19 @@ class AccountJournal(models.Model):
     def _check_statement_import_api(self):
         for journal in self:
             if journal.type == "bank" and journal.bank_statements_source == "api":
-                if not journal.bank_account_id:
-                    raise ValidationError(
-                        _(
-                            "The bank journal '%(journal)s' is configured with "
-                            "Bank Feeds set to API, but the Account Number is not set.",
-                            journal=journal.display_name,
-                        )
-                    )
                 if not journal.statement_import_api_id:
+                    continue
+                if (
+                    journal.statement_import_api_id
+                    and not journal.statement_import_api_account_id
+                ):
                     raise ValidationError(
                         _(
-                            "The bank journal '%(journal)s' is configured with "
-                            "Bank Feeds set to API, so you must configure a "
-                            "Statement Import API.",
+                            "The API Bank Account is not set on journal '%(journal)s' "
+                            "is configured with Bank Feeds set to API and "
+                            "Statement Import API '%(import_api)s'.",
                             journal=journal.display_name,
+                            import_api=journal.statement_import_api_id.display_name,
                         )
                     )
                 if (
@@ -244,7 +259,6 @@ class AccountJournal(models.Model):
                 "journal_currency": journal_currency,
                 "journal_currency_code": journal_currency.name,
                 "update_hook_speeddict": update_hook_speeddict,
-                "account_identifier": self.statement_import_api_account_identifier,
                 "bank_account_number": self.bank_account_id.sanitized_acc_number,
             }
         )

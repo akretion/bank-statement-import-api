@@ -31,14 +31,14 @@ class AccountBankStatementAnalyticAccount(models.Model):
     )
     active = fields.Boolean(default=True)
     company_id = fields.Many2one(
-        comodel_name="res.company", required=True, readonly=True
+        related="statement_import_api_id.company_id", store=True
     )
 
     _sql_constraints = [
         (
-            "identifier_service_company_uniq",
-            "unique(identifier, service, company)",
-            "This identifier already exists for this service and this company.",
+            "identifier_statement_import_api_uniq",
+            "unique(identifier, statement_import_api_id)",
+            "This identifier already exists for this statement import API.",
         )
     ]
 

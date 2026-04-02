@@ -15,7 +15,7 @@
         <field name="arch" type="xml">
             <field name="service" position="after">
                 <field
-                    name="bridge_external_user"
+                    name="bridge_external_user_identifier"
                     attrs="{'invisible': [('service', '!=', 'bridge')]}"
                 />
             </field>

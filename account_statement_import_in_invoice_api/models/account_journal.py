@@ -156,39 +156,29 @@ class AccountJournal(models.Model):
         bs_analytic_account_idents = pivot_line.get(
             "in_invoice_analytic_account_idents"
         )
-        bs_analytic_account_ids = []
-        company_id = self.company_id.id
-        bs_ana_account_company_ident2vals = speedy[
-            "bs_analytic_account_company_ident2vals"
-        ]
-        for bs_analytic_account_ident in bs_analytic_account_idents:
-            company_ident_key = (company_id, bs_analytic_account_ident)
-            if company_ident_key in bs_ana_account_company_ident2vals:
+        bs_ana_account_ident2vals = speedy.get("bs_analytic_account_ident2vals")
+        if bs_analytic_account_idents and bs_ana_account_ident2vals:
+            bs_analytic_account_ids = []
+            for bs_ana_acc_ident in bs_analytic_account_idents:
+                # TODO check that code below can't crash
                 bs_analytic_account_ids.append(
-                    bs_ana_account_company_ident2vals[company_ident_key]["id"]
+                    bs_ana_account_ident2vals[bs_ana_acc_ident]["id"]
                 )
-                if not bs_ana_account_company_ident2vals[company_ident_key][
+                if not bs_ana_account_ident2vals[bs_ana_acc_ident][
                     "analytic_account_id"
                 ]:
-                    analytic_account_dname = bs_ana_account_company_ident2vals[
-                        company_ident_key
-                    ]["display_name"]
+                    bs_ana_acc_dname = bs_ana_account_ident2vals[bs_ana_acc_ident][
+                        "display_name"
+                    ]
                     self._api_import_warning_log(
                         result,
-                        f"Analytic account '{analytic_account_dname}' is not "
-                        f"mapped for service {speedy['service']}",
+                        f"Bank statement analytic account '{bs_ana_acc_dname}' is not "
+                        f"mapped to an Odoo analytic account",
                     )
-            else:
-                self._api_import_warning_log(
-                    result,
-                    f"Analytic account identifier '{bs_analytic_account_ident}' doesn't "
-                    f"exist in company {self.company_id.display_name} "
-                    f"for service {speedy['service']}",
-                )
 
-        lvals["in_invoice_bank_statement_analytic_account_ids"] = [
-            Command.set(bs_analytic_account_ids)
-        ]
+            lvals["in_invoice_bank_statement_analytic_account_ids"] = [
+                Command.set(bs_analytic_account_ids)
+            ]
         # for the moment, we consider that autoliq taxes are set by country-specific modules
         # that inherit this method
         in_invoice_tax_ids = []

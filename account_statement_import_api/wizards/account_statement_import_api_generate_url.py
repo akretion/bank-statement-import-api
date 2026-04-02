@@ -10,12 +10,10 @@ class AccountStatementImportApiGenerateUrl(models.TransientModel):
     _name = "account.statement.import.api.generate.url"
     _description = "Wizard to generate a URL to manage the API bank account(s)"
 
-    company_id = fields.Many2one(
-        "res.company", readonly=True, required=True, ondelete="cascade"
-    )
     statement_import_api_id = fields.Many2one(
         "account.statement.import.api",
         readonly=True,
+        required=True,
         string="Bank Statement Import API",
     )
     service = fields.Selection(related="statement_import_api_id.service")
@@ -77,12 +75,7 @@ class AccountStatementImportApiGenerateUrl(models.TransientModel):
             )
         elif res.get("feature") == "renew_auth":
             res["connector_required"] = True
-        res.update(
-            {
-                "company_id": self.env.company.id,
-                "statement_import_api_id": import_api_id,
-            }
-        )
+        res["statement_import_api_id"] = import_api_id
         return res
 
     def start2url(self):
@@ -96,9 +89,9 @@ class AccountStatementImportApiGenerateUrl(models.TransientModel):
         if self.connector_required:
             if not self.connector_id:
                 raise UserError(_("You must select a Bank Connector."))
-            url = method(self.connector_id, self.company_id, result, speedy)
+            url = method(self.connector_id, result, speedy)
         else:
-            url = method(self.company_id, result, speedy)
+            url = method(result, speedy)
         for log_type, msg in result["logs"]:
             if log_type == "error":
                 raise UserError(

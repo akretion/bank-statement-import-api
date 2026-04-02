@@ -30,6 +30,7 @@ class AccountStatementImportApi(models.Model):
     service = fields.Selection(ondelete={"powens": "cascade"})
     powens_hostname = fields.Char()
     powens_redirect_url = fields.Char(string="Powens Redirect URL")
+    powens_token = fields.Char(readonly=False, groups="base.group_system")
 
     @api.constrains("service", "powens_hostname", "powens_redirect_url")
     def _check_powens_config(self):
@@ -39,15 +40,17 @@ class AccountStatementImportApi(models.Model):
                     rec.powens_hostname and not rec.powens_hostname.strip()
                 ):
                     raise ValidationError(
-                        _("Missing Powens Hostname on Bank Statement Import API '%s'.")
-                        % rec.display_name
+                        _(
+                            "Missing Powens Hostname on Bank Statement Import API '%s'.",
+                            rec.display_name,
+                        )
                     )
                 if not rec.powens_redirect_url:
                     raise ValidationError(
                         _(
-                            "Missing Powens Redirect URL on Bank Statement Import API '%s'."
+                            "Missing Powens Redirect URL on Bank Statement Import API '%s'.",
+                            rec.display_name,
                         )
-                        % rec.display_name
                     )
 
     @api.model
@@ -55,11 +58,8 @@ class AccountStatementImportApi(models.Model):
         service2info = super()._get_service_info()
         service2info["powens"] = {
             "name": "Powens",
-            "company_required": False,
             "login": "config_file",
             "password": "config_file",
-            "user_company_required": True,
-            "manage_accounts_wizard": True,
             "is_aggregator": True,
             # "instructions": _("TODO"),
         }
@@ -68,22 +68,25 @@ class AccountStatementImportApi(models.Model):
     def _prepare_speedy(self):
         speedy = super()._prepare_speedy()
         if speedy["service"] == "powens":
-            for company_user in self.sudo().company_user_ids:
-                if company_user.powens_token:
-                    company_id = company_user.company_id.id
-                    speedy["company_id2token"][company_id] = company_user.powens_token
+            if not self.powens_token:
+                raise UserError(
+                    _(
+                        "Missing Powens Token on Bank Statement Import API %s.",
+                        self.display_name,
+                    )
+                )
+            speedy["powens_token"] = self.powens_token
         return speedy
 
-    def _powens_get_headers(self, company, result, speedy):
-        token = speedy["company_id2token"].get(company.id)
+    def _powens_get_headers(self, result, speedy):
+        self.ensure_one()
+        token = speedy["powens_token"]
         if not token:
             raise UserError(
                 _(
                     "On bank statement import API '%(import_api)s', "
-                    "missing user identifier with Powens token "
-                    "on company '%(company)s'.",
+                    "missing user identifier with Powens token.",
                     import_api=self.display_name,
-                    company=company.display_name,
                 )
             )
         headers = {
@@ -116,16 +119,15 @@ class AccountStatementImportApi(models.Model):
     def _powens_test_api(self, result, speedy):
         self.ensure_one()
         self._powens_check_hostname(result)
-        company = self.company_id or self.env.company
-        headers = self._powens_get_headers(company, result, speedy)
+        headers = self._powens_get_headers(result, speedy)
         self._powens_get_all_pages("account_types", headers, result)
 
-    def _update_api_accounts_powens(self, company, result, speedy):
+    def _powens_update_api_accounts(self, result, speedy):
         self.ensure_one()
-        headers = self._powens_get_headers(company, result, speedy)
+        headers = self._powens_get_headers(result, speedy)
         if not headers:
             return None
-        user_id = speedy["company_id2user_identifier"][company.id]
+        user_id = self.user_identifier
         api_name = f"users/{user_id}/accounts"
 
         powens_accounts = self._powens_get_all_pages(api_name, headers, result)
@@ -146,7 +148,6 @@ class AccountStatementImportApi(models.Model):
                     "currency_code": account.get("currency")
                     and account["currency"].get("id"),
                     "identifier": account["id"],
-                    "company_id": company.id,
                     "aggregator_connection_identifier": account["id_source"],
                 }
             )
@@ -302,8 +303,9 @@ class AccountStatementImportApi(models.Model):
             return res_dict[answer_key]
         return res_dict
 
-    def _powens_get_url(self, path, company, result, speedy):
-        headers = self._powens_get_headers(company, result, speedy)
+    def _powens_get_url(self, path, result, speedy):
+        self.ensure_one()
+        headers = self._powens_get_headers(result, speedy)
         params = {"type": "singleAccess"}
         code = self._powens_get("auth/token/code", headers, result, params=params)
         url_params = {
@@ -321,8 +323,10 @@ class AccountStatementImportApi(models.Model):
         webview_url = f"{POWENS_WEBVIEW_BASE_URL}/{lang}/{path}?{url_params_encoded}"
         return webview_url
 
-    def _powens_add_account_get_url(self, company, result, speedy):
-        return self._powens_get_url("connect", company, result, speedy)
+    def _powens_add_account_get_url(self, result, speedy):
+        self.ensure_one()
+        return self._powens_get_url("connect", result, speedy)
 
-    def _powens_manage_accounts_get_url(self, company, result, speedy):
-        return self._powens_get_url("manage", company, result, speedy)
+    def _powens_manage_accounts_get_url(self, result, speedy):
+        self.ensure_one()
+        return self._powens_get_url("manage", result, speedy)

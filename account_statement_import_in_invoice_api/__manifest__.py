@@ -16,6 +16,7 @@
     "external_dependencies": {"python": ["unidecode"]},
     "data": [
         "security/ir.model.access.csv",
+        "security/ir_rule.xml",
         "views/account_bank_statement_analytic_account.xml",
         "views/account_bank_statement_line.xml",
         "views/account_statement_import_api.xml",

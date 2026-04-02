@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+  Copyright 2026 Akretion France (https://www.akretion.com/)
+  @author: Alexis de Lattre <alexis.delattre@akretion.com>
+  License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+-->
+<odoo noupdate="1">
+
+<record id="account_statement_import_api_qonto_cron" model="ir.cron">
+    <field name="name">Qonto Bank Statement Import API</field>
+    <field name="active" eval="False" />
+    <field name="user_id" ref="base.user_root" />
+    <field name="interval_number">1</field>
+    <field name="interval_type">days</field>
+    <field name="numbercall">-1</field> <!-- remove in v18 -->
+    <field
+            name="model_id"
+            ref="account_statement_import_api.model_account_statement_import_api"
+        />
+    <field name="state">code</field>
+    <field name="code">model.cron_run("qonto")</field>
+</record>
+
+</odoo>
