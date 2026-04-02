@@ -14,7 +14,6 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
     _name = "account.statement.import.api.create.user"
     _description = "Wizard to create a new user"
 
-    company_id = fields.Many2one("res.company", required=True, ondelete="cascade")
     statement_import_api_id = fields.Many2one(
         "account.statement.import.api",
         readonly=True,
@@ -27,32 +26,21 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
         res = super().default_get(fields_list)
         assert self._context.get("active_model") == "account.statement.import.api"
         import_api_id = self._context.get("active_id")
-        res.update(
-            {
-                "company_id": self.env.company.id,
-                "statement_import_api_id": import_api_id,
-            }
-        )
+        res["statement_import_api_id"] = import_api_id
         return res
 
     def run(self):
         self.ensure_one()
         import_api = self.statement_import_api_id
+        assert not import_api.user_identifier
         service = import_api.service
         method_name = f"_{service}_create_user"
-        speedy = import_api._prepare_speedy()
+        speedy = import_api.with_context(
+            no_check_user_identifier=True
+        )._prepare_speedy()
         result = {"logs": []}
-        if self.company_id.id in speedy["company_id2user_identifier"]:
-            raise UserError(
-                _(
-                    "On bank statement import API '%(import_api)s', "
-                    "a user already exists in company '%(company)s'.",
-                    import_api=import_api.display_name,
-                    company=self.company_id.name,
-                )
-            )
         method = getattr(self, method_name)
-        company_user_vals = method(result, speedy)
+        vals = method(result, speedy)
         for log_type, msg in result["logs"]:
             if log_type == "error":
                 raise UserError(
@@ -63,21 +51,20 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
                         msg=msg,
                     )
                 )
-        if not company_user_vals:
+        if not vals:
             raise UserError(
                 _(
                     "The method %s didn't return anything and didn't generate "
-                    "any error. THis should never happen."
+                    "any error. This should never happen.",
+                    method_name,
                 )
-                % method_name
             )
-        company_user_vals.update(
-            {
-                "company_id": self.company_id.id,
-                "statement_import_api_id": import_api.id,
-            }
-        )
-        company_user = self.env["account.statement.import.api.company.user"].create(
-            company_user_vals
-        )
-        logger.info("Company User ID %d created", company_user.id)
+        if not vals.get("user_identifier"):
+            raise UserError(
+                _(
+                    "The method %s didn't return a user identifier and didn't generate "
+                    "any error. This should never happen.",
+                    method_name,
+                )
+            )
+        import_api.write(vals)

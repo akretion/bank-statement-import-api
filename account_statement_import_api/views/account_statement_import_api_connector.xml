@@ -35,14 +35,10 @@
                                 <group name="main">
                                         <field
                         name="statement_import_api_id"
-                        invisible="not context.get('account_statement_import_api_connector')"
+                        invisible="not context.get('account_statement_import_api_connector_main_view')"
                     />
                                         <field name="name" />
                                         <field name="identifier" />
-                                        <field
-                        name="company_id"
-                        groups="base.group_multi_company"
-                    />
                                         <field
                         name="sync_status"
                         widget="badge"
@@ -64,6 +60,10 @@
                                         <field
                         name="auth_expiry_warn_type"
                         invisible="1"
+                    />
+                                        <field
+                        name="company_id"
+                        groups="base.group_multi_company"
                     />
                                 </group>
                                                             <group
@@ -87,15 +87,10 @@
                         <tree create="0">
                             <field
                     name="statement_import_api_id"
-                    invisible="not context.get('account_statement_import_api_connector')"
+                    invisible="not context.get('account_statement_import_api_connector_main_view')"
                 />
                             <field name="name" />
                             <field name="identifier" optional="hide" />
-                            <field
-                    name="company_id"
-                    groups="base.group_multi_company"
-                    optional="show"
-                />
                             <field
                     name="sync_status"
                     widget="badge"
@@ -120,6 +115,11 @@
                 />
                             <field name="auth_expiry_warn_type" invisible="1" />
                             <field name="last_sync_datetime" optional="hide" />
+                            <field
+                    name="company_id"
+                    groups="base.group_multi_company"
+                    optional="hide"
+                />
                         </tree>
                 </field>
         </record>
@@ -147,7 +147,7 @@
                 <field name="view_mode">tree,form</field>
                 <field
             name="context"
-        >{'account_statement_import_api_connector': True}</field>
+        >{'account_statement_import_api_connector_main_view': True}</field>
         </record>
 
 

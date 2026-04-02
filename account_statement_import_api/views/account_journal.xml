@@ -31,8 +31,9 @@
                 >
                     <field
                         name="statement_import_api_id"
-                        attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'required': [('bank_statements_source', '=', 'api')]}"
+                        attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
                         context="{'active_test': False}"
+                        options="{'no_create': True, 'no_create_edit': True}"
                     />
                     <button
                         name="api_import_bank_statement_lines_button"
@@ -41,12 +42,13 @@
                         help="Download bank statement lines via the API"
                         class="btn-link mb-1 px-0"
                         icon="fa-refresh"
-                        attrs="{'invisible': [('statement_import_api_id', '=', False)]}"
+                        attrs="{'invisible': [('statement_import_api_account_id', '=', False)]}"
                     />
             </div>
             <field
                     name="statement_import_api_account_id"
-                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'required': [('statement_import_api_id', '!=', False)]}"
+                    options="{'no_create': True, 'no_create_edit': True}"
                 />
             <field
                     name="statement_import_api_connector_id"
@@ -83,7 +85,7 @@
                 />
                     <field
                     name="statement_import_api_start_date"
-                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'readonly': [('statement_import_api_last_success', '!=', False)], 'required': [('bank_statements_source', '=', 'api'), ('statement_import_api_last_success', '=', False)]}"
+                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'readonly': [('statement_import_api_last_success', '!=', False)], 'required': [('statement_import_api_account_id', '=', 'api'), ('statement_import_api_last_success', '=', False)]}"
                 />
                     <field
                     name="statement_import_api_last_success"
@@ -91,11 +93,6 @@
                 />
                     <field name="statement_import_api_service" invisible="1" />
             </xpath>
-            <field name="bank_account_id" position="attributes">
-                <attribute
-                    name="attrs"
-                >{'required': [('bank_statements_source', '=', 'api')]}</attribute>
-            </field>
             <div name="button_box" position="inside">
                 <button
                     class="oe_stat_button"

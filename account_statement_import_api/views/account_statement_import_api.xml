@@ -12,11 +12,11 @@
             <form>
                 <header>
                     <button
-                        name="create_cron"
-                        type="object"
-                        string="Create Scheduled Action"
+                        name="%(account_statement_import_api_create_user_action)d"
+                        type="action"
+                        string="Create User"
                         class="btn-primary"
-                        attrs="{'invisible': [('cron_id', '!=', False)]}"
+                        attrs="{'invisible': ['|', ('user_identifier', '!=', False), ('user_identifier_required', '=', False)]}"
                         groups="account.group_account_manager"
                     />
                     <button
@@ -44,7 +44,7 @@
                         name="%(account_statement_import_api_generate_url_action)d"
                         type="action"
                         string="Add API Bank Accounts"
-                        attrs="{'invisible': [('show_add_account_wizard', '=', False)]}"
+                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
                         context="{'default_feature': 'add_account'}"
                         groups="account.group_account_manager"
                     />
@@ -57,12 +57,19 @@
                         groups="account.group_account_manager"
                     />
                     <button
-                        name="%(account_statement_import_api_create_user_action)d"
+                        name="%(account_statement_import_api_delete_user_action)d"
                         type="action"
-                        string="Create User"
-                        attrs="{'invisible': [('show_company_user', '=', False)]}"
+                        string="Delete User"
+                        groups="account.group_account_manager"
+                        attrs="{'invisible': ['|', ('user_identifier', '=', False), ('user_identifier_required', '=', False)]}"
+                    />
+                    <button
+                        name="open_cron"
+                        type="object"
+                        string="Edit Scheduled Action"
                         groups="account.group_account_manager"
                     />
+
                 </header>
                 <sheet>
                         <div class="oe_button_box" name="button_box">
@@ -86,10 +93,8 @@
                     <field name="service" />
                     <field name="company_id" groups="base.group_multi_company" />
                     <field name="company_id" invisible="1" />
-                    <field name="show_add_account_wizard" invisible="1" />
                     <field name="show_manage_accounts_wizard" invisible="1" />
                     <field name="is_aggregator" invisible="1" />
-                    <field name="cron_id" />
                     <field name="last_success" />
                 </group>
                 <group name="main-right">
@@ -104,29 +109,18 @@
                             />
                     <field name="show_login" invisible="1" />
                     <field name="show_password" invisible="1" />
-                    <field name="show_company_user" invisible="1" />
                     <field name="tz" />
+                    <field
+                                name="user_identifier"
+                                attrs="{'invisible': [('user_identifier_required', '=', False)]}"
+                            />
+                    <field name="user_identifier_required" invisible="1" />
                 </group>
         </group>
         <group name="instructions">
                 <field name="instructions" nolabel="1" colspan="2" />
         </group>
         <notebook>
-                <page name="journals" string="Bank Journals">
-                        <field
-                                name="journal_ids"
-                                nolabel="1"
-                                colspan="2"
-                                widget="many2many"
-                            >
-                        <tree>
-                        <field name="display_name" />
-                        <field name="statement_import_api_account_id" />
-                        <field name="statement_import_api_start_date" />
-                        <field name="statement_import_api_last_success" />
-                </tree>
-                </field>
-        </page>
         <page
                             name="connectors"
                             string="Bank Connectors"
@@ -136,7 +130,6 @@
                         <field name="connector_ids" nolabel="1" colspan="2" />
                 </group>
         </page>
-
             <page name="api_accounts" string="API Bank Accounts">
                 <group name="active_api_accounts" string="Active API accounts">
                         <field
@@ -155,26 +148,21 @@
                                 />
                 </group>
         </page>
-        <page
-                            name="company-users"
-                            string="Per-Company Users"
-                            attrs="{'invisible': [('show_company_user', '=', False)]}"
-                        >
-                <field name="company_user_ids" nolabel="1" colspan="2">
-                        <tree editable="bottom" delete="0">
-                                <field name="company_id" />
-                                <field name="identifier" />
-                                <button
-                                        name="%(account_statement_import_api_delete_user_action)d"
-                                        type="action"
-                                        string="Delete"
-                                        context="{'default_company_user_id': active_id}"
-                                        groups="account.group_account_manager"
-                                    />
-                        </tree>
+                <page name="journals" string="Bank Journals">
+                        <field
+                                name="journal_ids"
+                                nolabel="1"
+                                colspan="2"
+                                widget="many2many"
+                            >
+                        <tree>
+                        <field name="display_name" />
+                        <field name="statement_import_api_account_id" />
+                        <field name="statement_import_api_start_date" />
+                        <field name="statement_import_api_last_success" />
+                </tree>
                 </field>
         </page>
-
                 <page name="logs" string="Logs">
                     <field name="log_ids" nolabel="1" colspan="2" />
                 </page>
@@ -189,10 +177,14 @@
         <field name="arch" type="xml">
             <tree>
                 <field name="name" decoration-bf="1" />
-                <field name="company_id" groups="base.group_multi_company" />
                 <field name="service" />
                 <field name="journal_ids" widget="many2many_tags" />
-                <field name="cron_id" optional="hide" />
+                <field name="tz" optional="hide" />
+                <field
+                    name="company_id"
+                    groups="base.group_multi_company"
+                    optional="show"
+                />
             </tree>
         </field>
     </record>
@@ -202,22 +194,8 @@
         <field name="arch" type="xml">
             <search>
                 <field name="name" />
-                <filter
-                    string="Automatic"
-                    name="auto"
-                    domain="[('cron_id', '!=', False)]"
-                />
-                <filter
-                    string="Manual"
-                    name="manual"
-                    domain="[('cron_id', '=', False)]"
-                />
                 <group name="groupby">
                     <filter name="service_groupby" context="{'group_by': 'service'}" />
-                    <filter
-                        name="company_groupby"
-                        context="{'group_by': 'company_id'}"
-                    />
                 </group>
             </search>
         </field>

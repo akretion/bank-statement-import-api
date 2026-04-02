@@ -24,12 +24,8 @@ class AccountJournal(models.Model):
 
     def _api_import_bridge(self, result, speedy):
         self.ensure_one()
-        if not self.statement_import_api_account_identifier:
-            self._api_import_error_log(result, "Bridge Account Identifier is not set")
-            return
-        speedy["bridge_preferred_date"] = self.bridge_preferred_date
         import_api = self.statement_import_api_id
-        headers = import_api._bridge_get_headers(self.company_id, result, speedy)
+        headers = import_api._bridge_get_headers(result, speedy)
         if not headers:
             return  # The error is already in the logs
         # I would like to filter-out future lines, but it not possible in params
@@ -60,8 +56,8 @@ class AccountJournal(models.Model):
 
     def _api_import_bridge_prepare_pivot_line(self, trans, result, speedy):
         assert str(trans["account_id"]) == self.statement_import_api_account_identifier
-        if speedy["bridge_preferred_date"]:
-            date = trans.get(speedy["bridge_preferred_date"])
+        if self.bridge_preferred_date:
+            date = trans.get(self.bridge_preferred_date)
         else:
             date = trans.get("booking_date")
         # 'date' is the only field that is always set

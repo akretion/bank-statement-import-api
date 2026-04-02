@@ -22,19 +22,16 @@ class AccountStatementImportApi(models.Model):
     name = fields.Char(required=True)
     company_id = fields.Many2one(
         "res.company",
-        required=False,
+        required=True,
         ondelete="cascade",
-        compute="_compute_company_id",
-        store=True,
-        readonly=False,
-        precompute=True,
+        default=lambda self: self.env.company,
     )
     journal_ids = fields.One2many(
         "account.journal",
         "statement_import_api_id",
         string="Bank Journals",
         check_company=True,
-        domain="[('type', '=', 'bank')]",
+        domain="[('type', '=', 'bank'), ('company_id', '=', company_id)]",
     )
     tz = fields.Selection(
         _tz_get,
@@ -45,12 +42,13 @@ class AccountStatementImportApi(models.Model):
     )
     # API-specific modules should show/hide the tz field
     service = fields.Selection("_service_selection", required=True)
-    login = fields.Char(string="Login or Client ID", groups="base.group_system")
+    login = fields.Char(
+        string="Login or Client ID", groups="base.group_system", copy=False
+    )
     password = fields.Char(
-        string="Password or Client Secret", groups="base.group_system"
+        string="Password or Client Secret", groups="base.group_system", copy=False
     )
     last_success = fields.Datetime(compute="_compute_last_success")
-    cron_id = fields.Many2one("ir.cron", string="Scheduled Action", readonly=True)
     log_ids = fields.One2many(
         "account.statement.import.api.log",
         "statement_import_api_id",
@@ -79,14 +77,13 @@ class AccountStatementImportApi(models.Model):
         "statement_import_api_id",
         string="Bank Connectors",
     )
-    company_user_ids = fields.One2many(
-        "account.statement.import.api.company.user",
-        "statement_import_api_id",
-        string="Per-Company Users",
+    user_identifier = fields.Char(
+        readonly=True,
+        copy=False,
+        groups="account.group_account_manager,base.group_system",
     )
-    show_company_user = fields.Boolean(compute="_compute_show")
+    user_identifier_required = fields.Boolean(compute="_compute_show")
     instructions = fields.Html(compute="_compute_show")
-    show_add_account_wizard = fields.Boolean(compute="_compute_show")
     show_manage_accounts_wizard = fields.Boolean(compute="_compute_show")
     show_login = fields.Boolean(compute="_compute_show")
     show_password = fields.Boolean(compute="_compute_show")
@@ -97,6 +94,11 @@ class AccountStatementImportApi(models.Model):
             "name_company_uniq",
             "unique(name, company_id)",
             "A bank statement import API already exists with that name is this company.",
+        ),
+        (
+            "service_user_identifier_uniq",
+            "unique(service, user_identifier)",
+            "This user identifier already exists for this service.",
         ),
     ]
 
@@ -112,7 +114,7 @@ class AccountStatementImportApi(models.Model):
         res = [(service, info["name"]) for (service, info) in service2info.items()]
         return res
 
-    @api.constrains("service", "login", "password", "company_id")
+    @api.constrains("service", "login", "password")
     def _check_config(self):
         service2info = self._get_service_info()
         for rec in self:
@@ -120,10 +122,6 @@ class AccountStatementImportApi(models.Model):
                 if rec.service not in service2info:
                     raise ValidationError(_("Service '%s' is unknown.", rec.service))
                 info = service2info[rec.service]
-                if info.get("company_required") and not rec.company_id:
-                    raise ValidationError(
-                        _("Company is required for service '%s'.", info["name"])
-                    )
                 if info.get("login") == "field" and not rec.login:
                     raise ValidationError(
                         _(
@@ -153,44 +151,34 @@ class AccountStatementImportApi(models.Model):
     def _compute_show(self):
         service2info = self._get_service_info()
         for rec in self:
-            show_company_user = True
             instructions = False
-            show_add_account_wizard = False
-            show_manage_accounts_wizard = False
             is_aggregator = False
+            user_identifier_required = False
+            show_manage_accounts_wizard = False
             show_login = False
             show_password = False
             if rec.service:
                 info = service2info[rec.service]
-                show_company_user = info.get("user_company_required", True)
                 instructions = info.get("instructions")
-                show_add_account_wizard = info.get(
-                    "user_company_required", True
-                )  # TODO
-                show_manage_accounts_wizard = info.get("manage_accounts_wizard")
                 is_aggregator = info.get("is_aggregator")
+                if "user_identifier_required" in info:
+                    user_identifier_required = info["user_identifier_required"]
+                elif is_aggregator:
+                    user_identifier_required = True
+                if "manage_accounts_wizard" in info:
+                    show_manage_accounts_wizard = info["manage_accounts_wizard"]
+                elif is_aggregator:
+                    show_manage_accounts_wizard = True
                 show_login = info.get("login") == "field"
                 show_password = info.get("password") == "field"
-            rec.show_company_user = show_company_user
             rec.instructions = instructions
-            rec.show_add_account_wizard = show_add_account_wizard
-            rec.show_manage_accounts_wizard = show_manage_accounts_wizard
             rec.is_aggregator = is_aggregator
+            rec.user_identifier_required = user_identifier_required
+            rec.show_manage_accounts_wizard = show_manage_accounts_wizard
             rec.show_login = show_login
             rec.show_password = show_password
 
-    @api.depends("service")
-    def _compute_company_id(self):
-        service2info = self._get_service_info()
-        for rec in self:
-            if (
-                rec.service
-                and not rec.company_id
-                and service2info[rec.service].get("company_required")
-            ):
-                rec.company_id = self.env.company.id
-
-    def _prepare_cron(self):
+    def open_cron(self):
         self.ensure_one()
         model = self.env["ir.model"].search(
             [
@@ -199,34 +187,49 @@ class AccountStatementImportApi(models.Model):
             ]
         )
         assert len(model) == 1
-        name = f"Bank Statement Import API: {self.name}"
-        if self.company_id:
-            name = f"{name} (company {self.company_id.name})"
-        vals = {
-            "name": name,
-            "active": True,
-            "user_id": self.env.ref("base.user_root").id,
-            "interval_number": 1,
-            "interval_type": "days",
-            "numbercall": -1,  # remove when porting in v18
-            "model_id": model.id,
-            "state": "code",
-            "code": f"model.cron_run({self.id})",
-        }
-        return vals
-
-    def create_cron(self):
-        self.ensure_one()
-        assert not self.cron_id
-        cron = self.env["ir.cron"].create(self._prepare_cron())
-        self.write({"cron_id": cron.id})
+        crons = self.env["ir.cron"].search(
+            [
+                ("model_id", "=", model.id),
+                ("state", "=", "code"),
+                ("code", "=", f'model.cron_run("{self.service}")'),
+            ]
+        )
+        srv2label = dict(self._fields["service"]._description_selection(self.env))
+        if not crons:
+            raise UserError(
+                _(
+                    "No scheduled action found for service '%s'.",
+                    srv2label[self.service],
+                )
+            )
+        elif len(crons) > 1:
+            raise UserError(
+                _(
+                    "%(cron_count)s scheduled actions were found for "
+                    "service '%(service)s'. There should have "
+                    "only one scheduled action for each service.",
+                    cron_count=len(crons),
+                    service=srv2label[self.service],
+                )
+            )
+        action = self.env["ir.actions.actions"]._for_xml_id("base.ir_cron_act")
+        action.update(
+            {
+                "views": False,
+                "view_id": False,
+                "res_id": crons.id,
+                "view_mode": "form,tree,calendar",
+            }
+        )
+        return action
 
     @api.model
-    def cron_run(self, import_api_id):
-        import_api = self.browse(import_api_id)
-        logger.info("Start Bank Statement API cron %s", import_api.name)
-        import_api.run_import()
-        logger.info("End Bank Statement API cron %s", import_api.name)
+    def cron_run(self, service):
+        logger.info("Start Bank Statement API cron for service {service}")
+        import_apis = self.search([("service", "=", service)])
+        for import_api in import_apis:
+            import_api.run_import()
+        logger.info(f"End Bank Statement API cron for service {service}")
 
     def _prepare_speedy(self):
         self.ensure_one()
@@ -256,26 +259,50 @@ class AccountStatementImportApi(models.Model):
                             cred_key=cred_key,
                         )
                     )
-        if speedy["service_info"].get("user_company_required"):
-            self._check_company_user_identifier()
-            speedy["company_id2token"] = {}
-            speedy["company_id2user_identifier"] = {}
-            for company_user in self.sudo().company_user_ids:
-                company_id = company_user.company_id.id
-                speedy["company_id2user_identifier"][
-                    company_id
-                ] = company_user.identifier
-
+        if (
+            not self.env.context.get("no_check_user_identifier")
+            and self.user_identifier_required
+            and not self.user_identifier
+        ):
+            raise UserError(
+                _(
+                    "Missing user identifier on bank statement import API '%s'. "
+                    "Click on the button 'Create User'.",
+                    self.display_name,
+                )
+            )
         return speedy
 
     def run_import(self):
         self.ensure_one()
-        logger.info("Start bank statement import API %s", self.name)
+        logger.info(
+            "Start bank statement import API %s company %s",
+            self.name,
+            self.company_id.display_name,
+        )
         speedy = self._prepare_speedy()
         for journal in self.journal_ids:
-            journal._api_import_bank_statement_lines(speedy)
+            if journal.statement_import_api_account_id:
+                if journal.statement_import_api_account_id.active:
+                    journal._api_import_bank_statement_lines(speedy)
+                else:
+                    logger.warning(
+                        "API bank account %s on journal %s is inactive",
+                        journal.statement_import_api_account_id.display_name,
+                        journal.display_name,
+                    )
+            else:
+                logger.warning(
+                    "API bank account is not set on journal %s ID %d",
+                    journal.display_name,
+                    journal.id,
+                )
         self._connector_status_update(speedy)
-        logger.info("End of bank statement import API %s", self.name)
+        logger.info(
+            "End of bank statement import API %s company %s",
+            self.name,
+            self.company_id.display_name,
+        )
 
     def test_api(self):
         self.ensure_one()
@@ -320,7 +347,7 @@ class AccountStatementImportApi(models.Model):
         if not speedy["service_info"].get("is_aggregator"):
             return {}
         result = {"logs": [], "connector_identifier2vals": {}}
-        method_name = f"_update_sync_status_{speedy['service']}"
+        method_name = f"_{self.service}_update_sync_status"
         if not hasattr(self, method_name):
             logger.warning("There is no method %s on %s", method_name, self._name)
             return
@@ -363,12 +390,20 @@ class AccountStatementImportApi(models.Model):
         self.ensure_one()
         result = {"logs": []}
         speedy = self._prepare_speedy()
-        company = self.company_id or self.env.company
-        method_name = f"_update_api_accounts_{speedy['service']}"
+        method_name = f"_{self.service}_update_api_accounts"
         method = getattr(self, method_name)
-        account_ident2vals = method(company, result, speedy)
+        account_ident2vals = method(result, speedy)
+
+        for log_type, msg in result["logs"]:
+            if log_type == "error":
+                raise UserError(
+                    _(
+                        "Failed to get API bank accounts. Error: %(msg)s",
+                        msg=msg,
+                    )
+                )
         if not account_ident2vals:
-            raise UserError(result["logs"][-1][1])
+            raise UserError(_("No API bank accounts retreived."))
         to_create_vals_list = []
         # 1. clean-up, check and replace currency_code by currency_id
         for account_ident, vals in account_ident2vals.items():
@@ -487,7 +522,6 @@ class AccountStatementImportApi(models.Model):
                                         identifier=connector_identifier,
                                         statement_import_api_id=self.id,
                                         name=name,
-                                        company_id=company.id,
                                     )
                                 )
                                 logger.info(
@@ -510,7 +544,6 @@ class AccountStatementImportApi(models.Model):
                     {
                         "identifier": account_ident,
                         "statement_import_api_id": self.id,
-                        "company_id": company.id,
                     }
                 )
                 to_create_vals_list.append(vals)
@@ -553,24 +586,6 @@ class AccountStatementImportApi(models.Model):
         }
         return action
 
-    def _check_company_user_identifier(self):
-        self.ensure_one()
-        companies_missing_user = set()
-        for journal in self.journal_ids:
-            if journal.statement_import_api_account_id:
-                companies_missing_user.add(journal.company_id)
-        for company_user in self.company_user_ids:
-            if company_user.company_id in companies_missing_user:
-                companies_missing_user.remove(company_user.company_id)
-        if companies_missing_user:
-            raise UserError(
-                _(
-                    "Missing per-company user identifier for the following companies:\n%s.",
-                    "\n".join(
-                        [
-                            f"- {company.display_name}"
-                            for company in companies_missing_user
-                        ]
-                    ),
-                )
-            )
+    def _prepare_delete_user(self):
+        """This method is designed to be inherited by service-specific modules"""
+        return {"user_identifier": False}

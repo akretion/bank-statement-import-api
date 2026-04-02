@@ -20,8 +20,8 @@ except (ImportError, IOError) as err:
 class AccountStatementImportApiCreateUser(models.TransientModel):
     _inherit = "account.statement.import.api.create.user"
 
-    bridge_external_user = fields.Char(
-        compute="_compute_bridge_external_user",
+    bridge_external_user_identifier = fields.Char(
+        compute="_compute_bridge_external_user_identifier",
         store=True,
         readonly=False,
         precompute=True,
@@ -30,20 +30,24 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
         size=128,
     )
 
-    @api.depends("company_id")
-    def _compute_bridge_external_user(self):
+    @api.depends("statement_import_api_id")
+    def _compute_bridge_external_user_identifier(self):
         for wiz in self:
             bridge_external_user = False
-            if wiz.company_id:
-                company_name = unidecode(wiz.company_id.name).lower().replace(" ", "_")
+            company = wiz.statement_import_api_id.company_id
+            if company:
+                company_name = unidecode(company.name).lower().replace(" ", "_")
                 bridge_external_user = "".join(
                     re.findall(r"[a-zA-Z0-9_-]+", company_name)
                 )[:128]
-            wiz.bridge_external_user = bridge_external_user
+            wiz.bridge_external_user_identifier = bridge_external_user
 
     def _bridge_create_user(self, result, speedy):
         ajo = self.env["account.journal"]
-        external_user = self.bridge_external_user and self.bridge_external_user.strip()
+        external_user = (
+            self.bridge_external_user_identifier
+            and self.bridge_external_user_identifier.strip()
+        )
         if not external_user:
             raise UserError(_("Missing Bridge External User."))
         if len(external_user) > 128:
@@ -66,21 +70,36 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
 
         # For some reasons that I can't explain, sudo() doesn't allow
         # to by-pass the record rule and get all company_user_ids
-        for company_user in self.statement_import_api_id.sudo().company_user_ids:
-            if company_user.identifier == external_user:
-                raise UserError(
-                    _(
-                        "The Bridge External User '%(external_user)s' has already "
-                        "been used on company '%(company)s'.",
-                        external_user=external_user,
-                        company=self.company_id.display_name,
-                    )
+        duplicate_external_user_import_api = (
+            self.env["account.statement.import.api"]
+            .sudo()
+            .search(
+                [
+                    ("service", "=", "bridge"),
+                    ("bridge_external_user_identifier", "=", external_user),
+                ],
+                limit=1,
+            )
+        )
+        if duplicate_external_user_import_api:
+            raise UserError(
+                _(
+                    "The Bridge External User '%(external_user)s' has already "
+                    "been used on statement import API '%(import_api)s' "
+                    "of company '%(company)s'.",
+                    external_user=external_user,
+                    import_api=self.statement_import_api_id.display_name,
+                    company=self.company_id.display_name,
                 )
+            )
 
         post_json = {"external_user_id": external_user}
-        headers = self.statement_import_api_id._bridge_get_headers_no_token(speedy)
         res = self.env["account.statement.import.api"]._bridge_post(
-            "aggregation/users", headers, result, speedy, json=post_json
+            "aggregation/users",
+            speedy["bridge_headers_no_token"],
+            result,
+            speedy,
+            json=post_json,
         )
         if not res.get("external_user_id"):
             ajo._api_import_error_log(
@@ -91,8 +110,8 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
         # res has 'uuid' and 'external_user_id'
         # on 25/3/2026, we switch from external_user_id to uuid
         assert res["external_user_id"] == external_user
-        company_user_vals = {
-            "identifier": res["uuid"],
-            "bridge_external_identifier": external_user,
+        vals = {
+            "user_identifier": res["uuid"],
+            "bridge_external_user_identifier": external_user,
         }
-        return company_user_vals
+        return vals

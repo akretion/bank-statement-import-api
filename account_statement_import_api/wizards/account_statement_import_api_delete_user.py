@@ -4,7 +4,7 @@
 
 import logging
 
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 logger = logging.getLogger(__name__)
@@ -14,42 +14,32 @@ class AccountStatementImportApiDeleteUser(models.TransientModel):
     _name = "account.statement.import.api.delete.user"
     _description = "Wizard to delete a user"
 
-    company_user_id = fields.Many2one(
-        "account.statement.import.api.company.user", string="Per-Company User"
-    )
-    company_id = fields.Many2one(related="company_user_id.company_id")
     statement_import_api_id = fields.Many2one(
-        related="company_user_id.statement_import_api_id"
+        "account.statement.import.api",
+        readonly=True,
+        required=True,
+        string="Bank Statement Import API",
     )
+
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        assert self._context.get("active_model") == "account.statement.import.api"
+        import_api_id = self._context.get("active_id")
+        res["statement_import_api_id"] = import_api_id
+        return res
 
     def run(self):
         self.ensure_one()
-        company_user = self.company_user_id
-        if not company_user:
-            raise UserError(_("Company User is not set."))
         import_api = self.statement_import_api_id
         # first, we try to delete API bank accounts
-        api_bank_accounts = (
-            self.env["account.statement.import.api.account"]
-            .with_context(active_test=False)
-            .search(
-                [
-                    ("company_id", "=", company_user.company_id.id),
-                    (
-                        "statement_import_api_id",
-                        "=",
-                        company_user.statement_import_api_id.id,
-                    ),
-                ]
-            )
-        )
-        logger.info("Deleting API bank account IDs %s", api_bank_accounts.ids)
-        api_bank_accounts.unlink()
-        # TODO delete connectors ?
+        logger.info("Deleting API bank account IDs %s", import_api.api_account_ids.ids)
+        import_api.api_account_ids.unlink()
+        import_api.connector_ids.unlink()
         speedy = import_api._prepare_speedy()
         method_name = f"_{speedy['service']}_delete_user"
         result = {"logs": []}
-        method = getattr(company_user, method_name)
+        method = getattr(import_api, method_name)
         method(result, speedy)
         for log_type, msg in result["logs"]:
             if log_type == "error":
@@ -61,5 +51,10 @@ class AccountStatementImportApiDeleteUser(models.TransientModel):
                         msg=msg,
                     )
                 )
-        logger.info("Deleting Company User ID %d...", company_user.id)
-        company_user.unlink()
+        logger.info(
+            "Deleting user identifier %s on statement import API %s ID %d",
+            import_api.user_identifier,
+            import_api.display_name,
+            import_api.id,
+        )
+        import_api.write(import_api._prepare_delete_user())

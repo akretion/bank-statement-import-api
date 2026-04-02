@@ -16,7 +16,9 @@ class AccountStatementImportApiConnector(models.Model):
         string="Statement Import API",
         required=True,
     )
-    company_id = fields.Many2one("res.company", required=True, ondelete="cascade")
+    company_id = fields.Many2one(
+        related="statement_import_api_id.company_id", store=True
+    )
     name = fields.Char(required=True)
     auth_expiry_date = fields.Date(readonly=True, string="Auth Expiry")
     auth_expiry_warn_type = fields.Selection(
