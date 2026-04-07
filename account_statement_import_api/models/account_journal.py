@@ -142,7 +142,7 @@ class AccountJournal(models.Model):
                     raise ValidationError(
                         _(
                             "The API Bank Account is not set on journal '%(journal)s' "
-                            "is configured with Bank Feeds set to API and "
+                            "which is configured with Bank Feeds set to API and "
                             "Statement Import API '%(import_api)s'.",
                             journal=journal.display_name,
                             import_api=journal.statement_import_api_id.display_name,

@@ -15,7 +15,7 @@
                         name="%(account_statement_import_api_generate_url_action)d"
                         type="action"
                         context="{'default_feature': 'renew_auth'}"
-                        string="Extend Authentication"
+                        string="Extend Authorization"
                     />
                                 </header>
                                 <div
