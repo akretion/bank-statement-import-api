@@ -36,6 +36,7 @@ class AccountJournal(models.Model):
     #     "in_invoice_card_code": "1242",
     #     "in_invoice_expense_categ_code": "restaurant",
     #     "in_invoice_force_invoice_date": "2025-09-28",  # string or datetime
+    #     "in_invoice_receipt_lost": False,  # bool
     # }
 
     def _api_import_existing_line_bank_statement_line_fields(self):
@@ -257,6 +258,7 @@ class AccountJournal(models.Model):
                 "in_invoice_force_invoice_date": pivot_line.get(
                     "in_invoice_force_invoice_date"
                 ),
+                "in_invoice_receipt_lost": pivot_line.get("in_invoice_receipt_lost"),
                 "attachment_ids": attachment_ids,
             }
         )

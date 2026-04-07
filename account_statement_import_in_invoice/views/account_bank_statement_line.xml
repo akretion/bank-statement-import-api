@@ -205,10 +205,16 @@
                                 name="in_invoice_vat_amount"
                                 attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
+
+                                                  <field
+                                name="in_invoice_ref"
+                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                            />
                                                   <field
                                 name="in_invoice_force_invoice_date"
                                 attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
+
                                                   <field
                                 name="partner_id"
                                 string="Force Vendor (optional)"

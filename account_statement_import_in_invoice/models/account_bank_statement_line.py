@@ -63,6 +63,7 @@ class AccountBankStatementLine(models.Model):
     )
     in_invoice_expense_description = fields.Char(string="Expense Description")
     in_invoice_force_invoice_date = fields.Date(string="Force Invoice Date")
+    in_invoice_ref = fields.Char(string="Bill Reference")
     in_invoice_card_id = fields.Many2one(
         "account.bank.statement.card",
         string="Payment Card",
@@ -364,6 +365,7 @@ class AccountBankStatementLine(models.Model):
             "company_id": self.company_id.id,
             "journal_id": journal.id,
             "invoice_date": self.in_invoice_force_invoice_date or self.date,
+            "ref": self.in_invoice_ref,
             "partner_id": partner.id,
             "currency_id": self.currency_id.id,
             "invoice_line_ids": [Command.create(lvals)],

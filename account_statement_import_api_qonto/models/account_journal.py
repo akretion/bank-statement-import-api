@@ -99,6 +99,7 @@ class AccountJournal(models.Model):
             "in_invoice_force_invoice_date": self._api_import_timestamp_iso8601_to_date(
                 trans["emitted_at"][:10], speedy
             ),
+            "in_invoice_receipt_lost": trans["attachment_lost"],
             "in_invoice_analytic_account_idents": trans["label_ids"],
         }
         if trans["reference"]:
