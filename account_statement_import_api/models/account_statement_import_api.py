@@ -281,22 +281,41 @@ class AccountStatementImportApi(models.Model):
             self.company_id.display_name,
         )
         speedy = self._prepare_speedy()
+        logs_to_create = []
         for journal in self.journal_ids:
             if journal.statement_import_api_account_id:
                 if journal.statement_import_api_account_id.active:
                     journal._api_import_bank_statement_lines(speedy)
                 else:
-                    logger.warning(
-                        "API bank account %s on journal %s is inactive",
-                        journal.statement_import_api_account_id.display_name,
-                        journal.display_name,
+                    err_msg = (
+                        f"API bank account "
+                        f"'{journal.statement_import_api_account_id.display_name}' "
+                        f"on journal '{journal.display_name}' is inactive"
+                    )
+                    logger.warning(err_msg)
+                    logs_to_create.append(
+                        {
+                            "status": "failure",
+                            "journal_id": journal.id,
+                            "statement_import_api_id": self.id,
+                            "logs": err_msg,
+                        }
                     )
             else:
-                logger.warning(
-                    "API bank account is not set on journal %s ID %d",
-                    journal.display_name,
-                    journal.id,
+                err_msg = (
+                    f"API bank account is not set on journal '{journal.display_name}'"
                 )
+                logger.warning(err_msg)
+                logs_to_create.append(
+                    {
+                        "status": "failure",
+                        "journal_id": journal.id,
+                        "statement_import_api_id": self.id,
+                        "logs": err_msg,
+                    }
+                )
+        if logs_to_create:
+            self.env["account.statement.import.api.log"].create(logs_to_create)
         self._connector_status_update(speedy)
         logger.info(
             "End of bank statement import API %s company %s",
@@ -515,7 +534,7 @@ class AccountStatementImportApi(models.Model):
                             if connector_identifier in connector_ident2vals:
                                 name = vals.get("bank_name")
                                 if not name:
-                                    name = f"{connector_identifier} TODO rename"
+                                    name = f"{connector_identifier} (TO RENAME)"
                                 connector = conn_obj.create(
                                     dict(
                                         connector_ident2vals[connector_identifier],
