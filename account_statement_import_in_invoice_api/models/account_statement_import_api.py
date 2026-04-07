@@ -126,7 +126,7 @@ class AccountStatementImportApi(models.Model):
             if not isinstance(account_ident, str):
                 raise UserError(
                     _(
-                        "Account identifier %(ident)s for bank statement analytic "
+                        "Identifier %(ident)s for bank statement analytic "
                         "account %(vals)s must be a string.",
                         ident=account_ident,
                         vals=vals,

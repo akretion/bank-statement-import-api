@@ -45,7 +45,7 @@
         id="account_statement_import_api_delete_user_action"
         model="ir.actions.act_window"
     >
-    <field name="name">Delete a Per-Company User</field>
+    <field name="name">Delete a User</field>
     <field name="res_model">account.statement.import.api.delete.user</field>
     <field name="view_mode">form</field>
     <field name="target">new</field>

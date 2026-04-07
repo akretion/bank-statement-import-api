@@ -1,0 +1,154 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_statement_import_api_bridge
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-07 16:17+0000\n"
+"PO-Revision-Date: 2026-04-07 16:17+0000\n"
+"Last-Translator: Alexis de Lattre <alexis.delattre@akretion.com>\n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model.fields,help:account_statement_import_api_bridge.field_account_statement_import_api_create_user__bridge_external_user_identifier
+msgid ""
+"Allowed chars: letters (A to Z, lower and upper case), digits, dash and "
+"underscore."
+msgstr ""
+"Caractères autorisés : lettres (A à Z, minuscules et majuscules), chiffres, "
+"tiret et underscore."
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model,name:account_statement_import_api_bridge.model_account_statement_import_api
+msgid "Bank Statement Import API"
+msgstr "API d'import des relevés de compte"
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model.fields.selection,name:account_statement_import_api_bridge.selection__account_journal__bridge_preferred_date__booking_date
+msgid "Booking Date"
+msgstr "Date de comptabilisation"
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model.fields,field_description:account_statement_import_api_bridge.field_account_statement_import_api__bridge_external_user_identifier
+msgid "Bridge API External User Identifier"
+msgstr "Identifiant utilisateur externe de Bridge API"
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model.fields,field_description:account_statement_import_api_bridge.field_account_statement_import_api_create_user__bridge_external_user_identifier
+msgid "Bridge External User Identifier"
+msgstr "Identifiant utilisateur externe de Bridge"
+
+#. module: account_statement_import_api_bridge
+#. odoo-python
+#: code:addons/account_statement_import_api_bridge/wizards/account_statement_import_api_create_user.py:0
+#, python-format
+msgid ""
+"Bridge External User contains caracters that are not accepted: %s. Allowed "
+"caracters are letters (A to Z, lower and upper case), digits, dash and "
+"underscore."
+msgstr ""
+"Bridge External User contient des caractères qui ne sont pas acceptés : %s. "
+"Les caractères autorisés sont les lettres (A à Z, minuscules et majuscules), "
+"les chiffres, tiret et underscore."
+
+#. module: account_statement_import_api_bridge
+#. odoo-python
+#: code:addons/account_statement_import_api_bridge/wizards/account_statement_import_api_create_user.py:0
+#, python-format
+msgid "Bridge External User has %d caracters. The maximum is 128 caracters."
+msgstr ""
+"L'utilisateur externe Bridge comporte %d caractères. Le maximum est 128 "
+"caractères."
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model.fields,field_description:account_statement_import_api_bridge.field_account_journal__bridge_preferred_date
+msgid "Bridge Preferred Date"
+msgstr "Date préférée pour Bridge"
+
+#. module: account_statement_import_api_bridge
+#: model:ir.actions.server,name:account_statement_import_api_bridge.account_statement_import_api_bridge_cron_ir_actions_server
+#: model:ir.cron,cron_name:account_statement_import_api_bridge.account_statement_import_api_bridge_cron
+msgid "BridgeAPI Bank Statement Import API"
+msgstr "Import de relevés de compte par Bridge API"
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model,name:account_statement_import_api_bridge.model_account_journal
+msgid "Journal"
+msgstr "Journal"
+
+#. module: account_statement_import_api_bridge
+#. odoo-python
+#: code:addons/account_statement_import_api_bridge/wizards/account_statement_import_api_create_user.py:0
+#, python-format
+msgid "Missing Bridge External User."
+msgstr "Utilisateur externe Bridge manquant."
+
+#. module: account_statement_import_api_bridge
+#. odoo-python
+#: code:addons/account_statement_import_api_bridge/models/account_statement_import_api.py:0
+#, python-format
+msgid "Missing e-mail on partner '%s'."
+msgstr "E-mail manquant sur le partenaire '%s'."
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model.fields,field_description:account_statement_import_api_bridge.field_account_statement_import_api__service
+msgid "Service"
+msgstr "Service"
+
+#. module: account_statement_import_api_bridge
+#. odoo-python
+#: code:addons/account_statement_import_api_bridge/wizards/account_statement_import_api_create_user.py:0
+#, python-format
+msgid ""
+"The Bridge External User '%(external_user)s' has already been used on "
+"statement import API '%(import_api)s' of company '%(company)s'."
+msgstr ""
+"L'utilisateur externe Bridge '%(external_user)s' a déjà été utilisé sur l'API "
+"d'import de relevés '%(import_api)s' de la société '%(company)s'."
+
+#. module: account_statement_import_api_bridge
+#. odoo-python
+#: code:addons/account_statement_import_api_bridge/models/account_statement_import_api.py:0
+#, python-format
+msgid ""
+"The identifier of Bank connector '%(connector)s' is '%(identifier)s', but it "
+"should be an integer. Error: %(err)s"
+msgstr ""
+"L'identifiant du connecteur bancaire '%(connector)s' est '%(identifier)s', "
+"mais il devrait s'agir d'un nombre entier. Erreur : %(err)s"
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model.constraint,message:account_statement_import_api_bridge.constraint_account_statement_import_api_bridge_external_user_identifier_unique
+msgid ""
+"This Bridge API external identifier is already used on other bank statement "
+"import API."
+msgstr ""
+"Cet identifiant externe de l'API Bridge est déjà utilisé par d'autres API "
+"d'import de relevés de comptes."
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model.fields.selection,name:account_statement_import_api_bridge.selection__account_journal__bridge_preferred_date__transaction_date
+msgid "Transaction Date"
+msgstr "Date de la transaction"
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model.fields.selection,name:account_statement_import_api_bridge.selection__account_journal__bridge_preferred_date__value_date
+msgid "Value Date"
+msgstr "Date de valeur"
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model,name:account_statement_import_api_bridge.model_account_statement_import_api_create_user
+msgid "Wizard to create a new user"
+msgstr "Assistant de création d'un nouvel utilisateur"
+
+#. module: account_statement_import_api_bridge
+#: model:ir.model.fields.selection,name:account_statement_import_api_bridge.selection__account_journal__bridge_preferred_date__date
+msgid "date"
+msgstr "date"

@@ -6,14 +6,81 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-10-01 09:09+0000\n"
-"PO-Revision-Date: 2025-10-01 09:09+0000\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2026-04-07 16:32+0000\n"
+"PO-Revision-Date: 2026-04-07 16:32+0000\n"
+"Last-Translator: Alexis de Lattre <alexis.delattre@akretion.com>\n"
 "Language-Team: \n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
 "Plural-Forms: \n"
+
+#. module: account_statement_import_in_invoice_api
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_api/models/account_statement_import_api.py:0
+#, python-format
+msgid "%d bank statement analytic accounts archived."
+msgstr "%d comptes analytiques de relevé de compte archivés."
+
+#. module: account_statement_import_in_invoice_api
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_api/models/account_statement_import_api.py:0
+#, python-format
+msgid "%d bank statement analytic accounts created."
+msgstr "%d comptes analytiques de relevé de compte créés."
+
+#. module: account_statement_import_in_invoice_api
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_api/models/account_statement_import_api.py:0
+#, python-format
+msgid "%d bank statement analytic accounts updated."
+msgstr "%d comptes analytiques de relevé de compte mis à jour."
+
+#. module: account_statement_import_in_invoice_api
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_api/models/account_statement_import_api.py:0
+#, python-format
+msgid ""
+"Identifier %(ident)s for bank statement analytic account %(vals)s "
+"must be a string."
+msgstr ""
+"L'identifiant %(ident)s pour le compte analytique de relevé de "
+"compte %(vals)s doit être une chaîne de caractères."
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__active
+msgid "Active"
+msgstr "Actif"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__analytic_account_id
+msgid "Analytic Account"
+msgstr "Compte analytique"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_line__in_invoice_bank_statement_analytic_account_ids
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_statement_import_api_form
+msgid "Analytic Accounts"
+msgstr "Comptes analytiques"
+
+#. module: account_statement_import_in_invoice_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_search
+msgid "Archived"
+msgstr "Archivé"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.actions.act_window,name:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_action
+#: model:ir.model,name:account_statement_import_in_invoice_api.model_account_bank_statement_analytic_account
+#: model:ir.ui.menu,name:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_menu
+msgid "Bank Statement Analytic Account"
+msgstr "Compte analytique de relevé de compte"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_statement_import_api__bank_statement_analytic_account_ids
+msgid "Bank Statement Analytic Accounts"
+msgstr "Comptes analytiques de relevé de compte"
 
 #. module: account_statement_import_in_invoice_api
 #: model:ir.model,name:account_statement_import_in_invoice_api.model_account_statement_import_api
@@ -21,6 +88,198 @@ msgid "Bank Statement Import API"
 msgstr "API d'import des relevés de compte"
 
 #. module: account_statement_import_in_invoice_api
+#: model:ir.model,name:account_statement_import_in_invoice_api.model_account_bank_statement_line
+msgid "Bank Statement Line"
+msgstr "Ligne de relevé de compte"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__company_id
+msgid "Company"
+msgstr "Société"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__create_uid
+msgid "Created by"
+msgstr "Créé par"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__create_date
+msgid "Created on"
+msgstr "Créé le"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__display_name
+msgid "Display Name"
+msgstr "Nom affiché"
+
+#. module: account_statement_import_in_invoice_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_statement_import_api_form
+msgid "Expense Categories"
+msgstr "Catégories de dépense"
+
+#. module: account_statement_import_in_invoice_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_search
+msgid "Fully Configured"
+msgstr "Complètement configuré"
+
+#. module: account_statement_import_in_invoice_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_statement_import_api_form
+msgid "Get/Update Bank Statement Analytic Accounts"
+msgstr "Obtenir/mettre à jour les comptes analytiques des relevés de compte"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__id
+msgid "ID"
+msgstr "ID"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__identifier
+msgid "Identifier"
+msgstr "Identifiant"
+
+#. module: account_statement_import_in_invoice_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_form
+msgid "Identifier (do not modify)"
+msgstr "Identifiant (ne pas modifier)"
+
+#. module: account_statement_import_in_invoice_api
 #: model:ir.model,name:account_statement_import_in_invoice_api.model_account_journal
 msgid "Journal"
 msgstr "Journal"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__name
+msgid "Label"
+msgstr "Libellé"
+
+#. module: account_statement_import_in_invoice_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_search
+msgid "Label or Parent Label"
+msgstr "Libellé ou libellé parent"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account____last_update
+msgid "Last Modified on"
+msgstr "Dernière modification le"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__write_uid
+msgid "Last Updated by"
+msgstr "Dernière mise à jour par"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__write_date
+msgid "Last Updated on"
+msgstr "Dernière mise à jour le"
+
+#. module: account_statement_import_in_invoice_api
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_api/models/account_statement_import_api.py:0
+#, python-format
+msgid ""
+"Missing 'name' for bank statement analytic account %s. This should never "
+"happen."
+msgstr ""
+"'name' manquant pour le compte analytique de relevé de compte %s. Cela ne devrait jamais "
+"se produire."
+
+#. module: account_statement_import_in_invoice_api
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_api/models/account_statement_import_api.py:0
+#, python-format
+msgid ""
+"Missing 'parent name' for bank statement analytic account %s. This should "
+"never happen."
+msgstr ""
+"'parent name' manquant pour le compte analytique de relevé de compte %s. Cela ne "
+"devrait jamais se produire."
+
+#. module: account_statement_import_in_invoice_api
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_api/models/account_statement_import_api.py:0
+#, python-format
+msgid ""
+"Missing identifier for bank statement analytic account %s. This should never "
+"happen."
+msgstr ""
+"Identifiant manquant pour le compte analytique de relevé de compte %s. Cela ne devrait "
+"jamais arriver."
+
+#. module: account_statement_import_in_invoice_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_search
+msgid "Not Configured"
+msgstr "Non configuré"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_statement_import_api__bank_statement_analytic_account_count
+msgid "Number of Bank Statement Analytic Accounts"
+msgstr "Nombre de comptes analytiques de relevés de compte"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_statement_import_api__bank_statement_expense_categ_count
+msgid "Number of Bank Statement Expense Categories"
+msgstr "Nombre de catégories de dépense du relevé de compte"
+
+#. module: account_statement_import_in_invoice_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_search
+msgid "Parent"
+msgstr "Parent"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__parent_name
+msgid "Parent Label"
+msgstr "Libellé du parent"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__service
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_search
+msgid "Service"
+msgstr "Service"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_statement_import_api__show_analytic_button
+msgid "Show Analytic Button"
+msgstr "Afficher le bouton analytique"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__statement_import_api_id
+#: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice_api.account_bank_statement_analytic_account_search
+msgid "Statement Import API"
+msgstr "API d'import de relevés"
+
+#. module: account_statement_import_in_invoice_api
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_api/models/account_statement_import_api.py:0
+#, python-format
+msgid "Successful Update"
+msgstr "Mise à jour réussie"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,help:account_statement_import_in_invoice_api.field_account_bank_statement_analytic_account__identifier
+msgid ""
+"Technical ID given by the bank statement import provider for this analytic "
+"account."
+msgstr ""
+"ID technique attribué par le fournisseur d'import de relevés de "
+"compte pour ce compte analytique."
+
+#. module: account_statement_import_in_invoice_api
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_api/models/account_bank_statement_line.py:0
+#, python-format
+msgid ""
+"The following bank statement analytic account(s) are not mapped to an "
+"analytic account: %s"
+msgstr ""
+"Le(s) compte(s) analytique(s) de relevé de compte suivant(s) n'est (ne sont) "
+"pas mappé(s) à un compte analytique : %s"
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.constraint,message:account_statement_import_in_invoice_api.constraint_account_bank_statement_analytic_account_identifier_statement_import_api_uniq
+msgid "This identifier is already used on another bank statement analytic account for this statement import API."
+msgstr "Cet identifiant est déjà utilisé pour un autre compte analytique de relevé de compte de cette API d'import de relevés."
+
+#. module: account_statement_import_in_invoice_api
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_api.field_account_bank_statement_line__warn_message
+msgid "Warn Message"
+msgstr "Message d'avertissement"

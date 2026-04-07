@@ -38,7 +38,8 @@ class AccountBankStatementAnalyticAccount(models.Model):
         (
             "identifier_statement_import_api_uniq",
             "unique(identifier, statement_import_api_id)",
-            "This identifier already exists for this statement import API.",
+            "This identifier is already used on another bank statement "
+            "analytic account for this statement import API.",
         )
     ]
 
