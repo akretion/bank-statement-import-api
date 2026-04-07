@@ -61,7 +61,6 @@ class AccountStatementImportApi(models.Model):
             "login": "config_file",
             "password": "config_file",
             "is_aggregator": True,
-            # "instructions": _("TODO"),
         }
         return service2info
 

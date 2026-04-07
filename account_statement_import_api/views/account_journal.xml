@@ -131,6 +131,7 @@
                     <field name="show_on_dashboard" position="after">
                             <field name="statement_import_api_id" />
                             <field name="statement_import_api_connector_id" />
+                            <field name="statement_import_api_account_id" />
                             <field
                     name="statement_import_api_connector_auth_expiry_date"
                 />
@@ -142,12 +143,25 @@
                 expr="//t[@t-name='JournalManage']//div[hasclass('o_kanban_manage_reconciliation')]//a[@name='open_action_with_context']/.."
                 position="after"
             >
-                        <div t-if="record.statement_import_api_id.raw_value">
+                        <div t-if="record.statement_import_api_account_id.raw_value">
                             <a
                         role="menuitem"
                         type="object"
                         name="api_import_bank_statement_lines_button"
                     >Re-sync Now</a>
+                        </div>
+                </xpath>
+                <xpath
+                expr="//t[@t-name='JournalManage']//div[hasclass('o_kanban_manage_view')]//a[@name='open_action_with_context']/.."
+                position="after"
+            >
+                        <div t-if="record.statement_import_api_account_id.raw_value">
+                            <a
+                        role="menuitem"
+                        type="action"
+                        name="%(account_statement_import_api_log_action)d"
+                        context="{'search_default_journal_id': active_id}"
+                    >Statement Import Logs</a>
                         </div>
                 </xpath>
                 <xpath expr="//div[@name='latest_statement']/.." position="after">

@@ -93,7 +93,7 @@
         id="account_bank_statement_card_menu"
         action="account_bank_statement_card_action"
         parent="account.account_banks_menu"
-        sequence="90"
+        sequence="120"
     />
 
 </odoo>

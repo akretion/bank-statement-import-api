@@ -160,7 +160,15 @@ class AccountJournal(models.Model):
         if bs_analytic_account_idents and bs_ana_account_ident2vals:
             bs_analytic_account_ids = []
             for bs_ana_acc_ident in bs_analytic_account_idents:
-                # TODO check that code below can't crash
+                if bs_ana_acc_ident not in bs_ana_account_ident2vals:
+                    self._api_import_warning_log(
+                        result,
+                        f"Bank statement analytic account identifier "
+                        f"'{bs_ana_acc_ident}' doesn't exist in Odoo. "
+                        "Click on the button "
+                        "'Get/Update Bank Statement Analytic Accounts'.",
+                    )
+                    continue
                 bs_analytic_account_ids.append(
                     bs_ana_account_ident2vals[bs_ana_acc_ident]["id"]
                 )

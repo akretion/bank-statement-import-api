@@ -123,7 +123,7 @@
         action="account_bank_statement_analytic_account_action"
         groups="analytic.group_analytic_accounting"
         parent="account.account_banks_menu"
-        sequence="90"
+        sequence="130"
     />
 
 </odoo>
