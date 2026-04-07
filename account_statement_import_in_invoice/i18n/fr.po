@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-07 16:24+0000\n"
-"PO-Revision-Date: 2026-04-07 16:24+0000\n"
+"POT-Creation-Date: 2026-04-07 18:26+0000\n"
+"PO-Revision-Date: 2026-04-07 18:26+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -95,6 +95,11 @@ msgid "Bank Statement Line"
 msgstr "Ligne de relevé de compte"
 
 #. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_ref
+msgid "Bill Reference"
+msgstr "Référence de la facture"
+
+#. module: account_statement_import_in_invoice
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__card_id
 msgid "Card"
 msgstr "Carte"
@@ -114,7 +119,7 @@ msgstr "Cartes"
 #. module: account_statement_import_in_invoice
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__categ_id
 msgid "Categ"
-msgstr "Catég"
+msgstr "Catégorie"
 
 #. module: account_statement_import_in_invoice
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__code
@@ -494,5 +499,5 @@ msgid ""
 "bill/refund total amount: %(invoice_total)s. This should never happen."
 msgstr ""
 "Montant total erroné. Montant total de la transaction : %(trans_total)s. "
-"Montant total de la facture/avoir fournisseur : %(invoice_total)s. "
-"Cela ne devrait jamais arriver."
+"Montant total de la facture/avoir fournisseur : %(invoice_total)s. Cela ne "
+"devrait jamais arriver."
