@@ -57,9 +57,16 @@ class AccountBankStatementLine(models.Model):
         domain="[('company_id', '=', company_id), ('type_tax_use', '=', 'purchase')]",
         string="Taxes",
     )
+    in_invoice_currency_id = fields.Many2one(
+        "res.currency",
+        compute="_compute_in_invoice_currency_id",
+        store=True,
+        string="Invoice Currency",
+    )
     in_invoice_vat_amount = fields.Monetary(
         string="VAT Amount",
         help="To make things easier for users, the VAT Amount is always positive.",
+        currency_field="in_invoice_currency_id",
     )
     in_invoice_expense_description = fields.Char(string="Expense Description")
     in_invoice_force_invoice_date = fields.Date(string="Force Invoice Date")
@@ -89,6 +96,12 @@ class AccountBankStatementLine(models.Model):
             "The value of the field VAT Amount must be always positive.",
         )
     ]
+
+    @api.depends("foreign_currency_id", "currency_id")
+    def _compute_in_invoice_currency_id(self):
+        for line in self:
+            cur = line.foreign_currency_id or line.currency_id
+            line.in_invoice_currency_id = cur.id
 
     @api.depends(
         "company_id",
@@ -252,11 +265,16 @@ class AccountBankStatementLine(models.Model):
         logger.info("End Vendor Bill")
 
     def _in_invoice_post_process(self, invoice):
-        cur = self.currency_id
-        total = abs(self.amount)
+        cur = self.in_invoice_currency_id
+        if not cur:
+            raise UserError(_("Missing invoice currency. This should never happen."))
+        if self.foreign_currency_id:
+            total = abs(self.amount_currency)
+        else:
+            total = abs(self.amount)
         ini_vat_amount = invoice.amount_tax
         invoice._check_total_amount(total)
-        if self.currency_id.compare_amounts(invoice.amount_total, total):
+        if cur.compare_amounts(invoice.amount_total, total):
             raise UserError(
                 _(
                     "Wrong total amount. Transaction total amount: %(trans_total)s. "
@@ -273,7 +291,7 @@ class AccountBankStatementLine(models.Model):
                     "This should never happen."
                 )
             )
-        if invoice.currency_id.compare_amounts(ini_vat_amount, invoice.amount_tax):
+        if cur.compare_amounts(ini_vat_amount, invoice.amount_tax):
             invoice.message_post(
                 body=_(
                     "Total VAT Amount has been forced from %(ini_vat_amount)s "
@@ -285,13 +303,17 @@ class AccountBankStatementLine(models.Model):
 
     def _prepare_in_invoice(self):
         self.ensure_one()
-        if self.currency_id.compare_amounts(self.amount, 0) <= 0:
+        currency = self.in_invoice_currency_id
+        if self.foreign_currency_id:
+            total = self.amount_currency
+        else:
+            total = self.amount
+        if currency.compare_amounts(total, 0) <= 0:
             move_type = "in_invoice"
-            total = self.amount * -1
+            total *= -1
         else:
             move_type = "in_refund"
-            total = self.amount
-        untaxed = self.currency_id.round(total - self.in_invoice_vat_amount)
+        untaxed = currency.round(total - self.in_invoice_vat_amount)
         if self.partner_id:
             partner = self.partner_id
         elif self.in_invoice_card_id and self.in_invoice_card_id.misc_partner_id:
@@ -318,9 +340,7 @@ class AccountBankStatementLine(models.Model):
                     )
                 )
         partner = partner.with_company(self.company_id.id)
-        vat_compare = self.company_currency_id.compare_amounts(
-            self.in_invoice_vat_amount, 0
-        )
+        vat_compare = currency.compare_amounts(self.in_invoice_vat_amount, 0)
         assert vat_compare >= 0
         if vat_compare > 0 and not self.in_invoice_tax_ids:
             raise UserError(
@@ -331,7 +351,6 @@ class AccountBankStatementLine(models.Model):
                     ),
                 )
             )
-        self.company_currency_id.compare_amounts(self.amount, 0)
 
         lvals = {
             "display_type": "product",
@@ -368,7 +387,7 @@ class AccountBankStatementLine(models.Model):
             "invoice_date": self.in_invoice_force_invoice_date or self.date,
             "ref": self.in_invoice_ref,
             "partner_id": partner.id,
-            "currency_id": self.currency_id.id,
+            "currency_id": currency.id,
             "invoice_line_ids": [Command.create(lvals)],
         }
         if not partner.property_supplier_payment_term_id:

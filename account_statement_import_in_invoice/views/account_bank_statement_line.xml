@@ -18,6 +18,7 @@
                 <field name="in_invoice_expense_description" />
                 <field name="in_invoice_expense_categ_id" />
                 <field name="in_invoice_account_id" />
+                <field name="in_invoice_currency_id" />
                 <field name="in_invoice_vat_rate" />
                 <field name="in_invoice_tax_ids" />
                 <field name="in_invoice_vat_amount" />
@@ -120,6 +121,7 @@
                         widget="many2many_tags"
                     />
                                                   <field name="in_invoice_vat_amount" />
+                <field name="in_invoice_currency_id" invisible="1" />
                                                   <field
                         name="in_invoice_force_invoice_date"
                     />
@@ -210,6 +212,7 @@
                                 name="in_invoice_ref"
                                 attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
                             />
+                <field name="in_invoice_currency_id" invisible="1" />
                                                   <field
                                 name="in_invoice_force_invoice_date"
                                 attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
@@ -294,6 +297,7 @@
                             widget="many2many_tags"
                         />
                                               <field name="in_invoice_vat_amount" />
+                <field name="in_invoice_currency_id" invisible="1" />
                                               <field
                             name="in_invoice_expense_description"
                         />
@@ -341,6 +345,7 @@
                     optional="hide"
                 />
                 <field name="in_invoice_vat_amount" optional="hide" />
+                <field name="in_invoice_currency_id" invisible="1" />
                 <field name="in_invoice_expense_description" optional="hide" />
                 <field name="in_invoice_force_invoice_date" optional="hide" />
             </field>
