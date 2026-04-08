@@ -67,7 +67,7 @@
                         name="open_cron"
                         type="object"
                         string="Edit Scheduled Action"
-                        groups="account.group_account_manager"
+                        groups="base.group_system"
                     />
 
                 </header>
