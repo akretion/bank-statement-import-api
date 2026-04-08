@@ -13,6 +13,7 @@ from odoo.exceptions import UserError, ValidationError
 from odoo.tools.misc import format_date, format_datetime
 
 # Backport of datetime.fromisoformat() for python < 3.11
+# pip install backports-datetime-fromisoformat
 if sys.version_info < (3, 11):
     from backports.datetime_fromisoformat import MonkeyPatch
 
