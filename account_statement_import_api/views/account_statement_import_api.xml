@@ -20,26 +20,20 @@
                         groups="account.group_account_manager"
                     />
                     <button
-                        name="test_api"
-                        type="object"
-                        string="Test API"
-                        groups="account.group_account_manager"
-                    />
-                    <button
-                        name="update_api_accounts"
-                        type="object"
-                        string="Get/Update API Bank Accounts"
-                        class="btn-primary"
-                        groups="account.group_account_manager"
-                        attrs="{'invisible': [('service', '=', False)]}"
-                    />
-                    <button
                         name="run_import"
                         type="object"
                         string="Run Now"
                         class="btn-primary"
                         groups="account.group_account_manager"
+                        attrs="{'invisible': [('journal_ids', '=', [])]}"
                     />
+                    <button
+                        name="test_api"
+                        type="object"
+                        string="Test API"
+                        groups="account.group_account_manager"
+                    />
+
                     <button
                         name="%(account_statement_import_api_generate_url_action)d"
                         type="action"
@@ -47,6 +41,13 @@
                         attrs="{'invisible': [('is_aggregator', '=', False)]}"
                         context="{'default_feature': 'add_account'}"
                         groups="account.group_account_manager"
+                    />
+                    <button
+                        name="update_api_accounts"
+                        type="object"
+                        string="Get/Update API Bank Accounts"
+                        groups="account.group_account_manager"
+                        attrs="{'invisible': [('service', '=', False)]}"
                     />
                     <button
                         name="%(account_statement_import_api_generate_url_action)d"

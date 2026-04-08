@@ -13,7 +13,6 @@
                     name="update_api_analytic_accounts"
                     type="object"
                     string="Get/Update Bank Statement Analytic Accounts"
-                    class="btn-primary"
                     groups="account.group_account_manager"
                     attrs="{'invisible': [('show_analytic_button', '!=', True)]}"
                 />
