@@ -2,6 +2,7 @@
 # @author: Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import datetime
 import logging
 
 from unidecode import unidecode
@@ -10,6 +11,7 @@ from odoo import _, api, fields, models
 from odoo.exceptions import UserError
 
 logger = logging.getLogger(__name__)
+TAXINT_MULTIPLIER = 10000
 
 
 class AccountStatementImportApi(models.Model):
@@ -61,6 +63,18 @@ class AccountStatementImportApi(models.Model):
         for rec in self:
             rec.bank_statement_expense_categ_count = service2count.get(rec.service, 0)
 
+    def _purchase_tax_domain(self):
+        domain = [
+            ("company_id", "=", self.company_id.id),
+            ("type_tax_use", "=", "purchase"),
+            ("price_include", "=", False),
+            ("amount_type", "=", "percent"),
+            ("amount", ">", 0),
+            ("unece_type_code", "=", "VAT"),
+            ("unece_categ_code", "=", "S"),
+        ]
+        return domain
+
     def _prepare_speedy(self):
         speedy = super()._prepare_speedy()
         exp_categ_read = (
@@ -69,7 +83,52 @@ class AccountStatementImportApi(models.Model):
             .search_read([("service", "=", self.service)], ["code"])
         )
         expcateg_code2id = {x["code"]: x["id"] for x in exp_categ_read}
-        speedy["expcateg_code2id"] = expcateg_code2id
+        # Load taxes
+        taxes = self.env["account.tax"].search_read(
+            self._purchase_tax_domain(), ["amount"]
+        )
+        tax_rateint2id = {
+            int(round(t["amount"] * TAXINT_MULTIPLIER)): t["id"] for t in taxes
+        }
+        # To auto-set partner if a previous bank statement line with the same label
+        # had a forced partner (don't apply for misc partners)
+        excluded_partner_ids = set()
+        cards_with_misc_partner = self.env["account.bank.statement.card"].search_read(
+            [
+                ("company_id", "=", self.company_id.id),
+                ("misc_partner_id", "!=", False),
+            ],
+            ["misc_partner_id"],
+        )
+        for card_with_misc_partner in cards_with_misc_partner:
+            excluded_partner_ids.add(card_with_misc_partner["misc_partner_id"][0])
+        if self.company_id.misc_partner_id:
+            excluded_partner_ids.add(self.company_id.misc_partner_id.id)
+
+        limit_date = fields.Date.context_today(self) - datetime.timedelta(365 * 5)
+        st_line_read = self.env["account.bank.statement.line"].search_read(
+            [
+                ("in_invoice_id", "!=", False),
+                ("is_reconciled", "=", True),
+                ("company_id", "=", self.company_id.id),
+                ("partner_id", "!=", False),
+                ("partner_id", "not in", tuple(excluded_partner_ids)),
+                ("payment_ref", "!=", False),
+                ("date", ">=", limit_date),
+            ],
+            ["payment_ref", "partner_id"],
+            order="date",
+        )
+        payment_ref2partner_id = {
+            x["payment_ref"]: x["partner_id"][0] for x in st_line_read
+        }
+        speedy.update(
+            {
+                "expcateg_code2id": expcateg_code2id,
+                "tax_rateint2id": tax_rateint2id,
+                "payment_ref2partner_id": payment_ref2partner_id,
+            }
+        )
         if not speedy["service_info"].get("show_analytic_button"):
             return speedy
         bs_analytic_account_read = (

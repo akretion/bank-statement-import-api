@@ -233,7 +233,8 @@ class AccountBankStatementLine(models.Model):
         self._in_invoice_update_statement_line(inv, can_reconcile=True)
         new_data = []
         for line in self.reconcile_data_info["data"]:
-            new_data.append(line)
+            if line.get("kind") == "liquidity":
+                new_data.append(line)
         for line in inv.line_ids.filtered(
             lambda x: x.account_id == inv.partner_id.property_account_payable_id
         ):

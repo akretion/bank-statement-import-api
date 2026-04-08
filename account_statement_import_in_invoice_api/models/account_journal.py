@@ -14,8 +14,9 @@ from odoo.addons.account_statement_import_in_invoice.models.account_bank_stateme
     TAX_DECIMAL_DIGITS,
 )
 
+from .account_statement_import_api import TAXINT_MULTIPLIER
+
 logger = logging.getLogger(__name__)
-TAXINT_MULTIPLIER = 10000
 TIMEOUT = 30
 
 
@@ -58,18 +59,11 @@ class AccountJournal(models.Model):
         ]
         return res
 
-    def _api_import_update_speedy(self, speedy):
-        speedy["move_id2unique_import_id"] = {}
-        res = super()._api_import_update_speedy(speedy)
-        # Load cards
-        card_read = (
-            self.env["account.bank.statement.card"]
-            .with_context(active_test=False)
-            .search_read([("journal_id", "=", self.id)], ["code"])
-        )
-        card_code2id = {x["code"]: x["id"] for x in card_read}
+    def _api_import_set_existing_lines(self, search_unique_import_ids, speedy):
+        res = super()._api_import_set_existing_lines(search_unique_import_ids, speedy)
         # Load existing attachment identifiers
-        attach_identifier2id = {}  # Used for deleting attachments
+        # We must have the code there (and not in _api_import_update_speedy())
+        # because we need to have the values in speedy["move_id2unique_import_id"]
         attach_read = self.env["ir.attachment"].search_read(
             [
                 ("res_model", "=", "account.move"),
@@ -79,43 +73,33 @@ class AccountJournal(models.Model):
             ["bank_statement_import_identifier", "res_id"],
         )
         for attach in attach_read:
-            unique_import_id = speedy["move_id2unique_import_id"][attach["res_id"]]
+            move_id = attach["res_id"]
+            unique_import_id = speedy["move_id2unique_import_id"][move_id]
             speedy["existing_lines"][unique_import_id]["attachment_identifiers"].append(
                 attach["bank_statement_import_identifier"]
             )
-            attach_identifier2id[attach["bank_statement_import_identifier"]] = attach[
-                "id"
-            ]
-        # Load taxes
-        taxes = self.env["account.tax"].search_read(
-            self._api_import_purchase_tax_domain(), ["amount"]
+            speedy["attach_identifier2id"][
+                attach["bank_statement_import_identifier"]
+            ] = attach["id"]
+        return res
+
+    def _api_import_update_speedy(self, speedy):
+        res = super()._api_import_update_speedy(speedy)
+        # Load cards
+        card_read = (
+            self.env["account.bank.statement.card"]
+            .with_context(active_test=False)
+            .search_read([("journal_id", "=", self.id)], ["code"])
         )
-        tax_rateint2id = {}
-        for tax in taxes:
-            rate_int = int(
-                round(tax["amount"] * TAXINT_MULTIPLIER)
-            )  # amount digit precision = 4
-            tax_rateint2id[rate_int] = tax["id"]
+        card_code2id = {x["code"]: x["id"] for x in card_read}
         speedy.update(
             {
                 "card_code2id": card_code2id,
-                "attach_identifier2id": attach_identifier2id,
-                "tax_rateint2id": tax_rateint2id,
+                "move_id2unique_import_id": {},
+                "attach_identifier2id": {},  # used to handle attachment deletion
             }
         )
         return res
-
-    def _api_import_purchase_tax_domain(self):
-        domain = [
-            ("company_id", "=", self.company_id.id),
-            ("type_tax_use", "=", "purchase"),
-            ("price_include", "=", False),
-            ("amount_type", "=", "percent"),
-            ("amount", ">", 0),
-            ("unece_type_code", "=", "VAT"),
-            ("unece_categ_code", "=", "S"),
-        ]
-        return domain
 
     def _api_import_prepare_card(self, pivot_line, speedy):
         vals = {
@@ -154,6 +138,10 @@ class AccountJournal(models.Model):
                     f"Expense category code '{expcateg_code}' doesn't exist "
                     f"for service {speedy['service']}",
                 )
+        if pivot_line["payment_ref"] in speedy["payment_ref2partner_id"]:
+            lvals["partner_id"] = speedy["payment_ref2partner_id"][
+                pivot_line["payment_ref"]
+            ]
         bs_analytic_account_idents = pivot_line.get(
             "in_invoice_analytic_account_idents"
         )
@@ -247,6 +235,8 @@ class AccountJournal(models.Model):
                         ],
                     }
                     attachment_ids.append(Command.create(attach_vals))
+        else:
+            attachment_ids.append(Command.clear())  # del all attachments
         lvals.update(
             {
                 "in_invoice_vat_amount": pivot_line.get("in_invoice_vat_amount"),

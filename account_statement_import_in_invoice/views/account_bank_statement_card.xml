@@ -31,7 +31,10 @@
                         />
                                     <field name="company_id" invisible="1" />
                                     <field name="journal_id" />
-                                    <field name="misc_partner_id" />
+                                    <field
+                            name="misc_partner_id"
+                            context="{'default_is_company': True}"
+                        />
                                     <field name="active" invisible="1" />
                             </group>
                     </sheet>
