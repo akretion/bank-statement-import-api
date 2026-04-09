@@ -32,6 +32,7 @@ class AccountStatementImportApi(models.Model):
         string="Bank Journals",
         check_company=True,
         domain="[('type', '=', 'bank'), ('company_id', '=', company_id)]",
+        readonly=True,
     )
     tz = fields.Selection(
         _tz_get,
