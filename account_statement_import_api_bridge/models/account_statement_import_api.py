@@ -36,6 +36,16 @@ class AccountStatementImportApi(models.Model):
         ),
     ]
 
+    def init(self):
+        self._cr.execute(
+            """
+            CREATE UNIQUE INDEX IF NOT EXISTS
+            single_bridge_statement_import_api_per_company
+            ON account_statement_import_api
+            (company_id) WHERE service = 'bridge'
+            """
+        )
+
     @api.model
     def _get_service_info(self):
         service2info = super()._get_service_info()
