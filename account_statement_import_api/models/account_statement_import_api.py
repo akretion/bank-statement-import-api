@@ -179,6 +179,19 @@ class AccountStatementImportApi(models.Model):
             rec.show_login = show_login
             rec.show_password = show_password
 
+    def unlink(self):
+        for rec in self:
+            if rec.user_identifier_required and rec.user_identifier:
+                raise UserError(
+                    _(
+                        "Bank statement import API '%s' has a user identifier. "
+                        "You must delete the user before deleting the bank statement "
+                        "import API.",
+                        rec.display_name,
+                    )
+                )
+        return super().unlink()
+
     def open_cron(self):
         self.ensure_one()
         model = self.env["ir.model"].search(
