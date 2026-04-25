@@ -5,6 +5,9 @@
 from datetime import timedelta
 
 from odoo import api, fields, models
+import logging
+logger = logging.getLogger(__name__)
+DEFAULT_LOG_VACUUM_DAYS = 600
 
 
 class AccountStatementImportApiLog(models.Model):
@@ -49,12 +52,18 @@ class AccountStatementImportApiLog(models.Model):
 
     @api.autovacuum
     def _gc_old_logs(self):
-        """Method automatically called by the autovaccum internal data cron"""
+        """Method automatically called by the autovacuum internal data cron"""
+        config_key = "account_statement_import_api.log_days"
         days_str = (
             self.env["ir.config_parameter"]
             .sudo()
-            .get_param("account_statement_import_api.log_days", default="180")
+            .get_param(config_key, default=str(DEFAULT_LOG_VACUUM_DAYS))
         )
-        days = int(days_str)
+        try:
+            days = int(days_str)
+        except Exception:
+            days = DEFAULT_LOG_VACUUM_DAYS
+            logger.warning(f"Failed to convert ir.config_parameter {config_key} ({days_str}) to integer. Using default value {days} days")
         limit_date = fields.Datetime.now() - timedelta(days)
+        logger.info(f"Autovacuum of bank statement import API logs older than {days} days")
         self.search([("create_date", "<", limit_date)]).unlink()
