@@ -62,7 +62,6 @@
                     optional="show"
                     string="New Lines"
                     sum="1"
-                    attrs="{'invisible': [('status', '=', 'failure')]}"
                 />
                                 <field
                     name="updated_line_count"
