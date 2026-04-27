@@ -2,10 +2,11 @@
 # @author: Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
+import logging
 from datetime import timedelta
 
 from odoo import api, fields, models
-import logging
+
 logger = logging.getLogger(__name__)
 DEFAULT_LOG_VACUUM_DAYS = 600
 
@@ -63,7 +64,12 @@ class AccountStatementImportApiLog(models.Model):
             days = int(days_str)
         except Exception:
             days = DEFAULT_LOG_VACUUM_DAYS
-            logger.warning(f"Failed to convert ir.config_parameter {config_key} ({days_str}) to integer. Using default value {days} days")
+            logger.warning(
+                f"Failed to convert ir.config_parameter {config_key} ({days_str}) "
+                f"to integer. Using default value {days} days"
+            )
         limit_date = fields.Datetime.now() - timedelta(days)
-        logger.info(f"Autovacuum of bank statement import API logs older than {days} days")
+        logger.info(
+            f"Autovacuum of bank statement import API logs older than {days} days"
+        )
         self.search([("create_date", "<", limit_date)]).unlink()
