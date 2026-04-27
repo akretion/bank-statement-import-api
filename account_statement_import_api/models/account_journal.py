@@ -46,6 +46,10 @@ class AccountJournal(models.Model):
     )
     statement_import_api_start_date = fields.Date(
         string="Import Start Date",
+        compute="_compute_statement_import_api_start_date",
+        store=True,
+        readonly=False,
+        precompute=True,
         help="The first bank statement API import will start from this date.",
     )
     statement_import_api_last_success = fields.Datetime(
@@ -123,6 +127,25 @@ class AccountJournal(models.Model):
                         statement_import_api_account_id = api_account.id
                         break
             journal.statement_import_api_account_id = statement_import_api_account_id
+
+    @api.depends("statement_import_api_id")
+    def _compute_statement_import_api_start_date(self):
+        stline_obj = self.env["account.bank.statement.line"]
+        for journal in self:
+            start_date = False
+            journal_id = journal._origin.id
+            if journal.statement_import_api_id and journal_id:
+                last_st_line = stline_obj.search_read(
+                    [
+                        ("journal_id", "=", journal_id),
+                    ],
+                    ["date"],
+                    order="date desc",
+                    limit=1,
+                )
+                if last_st_line:
+                    start_date = last_st_line[0]["date"] + datetime.timedelta(1)
+            journal.statement_import_api_start_date = start_date
 
     @api.constrains(
         "statement_import_api_id",

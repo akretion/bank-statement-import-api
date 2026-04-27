@@ -55,7 +55,8 @@ class AccountStatementImportApiConnector(models.Model):
         (
             "statement_import_api_identifier_unique",
             "unique(statement_import_api_id, identifier)",
-            "This identifier is already used by another connector of the same statement import API.",
+            "This identifier is already used by another connector "
+            "of the same statement import API.",
         ),
         # no unicity on (statement_import_api_id, name) because
         # the connector is created by code and we don't want to block that
