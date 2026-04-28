@@ -6,7 +6,7 @@ import logging
 
 import requests
 
-from odoo import _, api, fields, models
+from odoo import _, api, fields, models, tools
 from odoo.exceptions import UserError
 
 BRIDGE_VERSION = "2025-01-15"
@@ -62,9 +62,7 @@ class AccountStatementImportApi(models.Model):
     def _prepare_speedy(self):
         speedy = super()._prepare_speedy()
         if self.service == "bridge":
-            url = (
-                self.env["ir.config_parameter"].sudo().get_param("bridge_api.base_url")
-            )
+            url = tools.config.get("account_statement_import_api_bridge_url")
             if url:
                 url = url.strip()
                 if url.endswith("/"):
