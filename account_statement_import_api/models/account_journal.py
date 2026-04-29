@@ -519,7 +519,7 @@ class AccountJournal(models.Model):
             result["updated_line_count"],
         )
         log_vals = self._api_import_prepare_log(result, speedy)
-        log = log_obj.create(log_vals)
+        log = log_obj.sudo().create(log_vals)
         logger.debug("Bank statement import log created ID %d", log.id)
         logger.info("End of bank statement import API of journal %s", self.display_name)
         return log

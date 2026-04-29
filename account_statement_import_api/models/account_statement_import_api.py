@@ -329,7 +329,7 @@ class AccountStatementImportApi(models.Model):
                     }
                 )
         if logs_to_create:
-            self.env["account.statement.import.api.log"].create(logs_to_create)
+            self.env["account.statement.import.api.log"].sudo().create(logs_to_create)
         self._connector_status_update(speedy)
         logger.info(
             "End of bank statement import API %s company %s",
