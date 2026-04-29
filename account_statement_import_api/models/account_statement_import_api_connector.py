@@ -2,7 +2,7 @@
 # @author: Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import _, fields, models
+from odoo import Command, _, api, fields, models
 
 
 class AccountStatementImportApiConnector(models.Model):
@@ -28,15 +28,14 @@ class AccountStatementImportApiConnector(models.Model):
         ],
         compute="_compute_auth_expiry_warn_type",
     )
-    sync_status = fields.Selection(
-        [
-            ("ok", "OK"),
-            ("warning", "Warning"),
-            ("ko", "Not Working"),
-        ],
+    sync_status = fields.Selection("_selection_sync_status", readonly=True)
+    sync_status_message = fields.Text(readonly=True, string="Sync Message")
+    sync_status_ids = fields.One2many(
+        "account.statement.import.api.connector.status",
+        "connector_id",
+        string="Status History",
         readonly=True,
     )
-    sync_status_message = fields.Text(readonly=True, string="Sync Message")
     last_sync_datetime = fields.Datetime(
         readonly=True,
         help="Last sync between the bank aggragator and the bank "
@@ -61,6 +60,15 @@ class AccountStatementImportApiConnector(models.Model):
         # no unicity on (statement_import_api_id, name) because
         # the connector is created by code and we don't want to block that
     ]
+
+    @api.model
+    def _selection_sync_status(self):
+        """Also used in account.statement.import.api.connector.status"""
+        return [
+            ("ok", _("OK")),
+            ("warning", _("Warning")),
+            ("ko", _("Not Working")),
+        ]
 
     def _compute_auth_expiry_warn_type(self):
         today = fields.Date.context_today(self)
@@ -97,3 +105,34 @@ class AccountStatementImportApiConnector(models.Model):
                     dname = " ".join([dname, expire_str])
             res.append((rec.id, dname))
         return res
+
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get("sync_status"):
+                vals["sync_status_ids"] = [
+                    Command.create(
+                        {
+                            "sync_status": vals["sync_status"],
+                            "sync_status_message": vals.get("sync_status_message"),
+                        }
+                    )
+                ]
+        return super().create(vals_list)
+
+    def write(self, vals):
+        if vals.get("sync_status"):
+            history_obj = self.env["account.statement.import.api.connector.status"]
+            for connector in self:
+                if connector.sync_status != vals["sync_status"] or (
+                    (connector.sync_status_message or vals.get("sync_status_message"))
+                    and connector.sync_status_message != vals.get("sync_status_message")
+                ):
+                    history_obj.create(
+                        {
+                            "connector_id": connector.id,
+                            "sync_status": vals["sync_status"],
+                            "sync_status_message": vals.get("sync_status_message"),
+                        }
+                    )
+        return super().write(vals)

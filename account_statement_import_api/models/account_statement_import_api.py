@@ -276,7 +276,7 @@ class AccountStatementImportApi(models.Model):
         if (
             not self.env.context.get("no_check_user_identifier")
             and self.user_identifier_required
-            and not self.user_identifier
+            and not self.sudo().user_identifier
         ):
             raise UserError(
                 _(
@@ -401,7 +401,7 @@ class AccountStatementImportApi(models.Model):
         connector_ident2vals = self._get_connector_ident2vals(speedy)
         for connector in self.connector_ids:
             if connector.identifier in connector_ident2vals:
-                connector.write(connector_ident2vals[connector.identifier])
+                connector.sudo().write(connector_ident2vals[connector.identifier])
                 logger.info(
                     "Connector %s in company %s updated",
                     connector.display_name,
