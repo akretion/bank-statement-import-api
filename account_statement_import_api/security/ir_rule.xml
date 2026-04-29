@@ -30,5 +30,12 @@
     <field name="domain_force">[('company_id', 'in', company_ids)]</field>
 </record>
 
+<record id="account_statement_import_api_connector_status_rule" model="ir.rule">
+    <field
+            name="name"
+        >Account Statement Import API Connector Status History multi-company</field>
+    <field name="model_id" ref="model_account_statement_import_api_connector_status" />
+    <field name="domain_force">[('company_id', 'in', company_ids)]</field>
+</record>
 
 </odoo>

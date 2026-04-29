@@ -106,7 +106,7 @@ class AccountStatementImportApi(models.Model):
         self.ensure_one()
         ajo = self.env["account.journal"]
         headers_token = speedy["bridge_headers_no_token"]
-        user_uuid = self.user_identifier
+        user_uuid = self.sudo().user_identifier
         post_json = {"user_uuid": user_uuid}
         token_dict = self._bridge_post(
             "aggregation/authorization/token",

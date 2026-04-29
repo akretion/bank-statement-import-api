@@ -76,6 +76,16 @@
                         colspan="2"
                     />
                                 </group>
+                                <group
+                    name="status_history"
+                    string="Sync Status History"
+                >
+                                        <field
+                        name="sync_status_ids"
+                        nolabel="1"
+                        colspan="2"
+                    />
+                                </group>
 
                         </form>
                 </field>
