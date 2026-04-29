@@ -33,7 +33,7 @@ class AccountJournal(models.Model):
         compute="_compute_statement_import_api_id",
         store=True,
         readonly=False,
-        prefetch=True,
+        precompute=True,
     )
     statement_import_api_service = fields.Selection(
         related="statement_import_api_id.service", store=True
@@ -64,7 +64,7 @@ class AccountJournal(models.Model):
         compute="_compute_statement_import_api_account_id",
         store=True,
         readonly=False,
-        prefetch=True,
+        precompute=True,
         domain="[('statement_import_api_id', '=', statement_import_api_id)]",
     )
     statement_import_api_account_identifier = fields.Char(
