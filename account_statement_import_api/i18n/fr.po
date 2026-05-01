@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-05-01 22:13+0000\n"
-"PO-Revision-Date: 2026-05-01 22:13+0000\n"
+"POT-Creation-Date: 2026-05-01 22:31+0000\n"
+"PO-Revision-Date: 2026-05-01 22:31+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -273,9 +273,9 @@ msgid ""
 "Bank statement import API '%s' has a user identifier. You must delete the "
 "user before deleting the bank statement import API."
 msgstr ""
-"L'API d'import de relevés de compte '%s' a un identifiant "
-"utilisateur. Vous devez supprimer l'utilisateur avant de supprimer l'API "
-"d'import de relevés compte."
+"L'API d'import de relevés de compte '%s' a un identifiant utilisateur. Vous "
+"devez supprimer l'utilisateur avant de supprimer l'API d'import de relevés "
+"compte."
 
 #. module: account_statement_import_api
 #: model:ir.model,name:account_statement_import_api.model_account_statement_import_api_account
@@ -892,7 +892,7 @@ msgstr "Lancer maintenant"
 #: code:addons/account_statement_import_api/models/account_statement_import_api_log.py:0
 #, python-format
 msgid "See failure log on Statement Import API '%s'."
-msgstr "Voir le log d'échec de l'API d'import des relevés de compte '%s'."
+msgstr "Voir le message d'échec de l'API d'import des relevés de compte '%s'."
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_journal__statement_import_api_service
@@ -1043,8 +1043,8 @@ msgstr "Échec de la synchronisation sur %s"
 #, python-format
 msgid "Sync with warning(s), cf warning log on Statement Import API '%s'."
 msgstr ""
-"Synchro avec avertissement(s), cf. log d'avertissement sur l'API"
-" d'import de relevés de compte '%s'."
+"Synchro avec avertissement(s), cf. message d'avertissement sur l'API d'import de"
+" relevés de compte '%s'."
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,help:account_statement_import_api.field_account_journal__statement_import_api_account_identifier
@@ -1204,14 +1204,13 @@ msgstr "Cet identifiant utilisateur existe déjà pour ce service."
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_delete_connector_form
 msgid ""
 "This wizard allows to delete a connector and all it's related API Bank "
-"Accounts. The deletion will happen in Odoo and also at the bank "
-"aggregator. <strong>Don't use it if you don't know what you are "
-"doing!</strong>"
+"Accounts. The deletion will happen in Odoo and also at the bank aggregator. "
+"<strong>Don't use it if you don't know what you are doing!</strong>"
 msgstr ""
 "Cet assistant permet de supprimer un connecteur et tous les comptes "
 "bancaires API qui lui sont liés. La suppression se fera dans Odoo et aussi "
-"dans l'agrégateur bancaire. <strong>Ne l'utilisez pas si vous ne"
-" savez pas ce que vous faites !</strong>"
+"dans l'agrégateur bancaire. <strong>Ne l'utilisez pas si vous ne savez pas "
+"ce que vous faites !</strong>"
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__tz
