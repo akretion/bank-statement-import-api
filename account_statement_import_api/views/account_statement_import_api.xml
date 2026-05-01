@@ -97,6 +97,7 @@
                             context="{'search_default_statement_import_api_id': active_id}"
                             icon="fa-history"
                             string="Sync Status History"
+                            attrs="{'invisible': [('is_aggregator', '=', False)]}"
                         />
 
                 </div>
