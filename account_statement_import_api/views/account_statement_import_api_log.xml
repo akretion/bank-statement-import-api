@@ -12,6 +12,7 @@
                         <form>
                                 <group name="main">
                                     <group name="main-left">
+                                        <field name="create_date" string="Date" />
                                             <field name="statement_import_api_id" />
                                             <field
                             name="type"
@@ -23,14 +24,6 @@
                             name="journal_id"
                             attrs="{'invisible': [('journal_id', '=', False)]}"
                         />
-                                        <field name="create_date" string="Date" />
-                                        <field name="create_uid" string="User" />
-                                        <field
-                            name="company_id"
-                            groups="base.group_multi_company"
-                        />
-                                </group>
-                                    <group name="main-right">
                                         <field
                             name="status"
                             widget="badge"
@@ -38,8 +31,27 @@
                             decoration-danger="status == 'failure'"
                             decoration-warning="status == 'success_warn'"
                         />
-                                        <field name="new_line_count" />
-                                        <field name="updated_line_count" />
+
+                                </group>
+                                    <group name="main-right">
+                                        <field
+                            name="new_line_count"
+                            attrs="{'invisible': [('type', '!=', 'statement_line')]}"
+                        />
+                                        <field
+                            name="updated_line_count"
+                            attrs="{'invisible': [('type', '!=', 'statement_line')]}"
+                        />
+                                        <field
+                            name="create_uid"
+                            string="User"
+                            widget="many2one_avatar_user"
+                        />
+                                        <field
+                            name="company_id"
+                            groups="base.group_multi_company"
+                        />
+
 
                                 </group>
                                 </group>
@@ -54,6 +66,7 @@
                 <field name="model">account.statement.import.api.log</field>
                 <field name="arch" type="xml">
                         <tree decoration-danger="status == 'failure'">
+                                <field name="create_date" string="Date" />
                                 <field
                     name="statement_import_api_id"
                     invisible="not context.get('api_log_main_view')"
@@ -65,12 +78,6 @@
                     widget="badge"
                 />
                                 <field name="journal_id" />
-                                <field name="create_date" string="Date" />
-                                <field
-                    name="create_uid"
-                    string="User"
-                    optional="show"
-                />
                                 <field
                     name="status"
                     widget="badge"
@@ -83,13 +90,22 @@
                     optional="show"
                     string="New Lines"
                     sum="1"
+                    attrs="{'invisible': [('type', '!=', 'statement_line')]}"
                 />
                                 <field
                     name="updated_line_count"
                     optional="show"
                     string="Updated Lines"
                     sum="1"
+                    attrs="{'invisible': [('type', '!=', 'statement_line')]}"
                 />
+                                <field
+                    name="create_uid"
+                    string="User"
+                    optional="show"
+                    widget="many2one_avatar_user"
+                />
+
                         </tree>
                 </field>
         </record>

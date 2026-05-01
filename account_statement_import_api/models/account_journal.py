@@ -423,6 +423,9 @@ class AccountJournal(models.Model):
                 )
                 if not check_res:
                     continue
+                pivot_line_amount_fmt = format_amount(
+                    self.env, pivot_line["amount"], speedy["journal_currency"]
+                )
                 if (
                     self.statement_import_api_start_date
                     and pivot_line["date"] < self.statement_import_api_start_date
@@ -430,19 +433,22 @@ class AccountJournal(models.Model):
                     speedy["log_obj"]._info_log(
                         result,
                         f"Skipped retreived transaction dated "
-                        f"{pivot_line['date']} amount {pivot_line['amount']} "
-                        f"label {pivot_line['payment_ref']} because it is "
+                        f"{pivot_line['date']} amount {pivot_line_amount_fmt} "
+                        f"label '{pivot_line['payment_ref']}' because it is "
                         f"before the start import date {self.statement_import_api_start_date}",
                     )
                 elif pivot_line["unique_import_id"] in existing_lines:
                     existing_line = existing_lines[pivot_line["unique_import_id"]]
+                    existing_line_amount_fmt = format_amount(
+                        self.env, existing_line["amount"], speedy["journal_currency"]
+                    )
                     if pivot_line.get("to_delete"):
                         if existing_line["is_reconciled"]:
                             speedy["log_obj"]._error_log(
                                 result,
                                 f"Existing reconciled line ID "
                                 f"{existing_line['id']} dated {existing_line['date']} "
-                                f"amount {existing_line['amount']} "
+                                f"amount {existing_line_amount_fmt} "
                                 f"label '{existing_line['payment_ref']}' is "
                                 "marked as 'to_delete', but odoo can't delete it "
                                 "because it is already reconciled. You must handle "
@@ -453,7 +459,7 @@ class AccountJournal(models.Model):
                                 result,
                                 f"Deleted existing unreconciled line ID "
                                 f"{existing_line['id']} dated {existing_line['date']} "
-                                f"amount {existing_line['amount']} "
+                                f"amount {existing_line_amount_fmt} "
                                 f"label '{existing_line['payment_ref']}' because "
                                 "it is marked as 'to_delete'",
                             )
@@ -467,7 +473,7 @@ class AccountJournal(models.Model):
                             result,
                             f"Skipped existing reconciled line ID "
                             f"{existing_line['id']} dated {existing_line['date']} "
-                            f"amount {existing_line['amount']} "
+                            f"amount {existing_line_amount_fmt} "
                             f"label '{existing_line['payment_ref']}'",
                         )
                     elif speedy.get("update_existing_bank_statement_lines"):
@@ -479,7 +485,7 @@ class AccountJournal(models.Model):
                             result,
                             f"Skipped existing unreconciled line ID "
                             f"{existing_line['id']} dated {existing_line['date']} "
-                            f"amount {existing_line['amount']} "
+                            f"amount {existing_line_amount_fmt} "
                             f"label '{existing_line['payment_ref']}'",
                         )
                 else:  # New bank statement line to create
@@ -487,7 +493,7 @@ class AccountJournal(models.Model):
                         speedy["log_obj"]._info_log(
                             result,
                             f"Skipped line dated {pivot_line['date']} "
-                            f"amount {pivot_line['amount']} label "
+                            f"amount {pivot_line_amount_fmt} label "
                             f"'{pivot_line['payment_ref']}' because it is marked "
                             "as 'to_delete' and it was not in Odoo yet.",
                         )
@@ -501,10 +507,13 @@ class AccountJournal(models.Model):
                         lvals, speedy["update_hook_speeddict"]
                     )
                     new_line_vals.append(lvals)
+                    amount_fmt = format_amount(
+                        self.env, lvals["amount"], speedy["journal_currency"]
+                    )
                     speedy["log_obj"]._info_log(
                         result,
                         f"Created new line dated {lvals['date']} "
-                        f"amount {lvals['amount']} label '{lvals['payment_ref']}'",
+                        f"amount {amount_fmt} label '{lvals['payment_ref']}'",
                     )
             if new_line_vals and not any(
                 [log_type == "error" for log_type, msg in result["logs"]]

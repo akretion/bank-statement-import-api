@@ -2,7 +2,13 @@
 # @author: Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
+import logging
+
 from odoo import Command, _, api, fields, models
+
+logger = logging.getLogger(__name__)
+
+DAYS_BEFORE_EXPIRY_WARN = 10
 
 
 class AccountStatementImportApiConnector(models.Model):
@@ -71,6 +77,23 @@ class AccountStatementImportApiConnector(models.Model):
         ]
 
     def _compute_auth_expiry_warn_type(self):
+        config_key = "account_statement_import_api.days_before_expiry_warn"
+        warn_limit_days_str = (
+            self.env["ir.config_parameter"]
+            .sudo()
+            .get_param(config_key, default=str(DAYS_BEFORE_EXPIRY_WARN))
+        )
+        try:
+            warn_limit_days = int(warn_limit_days_str)
+        except Exception:
+            warn_limit_days = DAYS_BEFORE_EXPIRY_WARN
+            logger.warning(
+                f"Failed to convert ir.config_parameter {config_key} "
+                f"({warn_limit_days_str}) to integer. "
+                f"Using default value {warn_limit_days} days"
+            )
+        if warn_limit_days < 0:
+            warn_limit_days = DAYS_BEFORE_EXPIRY_WARN
         today = fields.Date.context_today(self)
         for connector in self:
             warn_type = False
@@ -78,7 +101,7 @@ class AccountStatementImportApiConnector(models.Model):
                 days = (connector.auth_expiry_date - today).days
                 if days <= 0:
                     warn_type = "danger"
-                elif days <= 10:
+                elif days <= warn_limit_days:
                     warn_type = "warning"
             connector.auth_expiry_warn_type = warn_type
 
