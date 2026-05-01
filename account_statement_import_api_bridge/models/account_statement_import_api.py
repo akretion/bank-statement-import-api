@@ -400,6 +400,13 @@ class AccountStatementImportApi(models.Model):
             connector, result, speedy, force_reauthentication=True
         )
 
+    def _bridge_delete_connector(self, connector, result, speedy):
+        self.ensure_one()
+        url_path = f"aggregation/items/{connector.identifier}"
+        headers = self._bridge_get_headers(result, speedy)
+        res = self._bridge_del(url_path, headers, result, speedy)
+        return res
+
     def _bridge_delete_user(self, result, speedy):
         self.ensure_one()
         url_path = f"aggregation/users/{self.user_identifier}"

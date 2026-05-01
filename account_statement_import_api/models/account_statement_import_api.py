@@ -540,7 +540,7 @@ class AccountStatementImportApi(models.Model):
         message_list = []
         if account_ident2vals:
             to_create_vals_list = []
-            connector_ident2vals = self._get_connector_ident2vals(speedy)
+            connector_ident2vals = self._get_connector_ident2vals(result, speedy)
             conn_obj = self.env["account.statement.import.api.connector"]
             connector_sr = conn_obj.search_read(
                 [("statement_import_api_id", "=", self.id)], ["identifier"]

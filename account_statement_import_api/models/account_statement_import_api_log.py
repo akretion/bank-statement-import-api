@@ -28,6 +28,7 @@ class AccountStatementImportApiLog(models.Model):
         [
             ("statement_line", "Bank Statement Line Update"),
             ("other", "Get Balances and Update Connectors"),
+            ("delete_connector", "Delete Connector"),
         ],
         readonly=True,
     )
@@ -131,7 +132,6 @@ class AccountStatementImportApiLog(models.Model):
 
     @api.model
     def _prepare_log(self, log_type, result, speedy, journal_id=None):
-        assert log_type in ("other", "statement_line")
         if log_type == "statement_line":
             assert journal_id
         logs = []
