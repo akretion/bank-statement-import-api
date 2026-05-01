@@ -13,7 +13,10 @@
                 <field name="arch" type="xml">
                         <form>
                                 <group>
-                                        <field name="statement_import_api_id" invisible="not context.get('api_connector_status_main_view')"/>
+                                        <field
+                        name="statement_import_api_id"
+                        invisible="not context.get('api_connector_status_main_view')"
+                    />
                                         <field
                         name="connector_id"
                         invisible="not context.get('api_connector_status_main_view')"
@@ -38,8 +41,14 @@
             name="model"
         >account.statement.import.api.connector.status</field>
                 <field name="arch" type="xml">
-                        <tree decoration-danger="sync_status == 'ko'" decoration-warning="sync_status == 'warning'">
-                            <field name="statement_import_api_id" invisible="not context.get('api_connector_status_main_view')"/>
+                        <tree
+                decoration-danger="sync_status == 'ko'"
+                decoration-warning="sync_status == 'warning'"
+            >
+                            <field
+                    name="statement_import_api_id"
+                    invisible="not context.get('api_connector_status_main_view')"
+                />
                                         <field
                     name="connector_id"
                     invisible="not context.get('api_connector_status_main_view')"
@@ -86,15 +95,19 @@
                     name="ko"
                     string="Not Working"
                     domain="[('sync_status', '=', 'ko')]"
-                                    />
-                            <separator/>
-                            <filter string="Change Date" name="create_date" date="create_date"/>
+                />
+                            <separator />
+                            <filter
+                    string="Change Date"
+                    name="create_date"
+                    date="create_date"
+                />
                             <group name="groupby">
                                 <filter
                         name="sync_status_groupby"
                         string="Sync Status"
                         context="{'group_by': 'sync_status'}"
-                                        />
+                    />
                                 <filter
                         name="connector_groupby"
                         string="Connector"

@@ -5,7 +5,7 @@
 import logging
 from datetime import timedelta
 
-from odoo import api, fields, models
+from odoo import _, api, fields, models
 
 logger = logging.getLogger(__name__)
 DEFAULT_LOG_VACUUM_DAYS = 600
@@ -24,11 +24,17 @@ class AccountStatementImportApiLog(models.Model):
         required=True,
         ondelete="cascade",
     )
+    type = fields.Selection(
+        [
+            ("statement_line", "Bank Statement Line Update"),
+            ("other", "Get Balances and Update Connectors"),
+        ],
+        readonly=True,
+    )
     journal_id = fields.Many2one(
         "account.journal",
         string="Bank Journal",
         readonly=True,
-        required=True,
         ondelete="cascade",
     )
     company_id = fields.Many2one(
@@ -73,3 +79,52 @@ class AccountStatementImportApiLog(models.Model):
             f"Autovacuum of bank statement import API logs older than {days} days"
         )
         self.search([("create_date", "<", limit_date)]).unlink()
+
+    def _prepare_notification_action(self):
+        """This method can apply on several logs"""
+        if not self:
+            return {}
+        fail_log = warn_log = False
+        for log in self:
+            if log.status == "failure":
+                fail_log = log
+            elif log.status == "success_warn":
+                warn_log = log
+        if fail_log:
+            title = _("Sync failed on %s", fail_log.journal_id.display_name)
+            message = _(
+                "See failure log on Statement Import API '%s'.",
+                fail_log.statement_import_api_id.display_name,
+            )
+            ptype = "danger"
+        else:
+            title = _("Successful Sync")
+            if warn_log:
+                ptype = "warning"
+                message = _(
+                    "Sync with warning(s), cf warning log on Statement Import API '%s'.",
+                    warn_log.statement_import_api_id.display_name,
+                )
+            else:
+                new_line_count = sum([log.new_line_count for log in self])
+                updated_line_count = sum([log.updated_line_count for log in self])
+                ptype = "success"
+                if new_line_count > 1:
+                    message = _("%s bank statement lines created.", new_line_count)
+                elif new_line_count == 1:
+                    message = _("1 bank statement line created.")
+                else:
+                    message = _("No new bank statement lines.")
+                if updated_line_count:
+                    message += " " + _("%s updated.", updated_line_count)
+
+        action = {
+            "type": "ir.actions.client",
+            "tag": "display_notification",
+            "params": {
+                "type": ptype,
+                "title": title,
+                "message": message,
+            },
+        }
+        return action

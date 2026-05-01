@@ -179,42 +179,53 @@ class AccountStatementImportApi(models.Model):
             }
         return connector_ident2vals
 
-    def _bridge_update_api_accounts(self, result, speedy):
+    def _bridge_get_api_accounts(self, flavor, result, speedy):
         self.ensure_one()
+        assert flavor in ("balance", "properties")
         headers = self._bridge_get_headers(result, speedy)
         if not headers:
             return None
-        providers = self._bridge_get_all_pages("providers", headers, result, speedy)
-        if providers is None:
-            return None
-        providers_id2name = {}
-        for provider in providers:
-            providers_id2name[provider["id"]] = provider["name"]
-
         bridge_accounts = self._bridge_get_all_pages(
             "aggregation/accounts", headers, result, speedy
         )
         account_ident2vals = {}
+        provider_ids = set()
         for account in bridge_accounts or []:
             if account["data_access"] == "enabled":
-                account_ident2vals[str(account["id"])] = {
+                account_ident = str(account["id"])
+                bal = None
+                if "accounting_balance" in account:
+                    bal = account["accounting_balance"]
+                elif "balance" in account:
+                    bal = account["balance"]
+                account_ident2vals[account_ident] = {
                     "name": account["name"],
                     "account_type": account.get("type"),
                     "account_number": account.get("iban"),
-                    "bank_name": providers_id2name.get(account.get("provider_id")),
                     "currency_code": account.get("currency_code"),
                     "connector_identifier": str(account["item_id"]),
+                    "provider_id": account.get("provider_id"),  # temp key
+                    "balance": bal,
                 }
+                if flavor == "properties" and account.get("provider_id"):
+                    provider_ids.add(account["provider_id"])
+        if flavor == "properties":
+            providers_id2name = {}
+            for provider_id in provider_ids:
+                provider_dict = self._bridge_get(
+                    f"providers/{provider_id}", headers, result, speedy
+                )
+                providers_id2name[provider_id] = provider_dict.get("name")
+            for vals in account_ident2vals.values():
+                if vals["provider_id"] and vals["provider_id"] in providers_id2name:
+                    provider_id = vals.pop("provider_id")
+                    vals["bank_name"] = providers_id2name[provider_id]
         return account_ident2vals
 
     @api.model
-    def _bridge_get_all_pages(self, api_name, headers, result, speedy, params=None):
+    def _bridge_get(self, api_name, headers, result, speedy, params=None):
         ajo = self.env["account.journal"]
         url = f"{speedy['bridge_base_url']}/{BRIDGE_API_VERSION}/{api_name}"
-        if params is None:
-            params = {}
-        if not params.get("limit"):
-            params["limit"] = speedy["bridge_max_page_limit"]
         try:
             res = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
         except Exception as e:
@@ -234,6 +245,18 @@ class AccountStatementImportApi(models.Model):
             result, f"Successful HTTP GET API call on {url} with params={params}"
         )
         res_dict = res.json()
+        return res_dict
+
+    @api.model
+    def _bridge_get_all_pages(self, api_name, headers, result, speedy, params=None):
+        ajo = self.env["account.journal"]
+        if params is None:
+            params = {}
+        if not params.get("limit"):
+            params["limit"] = speedy["bridge_max_page_limit"]
+        res_dict = self._bridge_get(api_name, headers, result, speedy, params=params)
+        if res_dict is None:
+            return None
         res_list = res_dict["resources"]
         next_uri = res_dict["pagination"].get("next_uri")
         page = 1

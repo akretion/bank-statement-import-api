@@ -59,16 +59,20 @@ class AccountStatementImportApi(models.Model):
         self.ensure_one()
         self._qonto_get_all_pages("bank_accounts", result, speedy)
 
-    def _qonto_update_api_accounts(self, result, speedy):
+    def _qonto_get_api_accounts(self, flavor, result, speedy):
         self.ensure_one()
         accounts = self._qonto_get_all_pages("bank_accounts", result, speedy)
         account_ident2vals = {}
         for account in accounts:
+            balance = None
+            if "balance" in account:
+                balance = float(account["balance"])
             account_ident2vals[str(account["id"])] = {
                 "name": account["name"],
                 "account_number": account.get("iban"),
-                "bank_name": account.get("bic"),
+                "bank_name": "Qonto",
                 "currency_code": account.get("currency"),
+                "balance": balance,
             }
         return account_ident2vals
 
@@ -122,6 +126,9 @@ class AccountStatementImportApi(models.Model):
                     f"HTTP error code {res.status_code}.",
                 )
                 return []
+            ajo._api_import_info_log(
+                result, f"Successful HTTP GET API call on {url} with params={params}"
+            )
             res_json = res.json()
             total_pages = res_json["meta"]["total_pages"]
             data += res_json.get(api_name, [])

@@ -10,7 +10,7 @@ import pytz
 
 from odoo import _, api, fields, models
 from odoo.exceptions import UserError, ValidationError
-from odoo.tools.misc import format_date, format_datetime
+from odoo.tools.misc import format_amount, format_date, format_datetime
 
 # Backport of datetime.fromisoformat() for python < 3.11
 # pip install backports-datetime-fromisoformat
@@ -342,7 +342,7 @@ class AccountJournal(models.Model):
                         self._api_import_warning_log(result, msg)
         return lvals
 
-    def _api_import_bank_statement_lines(self, speedy):
+    def _api_import_bank_statement_lines(self, account_ident2vals, speedy):
         self.ensure_one()
         log_obj = self.env["account.statement.import.api.log"]
         logger.info("Start bank statement import API of journal %s", self.display_name)
@@ -518,6 +518,7 @@ class AccountJournal(models.Model):
             result["new_line_count"],
             result["updated_line_count"],
         )
+        self._api_import_check_balance(account_ident2vals, result, speedy)
         log_vals = self._api_import_prepare_log(result, speedy)
         log = log_obj.sudo().create(log_vals)
         logger.debug("Bank statement import log created ID %d", log.id)
@@ -556,11 +557,12 @@ class AccountJournal(models.Model):
             else:
                 status = "success"
         log_vals = {
-            "journal_id": self.id,
+            "journal_id": self and self.id or False,
+            "type": self and "statement_line" or "other",
             "statement_import_api_id": speedy["statement_import_api_id"],
             "status": status,
-            "new_line_count": result["new_line_count"],
-            "updated_line_count": result["updated_line_count"],
+            "new_line_count": result.get("new_line_count"),
+            "updated_line_count": result.get("updated_line_count"),
             "logs": "<br>".join(logs),
         }
         return log_vals
@@ -621,6 +623,68 @@ class AccountJournal(models.Model):
             return False
         return True
 
+    def _api_import_check_balance(self, account_ident2vals, result, speedy):
+        accounting_bal = self._api_import_get_accounting_balance(speedy)
+        account_ident = self.statement_import_api_account_id.identifier
+        if accounting_bal is None:
+            msg = (
+                f"Field 'default_account_id' is not set on journal {self.display_name}"
+            )
+            self._api_import_warning_log(result, msg)
+        elif account_ident not in account_ident2vals:
+            msg = f"Account identifier {account_ident} is not in account_ident2vals"
+            self._api_import_warning_log(result, msg)
+        elif "balance" not in account_ident2vals[account_ident]:
+            msg = f"Balance not available for account identifier {account_ident}"
+            self._api_import_info_log(result, msg)
+        else:
+            currency = speedy["journal_currency"]
+            bank_bal = account_ident2vals[account_ident]["balance"]
+            bank_currency_code = account_ident2vals[account_ident].get("currency_code")
+            currency_mismatch = False
+            if bank_currency_code:
+                bank_currency_id = speedy["currency_code2id"].get(bank_currency_code)
+                if bank_currency_id and bank_currency_id != currency.id:
+                    currency_mismatch = True
+                    msg = (
+                        f"Currency of bank journal ({currency.name}) is different "
+                        f"from currency reported by API ({bank_currency_code}). "
+                        "This should never happen!"
+                    )
+                    self._api_import_warning_log(result, msg)
+            if not currency_mismatch:
+                fcompare = currency.compare_amounts(accounting_bal, bank_bal)
+                accounting_bal_fmt = format_amount(self.env, accounting_bal, currency)
+                if not fcompare:
+                    msg = f"Accounting balance = bank balance ({accounting_bal_fmt})"
+                    self._api_import_info_log(result, msg)
+                else:
+                    bank_bal_fmt = format_amount(self.env, bank_bal, currency)
+                    diff_fmt = format_amount(
+                        self.env, accounting_bal - bank_bal, currency
+                    )
+                    msg = (
+                        f"Accounting balance ({accounting_bal_fmt}) is different "
+                        f"from bank balance ({bank_bal_fmt}). Difference: {diff_fmt}"
+                    )
+                    self._api_import_warning_log(result, msg)
+
+    def _api_import_get_accounting_balance(self, speedy):
+        self.ensure_one()
+        bal = None
+        if self.default_account_id:
+            rg_res = self.env["account.move.line"].read_group(
+                [
+                    ("account_id", "=", self.default_account_id.id),
+                    ("company_id", "=", self.company_id.id),
+                    ("parent_state", "=", "posted"),
+                ],
+                ["balance"],
+                [],
+            )
+            bal = rg_res and rg_res[0]["balance"] or 0
+        return bal
+
     def api_import_bank_statement_lines_button(self):
         self.ensure_one()
         import_api = self.statement_import_api_id
@@ -633,43 +697,9 @@ class AccountJournal(models.Model):
                 )
             )
         speedy = import_api._prepare_speedy()
-        log = self._api_import_bank_statement_lines(speedy)
-        import_api._connector_status_update(speedy)
-        if log.status == "failure":
-            title = _("Sync Failed")
-            message = _(
-                "See error log on Statement Import API '%s'.",
-                log.statement_import_api_id.display_name,
-            )
-            ptype = "danger"
-        else:
-            title = _("Successful Sync")
-            if log.status == "success_warn":
-                ptype = "warning"
-                message = _(
-                    "Sync with warning(s), cf last log on Statement Import API '%s'.",
-                    log.statement_import_api_id.display_name,
-                )
-            else:
-                ptype = "success"
-                if log.new_line_count > 1:
-                    message = _("%s bank statement lines created.", log.new_line_count)
-                elif log.new_line_count == 1:
-                    message = _("1 bank statement line created.")
-                else:
-                    message = _("No new bank statement lines.")
-                if log.updated_line_count:
-                    message += " " + _("%s updated.", log.updated_line_count)
-
-        action = {
-            "type": "ir.actions.client",
-            "tag": "display_notification",
-            "params": {
-                "type": ptype,
-                "title": title,
-                "message": message,
-            },
-        }
+        account_ident2vals = import_api._update_connector_and_get_balance(speedy)
+        log = self._api_import_bank_statement_lines(account_ident2vals, speedy)
+        action = log._prepare_notification_action()
         return action
 
     def _api_import_timestamp_iso8601_to_datetime_aware(
