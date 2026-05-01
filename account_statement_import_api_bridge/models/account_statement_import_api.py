@@ -193,9 +193,7 @@ class AccountStatementImportApi(models.Model):
             if account["data_access"] == "enabled":
                 account_ident = str(account["id"])
                 bal = None
-                if "accounting_balance" in account:
-                    bal = account["accounting_balance"]
-                elif "balance" in account:
+                if "balance" in account:
                     bal = account["balance"]
                 account_ident2vals[account_ident] = {
                     "name": account["name"],
