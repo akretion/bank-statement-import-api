@@ -58,6 +58,8 @@ class AccountStatementImportApiConnectorStatus(models.Model):
                 f"Failed to convert ir.config_parameter {config_key} ({days_str}) "
                 f"to integer. Using default value {days} days"
             )
+        if days < 0:
+            days = DEFAULT_STATUS_HISTORY_VACUUM_DAYS
         limit_date = fields.Datetime.now() - timedelta(days)
         logger.info(
             f"Autovacuum of bank statement import API status history older than {days} days"

@@ -100,7 +100,7 @@ class AccountStatementImportApiDeleteConnector(models.TransientModel):
                     {
                         "statement_import_api_id": False,
                         "statement_import_api_account_id": False,
-                        "bank_statements_source": False,
+                        "bank_statements_source": "undefined",
                     }
                 )
         msg = (

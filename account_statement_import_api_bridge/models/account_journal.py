@@ -7,6 +7,7 @@ from datetime import timedelta
 import pytz
 
 from odoo import fields, models
+from odoo.tools.misc import format_amount
 
 
 class AccountJournal(models.Model):
@@ -77,10 +78,13 @@ class AccountJournal(models.Model):
             "to_delete": trans["deleted"],
         }
         if trans["future"]:
+            pivot_amount_fmt = format_amount(
+                self.env, pivot["amount"], speedy["journal_currency"]
+            )
             speedy["log_obj"]._info_log(
                 result,
                 f"Skipped transaction dated {pivot['date']} "
-                f"amount {pivot['amount']} label '{pivot['payment_ref']}' "
+                f"amount {pivot_amount_fmt} label '{pivot['payment_ref']}' "
                 f"which has future flag",
             )
             return False
