@@ -23,10 +23,16 @@ addon | version | maintainers | summary
 --- | --- | --- | ---
 [account_statement_import_api](account_statement_import_api/) | 16.0.3.0.0 | <a href='https://github.com/alexis-via'><img src='https://github.com/alexis-via.png' width='32' height='32' style='border-radius:50%;' alt='alexis-via'/></a> | Base module to download bank statement via an API
 [account_statement_import_api_bridge](account_statement_import_api_bridge/) | 16.0.2.0.0 | <a href='https://github.com/alexis-via'><img src='https://github.com/alexis-via.png' width='32' height='32' style='border-radius:50%;' alt='alexis-via'/></a> | Use BridgeAPI.io to download bank statement lines
-[account_statement_import_api_powens](account_statement_import_api_powens/) | 16.0.1.0.0 | <a href='https://github.com/alexis-via'><img src='https://github.com/alexis-via.png' width='32' height='32' style='border-radius:50%;' alt='alexis-via'/></a> | Use Powens to download bank statement lines
 [account_statement_import_api_qonto](account_statement_import_api_qonto/) | 16.0.1.0.0 | <a href='https://github.com/alexis-via'><img src='https://github.com/alexis-via.png' width='32' height='32' style='border-radius:50%;' alt='alexis-via'/></a> | Use the Qonto API to download bank statement lines
 [account_statement_import_in_invoice](account_statement_import_in_invoice/) | 16.0.1.0.0 | <a href='https://github.com/alexis-via'><img src='https://github.com/alexis-via.png' width='32' height='32' style='border-radius:50%;' alt='alexis-via'/></a> | Enrich bank statement lines to allow the creation of vendor bills
 [account_statement_import_in_invoice_api](account_statement_import_in_invoice_api/) | 16.0.1.0.0 | <a href='https://github.com/alexis-via'><img src='https://github.com/alexis-via.png' width='32' height='32' style='border-radius:50%;' alt='alexis-via'/></a> | Glue module between account_statement_import_in_invoice and account_statement_import_api
+
+
+Unported addons
+---------------
+addon | version | maintainers | summary
+--- | --- | --- | ---
+[account_statement_import_api_powens](account_statement_import_api_powens/) | 16.0.1.0.0 (unported) | <a href='https://github.com/alexis-via'><img src='https://github.com/alexis-via.png' width='32' height='32' style='border-radius:50%;' alt='alexis-via'/></a> | Use Powens to download bank statement lines
 
 [//]: # (end addons)
 
