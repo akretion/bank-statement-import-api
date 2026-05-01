@@ -17,5 +17,5 @@
         "views/account_journal.xml",
         "views/account_statement_import_api.xml",
     ],
-    "installable": True,
+    "installable": False,
 }
