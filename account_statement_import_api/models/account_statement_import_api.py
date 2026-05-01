@@ -524,16 +524,14 @@ class AccountStatementImportApi(models.Model):
                         )
                     )
                 api_account.write(vals)
-                logger.info(
-                    "API account %s ID %s updated",
-                    api_account.display_name,
-                    api_account.id,
-                )
+                msg = f"API account {api_account.display_name} updated"
+                speedy["log_obj"]._info_log(result, msg)
                 account_ident2vals.pop(api_account.identifier)
                 write_count += 1
             else:
                 api_account.write({"active": False})
-                logger.info("API account %s archived", api_account.display_name)
+                msg = f"API account {api_account.display_name} archived"
+                speedy["log_obj"]._info_log(result, msg)
                 archive_count += 1
 
         # 3. Create
@@ -550,12 +548,8 @@ class AccountStatementImportApi(models.Model):
                 if "connector_identifier" in vals:
                     connector_identifier = vals.pop("connector_identifier")
                     if not connector_identifier:
-                        logger.warning(
-                            "connector_identifier is empty in vals=%s "
-                            "on statement import API %s",
-                            vals,
-                            self.display_name,
-                        )
+                        msg = f"connector_identifier is empty in vals={vals}"
+                        speedy["log_obj"]._warning_log(result, msg)
                     else:
                         if connector_identifier not in connector_ident2id:
                             if connector_identifier in connector_ident2vals:
@@ -570,18 +564,17 @@ class AccountStatementImportApi(models.Model):
                                         name=name,
                                     )
                                 )
-                                logger.info(
-                                    "Connector %s ID %s created",
-                                    connector.display_name,
-                                    connector.id,
-                                )
+                                msg = f"Connector {connector.display_name} created"
+                                speedy["log_obj"]._info_log(result, msg)
                                 connector_ident2id[connector_identifier] = connector.id
                                 vals["connector_id"] = connector.id
                             else:
-                                logger.warning(
-                                    "connector_identifier %s is not in connector_ident2vals",
-                                    connector_identifier,
+                                msg = (
+                                    f"connector_identifier {connector_identifier} "
+                                    "is not in connector_ident2vals"
                                 )
+                                speedy["log_obj"]._warning_log(result, msg)
+
                         else:
                             vals["connector_id"] = connector_ident2id[
                                 connector_identifier
@@ -597,15 +590,19 @@ class AccountStatementImportApi(models.Model):
                 self.env["account.statement.import.api.account"].create(
                     to_create_vals_list
                 )
-                logger.info(
-                    "%d API bank account(s) created on statement import API %s",
-                    len(to_create_vals_list),
-                    self.display_name,
+                msg = (
+                    f"{len(to_create_vals_list)} API bank account(s) "
+                    f"created on statement import API {self.display_name}"
                 )
+                speedy["log_obj"]._info_log(result, msg)
                 message_list.append(
                     _("%d API bank accounts created.", len(to_create_vals_list))
                 )
 
+        # We also update connector status ; it's important when we close
+        # the wizard for renew_auth, so that the expiry date is updated
+        self._connector_status_update(result, speedy)
+        speedy["log_obj"]._create_log("update_api_accounts", result, speedy)
         if write_count:
             message_list.append(_("%d API bank accounts updated.", write_count))
         if archive_count:
