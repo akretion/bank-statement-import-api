@@ -26,7 +26,7 @@ class AccountStatementImportApiLog(models.Model):
     )
     type = fields.Selection(
         [
-            ("statement_line", "Bank Statement Line Update"),
+            ("statement_line", "Bank Statement Lines Update"),
             ("other", "Get Balances and Update Connectors"),
             ("delete_connector", "Delete Connector"),
             ("update_api_accounts", "Get/Update API Accounts"),

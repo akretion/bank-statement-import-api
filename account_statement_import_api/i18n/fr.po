@@ -6,11 +6,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-07 15:13+0000\n"
-"PO-Revision-Date: 2026-04-07 15:14+0000\n"
-"Last-Translator: Alexis de Lattre <alexis.delattre@akretion.com>\n"
+"POT-Creation-Date: 2026-05-01 22:13+0000\n"
+"PO-Revision-Date: 2026-05-01 22:13+0000\n"
+"Last-Translator: \n"
 "Language-Team: \n"
-"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -21,8 +20,8 @@ msgstr ""
 #: code:addons/account_statement_import_api/models/account_statement_import_api.py:0
 #, python-format
 msgid ""
-"%(cron_count)s scheduled actions were found for service '%(service)s'. There "
-"should have only one scheduled action for each service."
+"%(cron_count)s scheduled actions were found for service '%(service)s'. There"
+" should have only one scheduled action for each service."
 msgstr ""
 "%(cron_count)s actions planifiées ont été trouvées pour le service "
 "'%(service)s'. Il ne devrait y avoir qu'une seule action planifiée par "
@@ -51,21 +50,21 @@ msgstr "%d comptes bancaires API mis à jour."
 
 #. module: account_statement_import_api
 #. odoo-python
-#: code:addons/account_statement_import_api/models/account_journal.py:0
+#: code:addons/account_statement_import_api/models/account_statement_import_api_log.py:0
 #, python-format
 msgid "%s bank statement lines created."
 msgstr "%s lignes de relevé de compte créées."
 
 #. module: account_statement_import_api
 #. odoo-python
-#: code:addons/account_statement_import_api/models/account_journal.py:0
+#: code:addons/account_statement_import_api/models/account_statement_import_api_log.py:0
 #, python-format
 msgid "%s updated."
 msgstr "%s mises à jour."
 
 #. module: account_statement_import_api
 #. odoo-python
-#: code:addons/account_statement_import_api/models/account_journal.py:0
+#: code:addons/account_statement_import_api/models/account_statement_import_api_log.py:0
 #, python-format
 msgid "1 bank statement line created."
 msgstr "1 ligne de relevé de compte créée."
@@ -74,7 +73,8 @@ msgstr "1 ligne de relevé de compte créée."
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_journal_dashboard_kanban_view
 msgid "<span title=\"Bank Connector\">Bank Connector Expiry</span>"
 msgstr ""
-"<span title=\"Connecteur bancaire\">Date limite du connecteur bancaire</span>"
+"<span title=\"Connecteur bancaire\">Date limite du connecteur "
+"bancaire</span>"
 
 #. module: account_statement_import_api
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_journal_dashboard_kanban_view
@@ -88,8 +88,8 @@ msgid ""
 "connectors of this bank statement import API and you will not be able to "
 "call the API of this provider any more.</strong>"
 msgstr ""
-"<strong>Si vous confirmez, Odoo supprimera tous les comptes bancaires API et "
-"les connecteurs de cette API d'import de relevés de compte et vous ne "
+"<strong>Si vous confirmez, Odoo supprimera tous les comptes bancaires API et"
+" les connecteurs de cette API d'import de relevés de compte et vous ne "
 "pourrez plus appeler l'API de ce fournisseur.</strong>"
 
 #. module: account_statement_import_api
@@ -105,7 +105,7 @@ msgstr ""
 #: code:addons/account_statement_import_api/models/account_journal.py:0
 #, python-format
 msgid "API"
-msgstr "API"
+msgstr ""
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_journal__statement_import_api_account_id
@@ -160,8 +160,8 @@ msgstr "Type de compte"
 msgid ""
 "Account identifier %(ident)s for API bank account %(vals)s must be a string."
 msgstr ""
-"L'identifiant du compte %(ident)s pour le compte bancaire API %(vals)s "
-"doit être une chaîne de caractères."
+"L'identifiant du compte %(ident)s pour le compte bancaire API %(vals)s doit "
+"être une chaîne de caractères."
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__active
@@ -213,6 +213,7 @@ msgstr "Banque"
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_journal__statement_import_api_connector_id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__connector_id
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector__connector_id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__connector_id
 msgid "Bank Connector"
 msgstr "Connecteur bancaire"
@@ -230,6 +231,7 @@ msgid "Bank Journal"
 msgstr "Journal de banque"
 
 #. module: account_statement_import_api
+#: model:ir.actions.act_window,name:account_statement_import_api.account_bank_journal_action
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__journal_ids
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_form
 msgid "Bank Journals"
@@ -239,9 +241,11 @@ msgstr "Journaux de banque"
 #: model:ir.actions.act_window,name:account_statement_import_api.account_statement_import_api_action
 #: model:ir.model,name:account_statement_import_api.model_account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_create_user__statement_import_api_id
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector__statement_import_api_id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_user__statement_import_api_id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__statement_import_api_id
 #: model:ir.ui.menu,name:account_statement_import_api.account_statement_import_api_menu
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_status_search
 msgid "Bank Statement Import API"
 msgstr "API d'import des relevés de compte"
 
@@ -256,6 +260,24 @@ msgid "Bank Statement Import by API"
 msgstr "Import des relevés de compte par API"
 
 #. module: account_statement_import_api
+#: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_log__type__statement_line
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
+msgid "Bank Statement Lines Update"
+msgstr "MAJ lignes de relevé de compte"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_statement_import_api.py:0
+#, python-format
+msgid ""
+"Bank statement import API '%s' has a user identifier. You must delete the "
+"user before deleting the bank statement import API."
+msgstr ""
+"L'API d'import de relevés de compte '%s' a un identifiant "
+"utilisateur. Vous devez supprimer l'utilisateur avant de supprimer l'API "
+"d'import de relevés compte."
+
+#. module: account_statement_import_api
 #: model:ir.model,name:account_statement_import_api.model_account_statement_import_api_account
 msgid "Bank statement import API Account"
 msgstr "Compte API des imports de relevé"
@@ -267,16 +289,24 @@ msgstr "Connecteur API pour l'import des relevés de compte"
 
 #. module: account_statement_import_api
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_create_user_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_delete_connector_form
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_delete_user_form
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_generate_url_form
 msgid "Cancel"
 msgstr "Annuler"
 
 #. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_status_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_status_list
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_status_search
+msgid "Change Date"
+msgstr "Date du changement"
+
+#. module: account_statement_import_api
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_generate_url_form
 msgid ""
-"Click on the URL below and follow the instructions to add one or several new "
-"API bank accounts.<br/>Once finished, come back here and click on the "
+"Click on the URL below and follow the instructions to add one or several new"
+" API bank accounts.<br/>Once finished, come back here and click on the "
 "<strong>Close</strong> button below."
 msgstr ""
 "Cliquez sur l'URL ci-dessous et suivez les instructions pour ajouter un ou "
@@ -288,8 +318,8 @@ msgstr ""
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_generate_url_form
 msgid ""
 "Click on the URL below and follow the instructions to manage the API bank "
-"accounts.<br/>Once finished, come back here and click on the <strong>Close</"
-"strong> button below."
+"accounts.<br/>Once finished, come back here and click on the "
+"<strong>Close</strong> button below."
 msgstr ""
 "Cliquez sur l'URL ci-dessous et suivez les instructions pour gérer les "
 "comptes bancaires de l'API.<br/>Une fois que vous avez terminé, revenez ici "
@@ -304,6 +334,7 @@ msgstr "Fermer"
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__company_id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__company_id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__company_id
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__company_id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__company_id
 msgid "Company"
 msgstr "Société"
@@ -314,9 +345,31 @@ msgid "Confirm Deletion"
 msgstr "Confirmer la suppression"
 
 #. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__connector_id
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_status_search
+msgid "Connector"
+msgstr "Connecteur"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/wizards/account_statement_import_api_delete_connector.py:0
+#, python-format
+msgid ""
+"Connector %(connector)s is not attached to statement import API "
+"%(import_api)s."
+msgstr ""
+"Le connecteur %(connector)s n'est pas rattaché à l'API d'import de relevés "
+"de compte %(import_api)s."
+
+#. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__connector_required
 msgid "Connector Required"
 msgstr "Connecteur requis"
+
+#. module: account_statement_import_api
+#: model:ir.actions.act_window,name:account_statement_import_api.account_statement_import_api_connector_status_action
+msgid "Connector Status History"
+msgstr "Historique du statut des connecteurs"
 
 #. module: account_statement_import_api
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_create_user_form
@@ -333,7 +386,9 @@ msgstr "Créer un nouvel utilisateur"
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__create_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__create_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__create_uid
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__create_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_create_user__create_uid
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector__create_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_user__create_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__create_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__create_uid
@@ -344,7 +399,9 @@ msgstr "Créé par"
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__create_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__create_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__create_date
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__create_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_create_user__create_date
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector__create_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_user__create_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__create_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__create_date
@@ -360,19 +417,27 @@ msgstr "Devise"
 #. module: account_statement_import_api
 #: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_connector__auth_expiry_warn_type__danger
 msgid "Danger"
-msgstr "Danger"
+msgstr ""
 
 #. module: account_statement_import_api
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_form
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_list
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
 msgid "Date"
-msgstr "Date"
+msgstr ""
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,help:account_statement_import_api.field_account_journal__statement_import_api_last_success
 msgid "Date and time of the last successful API import"
 msgstr "Date et heure du dernier import par API réussi"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_log__type__delete_connector
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_delete_connector_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_form
+msgid "Delete Connector"
+msgstr "Supprimer un connecteur"
 
 #. module: account_statement_import_api
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_form
@@ -382,18 +447,30 @@ msgstr "Supprimer l'utilisateur"
 #. module: account_statement_import_api
 #: model:ir.actions.act_window,name:account_statement_import_api.account_statement_import_api_delete_user_action
 msgid "Delete a User"
-msgstr "Supprimer un utilisateur"
+msgstr "Supprimer l'utilisateur"
+
+#. module: account_statement_import_api
+#: model:ir.actions.act_window,name:account_statement_import_api.account_statement_import_api_delete_connector_action
+msgid "Delete a connector"
+msgstr "Supprimer un connecteur"
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__display_name
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__display_name
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__display_name
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__display_name
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_create_user__display_name
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector__display_name
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_user__display_name
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__display_name
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__display_name
 msgid "Display Name"
 msgstr "Nom affiché"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector__confirm
+msgid "Do you confirm?"
+msgstr "Est-ce que vous confirmez ?"
 
 #. module: account_statement_import_api
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.view_account_journal_form
@@ -419,6 +496,14 @@ msgstr "Prolonger l'autorisation"
 
 #. module: account_statement_import_api
 #. odoo-python
+#: code:addons/account_statement_import_api/wizards/account_statement_import_api_delete_connector.py:0
+#, python-format
+msgid "Failed to delete the connector '%(connector)s'. Error: %(msg)s"
+msgstr ""
+"Échec de la suppression du connecteur '%(connector)s'. Erreur : %(msg)s"
+
+#. module: account_statement_import_api
+#. odoo-python
 #: code:addons/account_statement_import_api/models/account_statement_import_api.py:0
 #, python-format
 msgid "Failed to get API bank accounts. Error: %(msg)s"
@@ -433,7 +518,8 @@ msgstr "Échec de la récupération des comptes bancaires API. Erreur : %(msg)s"
 msgid ""
 "Failed to retreive the URL via the '%(service_name)s' API. Error: %(msg)s"
 msgstr ""
-"Échec de la récupération de l'URL via l'API de '%(service_name)s'. Erreur : %(msg)s"
+"Échec de la récupération de l'URL via l'API de '%(service_name)s'. Erreur : "
+"%(msg)s"
 
 #. module: account_statement_import_api
 #: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_log__status__failure
@@ -452,20 +538,39 @@ msgid "Generate URL to Manage API Bank Account(s)"
 msgstr "Générer une URL pour gérer le(s) compte(s) bancaire(s) API"
 
 #. module: account_statement_import_api
+#: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_log__type__other
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
+msgid "Get Balances and Update Connectors"
+msgstr "Récup. soldes et MAJ connecteurs"
+
+#. module: account_statement_import_api
+#: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_log__type__update_api_accounts
+msgid "Get/Update API Accounts"
+msgstr "Obtenir/mettre à jour les comptes API"
+
+#. module: account_statement_import_api
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_form
 msgid "Get/Update API Bank Accounts"
 msgstr "Obtenir/mettre à jour les comptes bancaires API"
 
 #. module: account_statement_import_api
+#: model:ir.model,name:account_statement_import_api.model_account_statement_import_api_connector_status
+msgid "History for Bank statement import API Connector Status"
+msgstr ""
+"Historique du statut des connecteurs d'API d'import des relevés de compte"
+
+#. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__id
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_create_user__id
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector__id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_user__id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__id
 msgid "ID"
-msgstr "ID"
+msgstr ""
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__identifier
@@ -498,7 +603,8 @@ msgstr "Date de début de l'import"
 #, python-format
 msgid "Import Start Date is not set on journal '%(journal)s'."
 msgstr ""
-"La date de début de l'import n'est pas définie pour le journal '%(journal)s'."
+"La date de début de l'import n'est pas définie pour le journal "
+"'%(journal)s'."
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__inactive_api_account_ids
@@ -513,7 +619,7 @@ msgstr "Comptes API inactifs"
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__instructions
 msgid "Instructions"
-msgstr "Instructions"
+msgstr ""
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__is_aggregator
@@ -524,7 +630,7 @@ msgstr "Est un agrégateur"
 #. module: account_statement_import_api
 #: model:ir.model,name:account_statement_import_api.model_account_journal
 msgid "Journal"
-msgstr "Journal"
+msgstr ""
 
 #. module: account_statement_import_api
 #. odoo-python
@@ -559,7 +665,9 @@ msgstr "Dernier import"
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api____last_update
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account____last_update
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector____last_update
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status____last_update
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_create_user____last_update
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector____last_update
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_user____last_update
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url____last_update
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log____last_update
@@ -580,7 +688,9 @@ msgstr "Date de la dernière synchro"
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__write_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__write_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__write_uid
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__write_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_create_user__write_uid
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector__write_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_user__write_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__write_uid
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__write_uid
@@ -591,7 +701,9 @@ msgstr "Dernière mise à jour par"
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__write_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__write_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__write_date
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__write_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_create_user__write_date
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector__write_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_user__write_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__write_date
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__write_date
@@ -604,8 +716,8 @@ msgid ""
 "Last sync between the bank aggragator and the bank as reported by the bank "
 "aggregator. This is not the last sync between Odoo and the bank aggregator."
 msgstr ""
-"Dernière synchro entre l'agrégateur bancaire et la banque telle "
-"que rapportée par l'agrégateur bancaire. Il ne s'agit pas de la dernière "
+"Dernière synchro entre l'agrégateur bancaire et la banque telle que "
+"rapportée par l'agrégateur bancaire. Il ne s'agit pas de la dernière "
 "synchronisation entre Odoo et l'agrégateur bancaire."
 
 #. module: account_statement_import_api
@@ -657,7 +769,8 @@ msgstr ""
 #, python-format
 msgid "Missing identifier for API bank account %s. This should never happen."
 msgstr ""
-"Identifiant manquant pour le compte bancaire API %s. Cela ne devrait jamais arriver."
+"Identifiant manquant pour le compte bancaire API %s. Cela ne devrait jamais "
+"arriver."
 
 #. module: account_statement_import_api
 #. odoo-python
@@ -676,8 +789,8 @@ msgid ""
 "Missing user identifier on bank statement import API '%s'. Click on the "
 "button 'Create User'."
 msgstr ""
-"Identifiant d'utilisateur manquant sur l'API d'import de relevé de compte '%s'. "
-"Cliquez sur le bouton 'Créer un utilisateur'."
+"Identifiant d'utilisateur manquant sur l'API d'import de relevé de compte "
+"'%s'. Cliquez sur le bouton 'Créer un utilisateur'."
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__name
@@ -704,7 +817,7 @@ msgstr "Aucun compte bancaire API n'a été reçu."
 
 #. module: account_statement_import_api
 #. odoo-python
-#: code:addons/account_statement_import_api/models/account_journal.py:0
+#: code:addons/account_statement_import_api/models/account_statement_import_api_log.py:0
 #, python-format
 msgid "No new bank statement lines."
 msgstr "Aucune nouvelle ligne de relevé de compte."
@@ -717,7 +830,10 @@ msgid "No scheduled action found for service '%s'."
 msgstr "Aucune action planifiée n'a été trouvée pour le service '%s'."
 
 #. module: account_statement_import_api
-#: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_connector__sync_status__ko
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_statement_import_api_connector.py:0
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_status_search
+#, python-format
 msgid "Not Working"
 msgstr "Ne fonctionne pas"
 
@@ -732,9 +848,16 @@ msgid "Number of Statement Lines Updated"
 msgstr "Nombre de lignes de relevé mises à jour"
 
 #. module: account_statement_import_api
-#: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_connector__sync_status__ok
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_statement_import_api_connector.py:0
+#, python-format
 msgid "OK"
-msgstr "OK"
+msgstr ""
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_status_search
+msgid "Ok Status"
+msgstr "Statut Ok"
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__password
@@ -766,20 +889,20 @@ msgstr "Lancer maintenant"
 
 #. module: account_statement_import_api
 #. odoo-python
-#: code:addons/account_statement_import_api/models/account_journal.py:0
+#: code:addons/account_statement_import_api/models/account_statement_import_api_log.py:0
 #, python-format
-msgid "See error log on Statement Import API '%s'."
-msgstr ""
-"Voir les messages d'erreur sur l'API d'import de relevés de compte '%s'."
+msgid "See failure log on Statement Import API '%s'."
+msgstr "Voir le log d'échec de l'API d'import des relevés de compte '%s'."
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_journal__statement_import_api_service
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__service
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__service
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_create_user__service
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_delete_connector__service
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__service
 msgid "Service"
-msgstr "Service"
+msgstr ""
 
 #. module: account_statement_import_api
 #. odoo-python
@@ -818,6 +941,7 @@ msgstr "État"
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_journal__statement_import_api_id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_account__statement_import_api_id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__statement_import_api_id
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__statement_import_api_id
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__statement_import_api_id
 msgid "Statement Import API"
 msgstr "API d'import des relevés"
@@ -849,6 +973,11 @@ msgid "Status"
 msgstr "Statut"
 
 #. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__sync_status_ids
+msgid "Status History"
+msgstr "Historique des statuts"
+
+#. module: account_statement_import_api
 #: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_log__status__success
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
 msgid "Success"
@@ -862,7 +991,7 @@ msgstr "Succès avec avertissements"
 
 #. module: account_statement_import_api
 #. odoo-python
-#: code:addons/account_statement_import_api/models/account_journal.py:0
+#: code:addons/account_statement_import_api/models/account_statement_import_api_log.py:0
 #, python-format
 msgid "Successful Sync"
 msgstr "Synchronisation réussie"
@@ -882,31 +1011,40 @@ msgid "Successful connection to the '%(service_name)s' API."
 msgstr "Connexion réussie à l'API '%(service_name)s'."
 
 #. module: account_statement_import_api
-#. odoo-python
-#: code:addons/account_statement_import_api/models/account_journal.py:0
-#, python-format
-msgid "Sync Failed"
-msgstr "Échec de la synchro"
-
-#. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__sync_status_message
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__sync_status_message
 msgid "Sync Message"
 msgstr "Message de la synchro"
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_journal__statement_import_api_connector_sync_status
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector__sync_status
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_connector_status__sync_status
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_status_search
 msgid "Sync Status"
-msgstr "État de la synchro"
+msgstr "Statut de la synchro"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_form
+msgid "Sync Status History"
+msgstr "Historique du statut de la synchro"
 
 #. module: account_statement_import_api
 #. odoo-python
-#: code:addons/account_statement_import_api/models/account_journal.py:0
+#: code:addons/account_statement_import_api/models/account_statement_import_api_log.py:0
 #, python-format
-msgid "Sync with warning(s), cf last log on Statement Import API '%s'."
+msgid "Sync failed on %s"
+msgstr "Échec de la synchronisation sur %s"
+
+#. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_statement_import_api_log.py:0
+#, python-format
+msgid "Sync with warning(s), cf warning log on Statement Import API '%s'."
 msgstr ""
-"Synchro avec avertissement(s), cf dernier message de l'API d'import de relevés "
-"'%s'."
+"Synchro avec avertissement(s), cf. log d'avertissement sur l'API"
+" d'import de relevés de compte '%s'."
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,help:account_statement_import_api.field_account_journal__statement_import_api_account_identifier
@@ -928,11 +1066,11 @@ msgstr "Tester l'API"
 #: code:addons/account_statement_import_api/models/account_journal.py:0
 #, python-format
 msgid ""
-"The API Bank Account is not set on journal '%(journal)s' which is configured with "
-"Bank Feeds set to API and Statement Import API '%(import_api)s'."
+"The API Bank Account is not set on journal '%(journal)s' which is configured"
+" with Bank Feeds set to API and Statement Import API '%(import_api)s'."
 msgstr ""
-"Le compte bancaire API n'est pas défini sur le journal '%(journal)s' qui est "
-"configuré avec 'API' comme provenance des relevés bancaires et "
+"Le compte bancaire API n'est pas défini sur le journal '%(journal)s' qui est"
+" configuré avec 'API' comme provenance des relevés bancaires et "
 "'%(import_api)s' comme API d'import de relevés."
 
 #. module: account_statement_import_api
@@ -944,8 +1082,8 @@ msgid ""
 "you must configure an Import Start Date."
 msgstr ""
 "Le journal de banque \"%(journal)s\" est configuré avec la provenance des "
-"relevés bancaires défini à API, donc vous devez configurer une date de début "
-"d'import."
+"relevés bancaires défini à API, donc vous devez configurer une date de début"
+" d'import."
 
 #. module: account_statement_import_api
 #. odoo-python
@@ -970,8 +1108,8 @@ msgid ""
 "the API bank account is linked to another statement import API "
 "('%(api_account_statement_import_api)s')."
 msgstr ""
-"Le journal de banque \"%(journal)s\" est configuré avec l'API d'import "
-"de relevés \"%(statement_import_api)s\" et le compte bancaire API "
+"Le journal de banque \"%(journal)s\" est configuré avec l'API d'import de "
+"relevés \"%(statement_import_api)s\" et le compte bancaire API "
 "\"%(api_account)s\", mais le compte bancaire API est lié à une autre API "
 "d'import de relevés (\"%(api_account_statement_import_api)s\")."
 
@@ -983,9 +1121,8 @@ msgid ""
 "The bank journal '%(journal)s' is in currency %(journal_currency)s whereas "
 "the API Bank Account is in currency %(api_account_currency)s."
 msgstr ""
-"Le journal de banque \"%(journal)s\" est en devise "
-"%(journal_currency)s tandis que le compte bancaire API est en "
-"devise %(api_account_currency)s."
+"Le journal de banque \"%(journal)s\" est en devise %(journal_currency)s "
+"tandis que le compte bancaire API est en devise %(api_account_currency)s."
 
 #. module: account_statement_import_api
 #. odoo-python
@@ -996,20 +1133,23 @@ msgid ""
 "account vals=%(vals)s ident=%(account_ident)s must be a string."
 msgstr ""
 "Le champ \"connector_identifier\" %(connector_identifier)s pour le compte "
-"bancaire API vals=%(vals)s ident=%(account_ident)s doit être une chaîne de caractères."
+"bancaire API vals=%(vals)s ident=%(account_ident)s doit être une chaîne de "
+"caractères."
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,help:account_statement_import_api.field_account_journal__statement_import_api_start_date
 msgid "The first bank statement API import will start from this date."
-msgstr "Le premier import de relevé de compte par API commencera à partir de cette date."
+msgstr ""
+"Le premier import de relevé de compte par API commencera à partir de cette "
+"date."
 
 #. module: account_statement_import_api
 #. odoo-python
 #: code:addons/account_statement_import_api/wizards/account_statement_import_api_create_user.py:0
 #, python-format
 msgid ""
-"The method %s didn't return a user identifier and didn't generate any error. "
-"This should never happen."
+"The method %s didn't return a user identifier and didn't generate any error."
+" This should never happen."
 msgstr ""
 "La méthode %s n'a pas renvoyé d'identifiant utilisateur et n'a pas généré "
 "d'erreur. Cela ne devrait jamais arriver."
@@ -1031,7 +1171,8 @@ msgstr ""
 #, python-format
 msgid "The test feature has not been implemented for the '%(service)s' API."
 msgstr ""
-"La fonctionnalité de test n'a pas été implémentée pour l'API \"%(service)s\"."
+"La fonctionnalité de test n'a pas été implémentée pour l'API "
+"\"%(service)s\"."
 
 #. module: account_statement_import_api
 #. odoo-python
@@ -1047,8 +1188,12 @@ msgstr "Ce compte bancaire API est déjà sélectionné sur un autre journal."
 
 #. module: account_statement_import_api
 #: model:ir.model.constraint,message:account_statement_import_api.constraint_account_statement_import_api_connector_statement_import_api_identifier_unique
-msgid "This identifier is already used by another connector of the same statement import API.."
-msgstr "Cet identifiant est déjà utilisé par un autre connecteur de cette API d'import de relevés."
+msgid ""
+"This identifier is already used by another connector of the same statement "
+"import API."
+msgstr ""
+"Cet identifiant est déjà utilisé par un autre connecteur de cette API "
+"d'import de relevés."
 
 #. module: account_statement_import_api
 #: model:ir.model.constraint,message:account_statement_import_api.constraint_account_statement_import_api_service_user_identifier_uniq
@@ -1056,20 +1201,45 @@ msgid "This user identifier already exists for this service."
 msgstr "Cet identifiant utilisateur existe déjà pour ce service."
 
 #. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_delete_connector_form
+msgid ""
+"This wizard allows to delete a connector and all it's related API Bank "
+"Accounts. The deletion will happen in Odoo and also at the bank "
+"aggregator. <strong>Don't use it if you don't know what you are "
+"doing!</strong>"
+msgstr ""
+"Cet assistant permet de supprimer un connecteur et tous les comptes "
+"bancaires API qui lui sont liés. La suppression se fera dans Odoo et aussi "
+"dans l'agrégateur bancaire. <strong>Ne l'utilisez pas si vous ne"
+" savez pas ce que vous faites !</strong>"
+
+#. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__tz
 msgid "Timezone"
 msgstr "Fuseau horaire"
 
 #. module: account_statement_import_api
+#: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_log__type
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_search
+msgid "Type"
+msgstr ""
+
+#. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api_generate_url__url
 #: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_generate_url__state__url
 msgid "URL"
-msgstr "URL"
+msgstr ""
 
 #. module: account_statement_import_api
 #: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_list
 msgid "Updated Lines"
 msgstr "Lignes mises à jour"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_form
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_log_list
+msgid "User"
+msgstr "Utilisateur"
 
 #. module: account_statement_import_api
 #: model:ir.model.fields,field_description:account_statement_import_api.field_account_statement_import_api__user_identifier
@@ -1082,15 +1252,27 @@ msgid "User Identifier Required"
 msgstr "Identifiant utilisateur requis"
 
 #. module: account_statement_import_api
+#. odoo-python
+#: code:addons/account_statement_import_api/models/account_statement_import_api_connector.py:0
 #: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_connector__auth_expiry_warn_type__warning
-#: model:ir.model.fields.selection,name:account_statement_import_api.selection__account_statement_import_api_connector__sync_status__warning
+#, python-format
 msgid "Warning"
 msgstr "Avertissement"
+
+#. module: account_statement_import_api
+#: model_terms:ir.ui.view,arch_db:account_statement_import_api.account_statement_import_api_connector_status_search
+msgid "Warning Status"
+msgstr "Statut avertissement"
 
 #. module: account_statement_import_api
 #: model:ir.model,name:account_statement_import_api.model_account_statement_import_api_create_user
 msgid "Wizard to create a new user"
 msgstr "Assistant de création d'un nouvel utilisateur"
+
+#. module: account_statement_import_api
+#: model:ir.model,name:account_statement_import_api.model_account_statement_import_api_delete_connector
+msgid "Wizard to delete a bank connector"
+msgstr "Assistant de suppression d'un connecteur bancaire"
 
 #. module: account_statement_import_api
 #: model:ir.model,name:account_statement_import_api.model_account_statement_import_api_delete_user
@@ -1106,10 +1288,19 @@ msgstr ""
 
 #. module: account_statement_import_api
 #. odoo-python
+#: code:addons/account_statement_import_api/wizards/account_statement_import_api_delete_connector.py:0
+#, python-format
+msgid ""
+"You must confirm the deletion of the connector or cancel the operation."
+msgstr ""
+"Vous devez confirmer la suppression du connecteur ou annuler l'opération."
+
+#. module: account_statement_import_api
+#. odoo-python
 #: code:addons/account_statement_import_api/wizards/account_statement_import_api_generate_url.py:0
 #, python-format
 msgid "You must select a Bank Connector."
-msgstr "Vous devez sélectionner un connecteur de banque."
+msgstr "Vous devez sélectionner un connecteur bancaire."
 
 #. module: account_statement_import_api
 #. odoo-python
