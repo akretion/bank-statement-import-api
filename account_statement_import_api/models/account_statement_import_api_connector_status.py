@@ -24,7 +24,8 @@ class AccountStatementImportApiConnectorStatus(models.Model):
     )
     statement_import_api_id = fields.Many2one(
         "account.statement.import.api",
-        related="connector_id.statement_import_api_id", store=True,
+        related="connector_id.statement_import_api_id",
+        store=True,
     )
     company_id = fields.Many2one(
         related="connector_id.statement_import_api_id.company_id", store=True

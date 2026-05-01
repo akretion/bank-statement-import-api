@@ -294,12 +294,18 @@ class AccountStatementImportApi(models.Model):
             self.name,
             self.company_id.display_name,
         )
+        log_obj = self.env["account.statement.import.api.log"]
         speedy = self._prepare_speedy()
+        account_ident2vals = self._update_connector_and_get_balance(speedy)
+        all_logs = log_obj
         logs_to_create = []
         for journal in self.journal_ids:
             if journal.statement_import_api_account_id:
                 if journal.statement_import_api_account_id.active:
-                    journal._api_import_bank_statement_lines(speedy)
+                    log = journal._api_import_bank_statement_lines(
+                        account_ident2vals, speedy
+                    )
+                    all_logs |= log
                 else:
                     err_msg = (
                         f"API bank account "
@@ -309,6 +315,7 @@ class AccountStatementImportApi(models.Model):
                     logger.warning(err_msg)
                     logs_to_create.append(
                         {
+                            "type": "other",
                             "status": "failure",
                             "journal_id": journal.id,
                             "statement_import_api_id": self.id,
@@ -322,6 +329,7 @@ class AccountStatementImportApi(models.Model):
                 logger.warning(err_msg)
                 logs_to_create.append(
                     {
+                        "type": "other",
                         "status": "failure",
                         "journal_id": journal.id,
                         "statement_import_api_id": self.id,
@@ -329,13 +337,38 @@ class AccountStatementImportApi(models.Model):
                     }
                 )
         if logs_to_create:
-            self.env["account.statement.import.api.log"].sudo().create(logs_to_create)
-        self._connector_status_update(speedy)
+            logs = (
+                self.env["account.statement.import.api.log"]
+                .sudo()
+                .create(logs_to_create)
+            )
+            all_logs |= logs
         logger.info(
             "End of bank statement import API %s company %s",
             self.name,
             self.company_id.display_name,
         )
+        action = all_logs._prepare_notification_action()
+        return action
+
+    def _update_connector_and_get_balance(self, speedy):
+        result = {"logs": []}
+        ajo = self.env["account.journal"]
+        self._connector_status_update(result, speedy)
+        account_ident2vals = self._get_account_ident2vals("balance", result, speedy)
+        for account_ident, vals in account_ident2vals.items():
+            if vals.get("balance") is not None:
+                msg = (
+                    f"Account identifier {account_ident} has balance "
+                    f"{vals['balance']} in {vals.get('currency_code')}"
+                )
+                ajo._api_import_info_log(result, msg)
+            else:
+                msg = f"No balance obtained for account identifier {account_ident}"
+                ajo._api_import_info_log(result, msg)
+        log_vals = self.env["account.journal"]._api_import_prepare_log(result, speedy)
+        self.env["account.statement.import.api.log"].sudo().create(log_vals)
+        return account_ident2vals
 
     def test_api(self):
         self.ensure_one()
@@ -375,11 +408,10 @@ class AccountStatementImportApi(models.Model):
         }
         return action
 
-    def _get_connector_ident2vals(self, speedy):
+    def _get_connector_ident2vals(self, result, speedy):
         self.ensure_one()
         if not speedy["service_info"].get("is_aggregator"):
             return {}
-        result = {"logs": [], "connector_identifier2vals": {}}
         method_name = f"_{self.service}_update_sync_status"
         if not hasattr(self, method_name):
             logger.warning("There is no method %s on %s", method_name, self._name)
@@ -388,44 +420,52 @@ class AccountStatementImportApi(models.Model):
         connector_ident2vals = method(result, speedy)
         return connector_ident2vals
 
-    def _connector_status_update(self, speedy):
+    def _connector_status_update(self, result, speedy):
         self.ensure_one()
         if not speedy["service_info"].get("is_aggregator"):
             return
         if not self.connector_ids:
             return
+        ajo = self.env["account.journal"]
         logger.info(
-            "Start connector status update on statement import API %s",
+            "Start connector status update on statement import API %s ID %s",
             self.display_name,
+            self.id,
         )
-        connector_ident2vals = self._get_connector_ident2vals(speedy)
+        connector_ident2vals = self._get_connector_ident2vals(result, speedy)
         for connector in self.connector_ids:
             if connector.identifier in connector_ident2vals:
                 connector.sudo().write(connector_ident2vals[connector.identifier])
-                logger.info(
-                    "Connector %s in company %s updated",
-                    connector.display_name,
-                    connector.company_id.display_name,
-                )
+                msg = f"Connector {connector.display_name} successfully updated"
+                ajo._api_import_info_log(result, msg)
             else:
-                logger.warning(
-                    "Identifier %s of connector %s in company %s not retrieved by API",
-                    connector.identifier,
-                    connector.display_name,
-                    connector.company_id.display_name,
+                msg = (
+                    f"Connector {connector.display_name} not updated because "
+                    f"its identifier {connector.identifier} was not retrieved by API"
                 )
+                ajo._api_import_warning_log(result, msg)
         logger.info(
-            "End of connector status update on statement import API %s",
+            "End of connector status update on statement import API %s ID %s",
+            self.display_name,
+            self.id,
+        )
+
+    def _get_account_ident2vals(self, flavor, result, speedy):
+        logger.info(
+            "Start get API accounts with flavor=%s on statement import API %s",
+            flavor,
             self.display_name,
         )
+        method_name = f"_{self.service}_get_api_accounts"
+        method = getattr(self, method_name)
+        account_ident2vals = method(flavor, result, speedy)
+        return account_ident2vals
 
     def update_api_accounts(self):
         self.ensure_one()
         result = {"logs": []}
         speedy = self._prepare_speedy()
-        method_name = f"_{self.service}_update_api_accounts"
-        method = getattr(self, method_name)
-        account_ident2vals = method(result, speedy)
+        account_ident2vals = self._get_account_ident2vals("properties", result, speedy)
 
         for log_type, msg in result["logs"]:
             if log_type == "error":
@@ -441,6 +481,8 @@ class AccountStatementImportApi(models.Model):
         # 1. clean-up, check and replace currency_code by currency_id
         for account_ident, vals in account_ident2vals.items():
             # clean-up vals
+            if "balance" in vals:
+                vals.pop("balance")
             for key, value in vals.items():
                 if value and isinstance(value, str):
                     vals[key] = value.strip()

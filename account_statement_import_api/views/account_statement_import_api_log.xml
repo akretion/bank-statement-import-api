@@ -12,8 +12,12 @@
                         <form>
                                 <group name="main">
                                     <group name="main-left">
-                                        <field name="statement_import_api_id" />
-                                        <field name="journal_id" />
+                                            <field name="statement_import_api_id" />
+                                            <field name="type" />
+                                            <field
+                            name="journal_id"
+                            attrs="{'invisible': [('journal_id', '=', False)]}"
+                        />
                                         <field name="create_date" string="Date" />
                                         <field
                             name="company_id"
@@ -47,6 +51,11 @@
                                 <field
                     name="statement_import_api_id"
                     invisible="not context.get('api_log_main_view')"
+                />
+                                <field
+                    name="type"
+                    decoration-info="type == 'statement_line'"
+                    widget="badge"
                 />
                                 <field name="journal_id" />
                                 <field name="create_date" string="Date" />
@@ -95,7 +104,23 @@
                     string="Failure"
                     domain="[('status', '=', 'failure')]"
                 />
+                                <separator />
+                                <filter
+                    name="type_statement_line"
+                    string="Bank Statement Lines Update"
+                    domain="[('type', '=', 'statement_line')]"
+                />
+                                <filter
+                    name="type_other"
+                    string="Get Balances and Update Connectors"
+                    domain="[('type', '=', 'other')]"
+                />
                                 <group name="groupby">
+                                        <filter
+                        name="type_groupby"
+                        string="Type"
+                        context="{'group_by': 'type'}"
+                    />
                                         <filter
                         name="create_date_groupby"
                         string="Date"

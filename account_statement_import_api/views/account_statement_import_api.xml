@@ -89,7 +89,7 @@
                             context="{'search_default_statement_import_api_id': active_id}"
                             icon="fa-bars"
                             string="Logs"
-                                        />
+                        />
                                 <button
                             class="oe_stat_button"
                             type="action"
