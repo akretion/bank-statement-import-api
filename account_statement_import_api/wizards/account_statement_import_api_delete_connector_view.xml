@@ -18,7 +18,7 @@
                                           <group name="main">
                                                   <div colspan="2">
                                                         <p
-                        >This wizard allows to delete a connector and all it's related API Bank Accounts. The deletion will happen in Odoo and also at the bank account aggregator. <strong
+                        >This wizard allows to delete a connector and all it's related API Bank Accounts. The deletion will happen in Odoo and also at the bank aggregator. <strong
                             >Don't use it if you don't know what you are doing!</strong></p>
     </div>
 
