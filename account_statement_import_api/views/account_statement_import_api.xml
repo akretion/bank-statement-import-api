@@ -58,6 +58,13 @@
                         groups="account.group_account_manager"
                     />
                     <button
+                        name="%(account_statement_import_api_delete_connector_action)d"
+                        type="action"
+                        string="Delete Connector"
+                        groups="account.group_account_manager"
+                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                    />
+                    <button
                         name="%(account_statement_import_api_delete_user_action)d"
                         type="action"
                         string="Delete User"

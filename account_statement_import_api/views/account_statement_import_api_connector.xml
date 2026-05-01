@@ -17,6 +17,12 @@
                         context="{'default_feature': 'renew_auth'}"
                         string="Extend Authorization"
                     />
+                            <button
+                        name="%(account_statement_import_api_delete_connector_action)d"
+                        type="action"
+                        string="Delete Connector"
+                    />
+
                                 </header>
                                 <div
                     class="alert alert-warning"

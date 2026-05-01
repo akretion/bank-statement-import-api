@@ -13,12 +13,18 @@
                                 <group name="main">
                                     <group name="main-left">
                                             <field name="statement_import_api_id" />
-                                            <field name="type" />
+                                            <field
+                            name="type"
+                            decoration-info="type == 'statement_line'"
+                            decoration-danger="type == 'delete_connector'"
+                            widget="badge"
+                        />
                                             <field
                             name="journal_id"
                             attrs="{'invisible': [('journal_id', '=', False)]}"
                         />
                                         <field name="create_date" string="Date" />
+                                        <field name="create_uid" string="User" />
                                         <field
                             name="company_id"
                             groups="base.group_multi_company"
@@ -55,10 +61,16 @@
                                 <field
                     name="type"
                     decoration-info="type == 'statement_line'"
+                    decoration-danger="type == 'delete_connector'"
                     widget="badge"
                 />
                                 <field name="journal_id" />
                                 <field name="create_date" string="Date" />
+                                <field
+                    name="create_uid"
+                    string="User"
+                    optional="show"
+                />
                                 <field
                     name="status"
                     widget="badge"
