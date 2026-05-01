@@ -43,7 +43,6 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
             wiz.bridge_external_user_identifier = bridge_external_user
 
     def _bridge_create_user(self, result, speedy):
-        ajo = self.env["account.journal"]
         external_user = (
             self.bridge_external_user_identifier
             and self.bridge_external_user_identifier.strip()
@@ -102,7 +101,7 @@ class AccountStatementImportApiCreateUser(models.TransientModel):
             json=post_json,
         )
         if not res.get("external_user_id"):
-            ajo._api_import_error_log(
+            speedy["log_obj"]._error_log(
                 result,
                 "The API call to create a company user didn't return the expected result.",
             )
