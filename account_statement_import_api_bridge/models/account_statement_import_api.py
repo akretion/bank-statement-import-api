@@ -195,6 +195,19 @@ class AccountStatementImportApi(models.Model):
                 bal = None
                 if "balance" in account:
                     bal = account["balance"]
+                debug_msg = []
+                if "accounting_balance" in account:
+                    debug_msg.append(
+                        f"accounting_balance={account['accounting_balance']}"
+                    )
+                if "instant_balance" in account:
+                    debug_msg.append(f"instant_balance={account['instant_balance']}")
+                if debug_msg:
+                    msg = (
+                        f"Other balances for account identifier {account_ident}: "
+                        f"{' '.join(debug_msg)}"
+                    )
+                    speedy["log_obj"]._debug_log(result, msg)
                 account_ident2vals[account_ident] = {
                     "name": account["name"],
                     "account_type": account.get("type"),

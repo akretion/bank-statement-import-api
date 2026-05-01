@@ -155,6 +155,11 @@ class AccountStatementImportApiLog(models.Model):
                     f"ERROR </span>{msg}"
                 )
                 has_error = True
+            elif log_level == "debug":
+                logs.append(
+                    f'<span style="color: darkblue; font-weight: bold">'
+                    f"DEBUG </span>{msg}"
+                )
             else:  # Should not happen
                 logs.append(msg)
         if has_error:
@@ -186,6 +191,11 @@ class AccountStatementImportApiLog(models.Model):
             "Bank statement import API log created type %s ID %d", log_type, log.id
         )
         return log
+
+    @api.model
+    def _debug_log(self, result, msg):
+        logger.debug(msg)
+        result["logs"].append(("debug", msg))
 
     @api.model
     def _info_log(self, result, msg):
