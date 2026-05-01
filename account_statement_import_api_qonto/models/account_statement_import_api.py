@@ -96,7 +96,6 @@ class AccountStatementImportApi(models.Model):
 
     @api.model
     def _qonto_get_all_pages(self, api_name, result, speedy, params=None):
-        ajo = self.env["account.journal"]
         url = BASE_URL + api_name
         if params is None:
             params = {}
@@ -115,18 +114,18 @@ class AccountStatementImportApi(models.Model):
                     timeout=TIMEOUT,
                 )
             except Exception as e:
-                ajo._api_import_error_log(
+                speedy["log_obj"]._error_log(
                     result, f"API call on {url} with params={params} failed: {e}"
                 )
                 return []
             if res.status_code != 200:
-                ajo._api_import_error_log(
+                speedy["log_obj"]._error_log(
                     result,
                     f"API call on {url} with params={params} returned an "
                     f"HTTP error code {res.status_code}.",
                 )
                 return []
-            ajo._api_import_info_log(
+            speedy["log_obj"]._info_log(
                 result, f"Successful HTTP GET API call on {url} with params={params}"
             )
             res_json = res.json()

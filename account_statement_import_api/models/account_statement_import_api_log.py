@@ -128,3 +128,76 @@ class AccountStatementImportApiLog(models.Model):
             },
         }
         return action
+
+    @api.model
+    def _prepare_log(self, log_type, result, speedy, journal_id=None):
+        assert log_type in ("other", "statement_line")
+        if log_type == "statement_line":
+            assert journal_id
+        logs = []
+        has_error = False
+        has_warning = False
+        for log_level, msg in result["logs"]:
+            if log_level == "info":
+                logs.append(
+                    f'<span style="color: green; font-weight: bold">'
+                    f"INFO </span>{msg}"
+                )
+            elif log_level == "warning":
+                logs.append(
+                    f'<span style="color: orange; font-weight: bold">'
+                    f"WARNING </span>{msg}"
+                )
+                has_warning = True
+            elif log_level == "error":
+                logs.append(
+                    f'<span style="color: red; font-weight: bold">'
+                    f"ERROR </span>{msg}"
+                )
+                has_error = True
+            else:  # Should not happen
+                logs.append(msg)
+        if has_error:
+            status = "failure"
+        else:
+            if has_warning:
+                status = "success_warn"
+            else:
+                status = "success"
+        log_vals = {
+            "journal_id": journal_id,
+            "type": log_type,
+            "statement_import_api_id": speedy["statement_import_api_id"],
+            "status": status,
+            "new_line_count": result.get("new_line_count"),
+            "updated_line_count": result.get("updated_line_count"),
+            "logs": "<br>".join(logs),
+        }
+        return log_vals
+
+    @api.model
+    def _create_log(self, log_type, result, speedy, journal_id=None):
+        if not result["logs"]:
+            logger.debug("Empty logs: no bank statement import API log created")
+            return None
+        vals = self._prepare_log(log_type, result, speedy, journal_id=journal_id)
+        log = self.sudo().create(vals)
+        logger.debug(
+            "Bank statement import API log created type %s ID %d", log_type, log.id
+        )
+        return log
+
+    @api.model
+    def _info_log(self, result, msg):
+        logger.info(msg)
+        result["logs"].append(("info", msg))
+
+    @api.model
+    def _warning_log(self, result, msg):
+        logger.warning(msg)
+        result["logs"].append(("warning", msg))
+
+    @api.model
+    def _error_log(self, result, msg):
+        logger.error(msg)
+        result["logs"].append(("error", msg))

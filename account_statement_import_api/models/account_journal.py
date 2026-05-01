@@ -339,12 +339,11 @@ class AccountJournal(models.Model):
                             f"the amount in foreign currency "
                             f"{line_pivot['foreign_currency_amount']}."
                         )
-                        self._api_import_warning_log(result, msg)
+                        speedy["log_obj"]._warning_log(result, msg)
         return lvals
 
     def _api_import_bank_statement_lines(self, account_ident2vals, speedy):
         self.ensure_one()
-        log_obj = self.env["account.statement.import.api.log"]
         logger.info("Start bank statement import API of journal %s", self.display_name)
         # raise for cases that should never happen because that are python constrains on it
         if (
@@ -428,7 +427,7 @@ class AccountJournal(models.Model):
                     self.statement_import_api_start_date
                     and pivot_line["date"] < self.statement_import_api_start_date
                 ):
-                    self._api_import_info_log(
+                    speedy["log_obj"]._info_log(
                         result,
                         f"Skipped retreived transaction dated "
                         f"{pivot_line['date']} amount {pivot_line['amount']} "
@@ -439,7 +438,7 @@ class AccountJournal(models.Model):
                     existing_line = existing_lines[pivot_line["unique_import_id"]]
                     if pivot_line.get("to_delete"):
                         if existing_line["is_reconciled"]:
-                            self._api_import_error_log(
+                            speedy["log_obj"]._error_log(
                                 result,
                                 f"Existing reconciled line ID "
                                 f"{existing_line['id']} dated {existing_line['date']} "
@@ -450,7 +449,7 @@ class AccountJournal(models.Model):
                                 "it manually.",
                             )
                         else:
-                            self._api_import_warning_log(
+                            speedy["log_obj"]._warning_log(
                                 result,
                                 f"Deleted existing unreconciled line ID "
                                 f"{existing_line['id']} dated {existing_line['date']} "
@@ -464,7 +463,7 @@ class AccountJournal(models.Model):
                             bank_statement_line.unlink()
                         continue
                     if existing_line["is_reconciled"]:
-                        self._api_import_info_log(
+                        speedy["log_obj"]._info_log(
                             result,
                             f"Skipped existing reconciled line ID "
                             f"{existing_line['id']} dated {existing_line['date']} "
@@ -476,7 +475,7 @@ class AccountJournal(models.Model):
                             pivot_line, result, speedy
                         )
                     else:
-                        self._api_import_info_log(
+                        speedy["log_obj"]._info_log(
                             result,
                             f"Skipped existing unreconciled line ID "
                             f"{existing_line['id']} dated {existing_line['date']} "
@@ -485,7 +484,7 @@ class AccountJournal(models.Model):
                         )
                 else:  # New bank statement line to create
                     if pivot_line.get("to_delete"):
-                        self._api_import_info_log(
+                        speedy["log_obj"]._info_log(
                             result,
                             f"Skipped line dated {pivot_line['date']} "
                             f"amount {pivot_line['amount']} label "
@@ -502,7 +501,7 @@ class AccountJournal(models.Model):
                         lvals, speedy["update_hook_speeddict"]
                     )
                     new_line_vals.append(lvals)
-                    self._api_import_info_log(
+                    speedy["log_obj"]._info_log(
                         result,
                         f"Created new line dated {lvals['date']} "
                         f"amount {lvals['amount']} label '{lvals['payment_ref']}'",
@@ -519,53 +518,11 @@ class AccountJournal(models.Model):
             result["updated_line_count"],
         )
         self._api_import_check_balance(account_ident2vals, result, speedy)
-        log_vals = self._api_import_prepare_log(result, speedy)
-        log = log_obj.sudo().create(log_vals)
-        logger.debug("Bank statement import log created ID %d", log.id)
+        log = speedy["log_obj"]._create_log(
+            "statement_line", result, speedy, journal_id=self.id
+        )
         logger.info("End of bank statement import API of journal %s", self.display_name)
         return log
-
-    def _api_import_prepare_log(self, result, speedy):
-        logs = []
-        has_error = False
-        has_warning = False
-        for log_type, msg in result["logs"]:
-            if log_type == "info":
-                logs.append(
-                    f'<span style="color: green; font-weight: bold">'
-                    f"INFO </span>{msg}"
-                )
-            elif log_type == "warning":
-                logs.append(
-                    f'<span style="color: orange; font-weight: bold">'
-                    f"WARNING </span>{msg}"
-                )
-                has_warning = True
-            elif log_type == "error":
-                logs.append(
-                    f'<span style="color: red; font-weight: bold">'
-                    f"ERROR </span>{msg}"
-                )
-                has_error = True
-            else:  # Should not happen
-                logs.append(msg)
-        if has_error:
-            status = "failure"
-        else:
-            if has_warning:
-                status = "success_warn"
-            else:
-                status = "success"
-        log_vals = {
-            "journal_id": self and self.id or False,
-            "type": self and "statement_line" or "other",
-            "statement_import_api_id": speedy["statement_import_api_id"],
-            "status": status,
-            "new_line_count": result.get("new_line_count"),
-            "updated_line_count": result.get("updated_line_count"),
-            "logs": "<br>".join(logs),
-        }
-        return log_vals
 
     def _api_import_update_existing_line(self, pivot_line, result, speedy):
         """This method is inherited in account_statement_import_in_invoice_api"""
@@ -581,7 +538,7 @@ class AccountJournal(models.Model):
 
         for required_field in required_field2type.keys():
             if not pivot_line.get(required_field):
-                self._api_import_error_log(
+                speedy["log_obj"]._error_log(
                     result,
                     f"Field {required_field} is missing in pivot line {pivot_line}",
                 )
@@ -594,7 +551,7 @@ class AccountJournal(models.Model):
                     pivot_line["date"], "%Y-%m-%d"
                 ).date()
             except ValueError:
-                self._api_import_error_log(
+                speedy["log_obj"]._error_log(
                     result,
                     f"Date '{pivot_line['date']}' is a string that doesn't "
                     f"respect format '%Y-%m-%d' in pivot line {pivot_line}",
@@ -603,7 +560,7 @@ class AccountJournal(models.Model):
 
         for field, field_type in required_field2type.items():
             if not isinstance(pivot_line[field], field_type):
-                self._api_import_error_log(
+                speedy["log_obj"]._error_log(
                     result,
                     f"Field {field} has value '{pivot_line[field]}' "
                     f"and type '{type(pivot_line[field])}' whereas the expected type "
@@ -614,7 +571,7 @@ class AccountJournal(models.Model):
             pivot_line.get("currency_code")
             and pivot_line["currency_code"].upper() != speedy["journal_currency_code"]
         ):
-            self._api_import_error_log(
+            speedy["log_obj"]._error_log(
                 result,
                 f"Transaction is in currency {pivot_line['currency_code']} "
                 f"whereas the bank journal {self.display_name} is in currency "
@@ -630,13 +587,13 @@ class AccountJournal(models.Model):
             msg = (
                 f"Field 'default_account_id' is not set on journal {self.display_name}"
             )
-            self._api_import_warning_log(result, msg)
+            speedy["log_obj"]._warning_log(result, msg)
         elif account_ident not in account_ident2vals:
             msg = f"Account identifier {account_ident} is not in account_ident2vals"
-            self._api_import_warning_log(result, msg)
+            speedy["log_obj"]._warning_log(result, msg)
         elif "balance" not in account_ident2vals[account_ident]:
             msg = f"Balance not available for account identifier {account_ident}"
-            self._api_import_info_log(result, msg)
+            speedy["log_obj"]._info_log(result, msg)
         else:
             currency = speedy["journal_currency"]
             bank_bal = account_ident2vals[account_ident]["balance"]
@@ -651,13 +608,13 @@ class AccountJournal(models.Model):
                         f"from currency reported by API ({bank_currency_code}). "
                         "This should never happen!"
                     )
-                    self._api_import_warning_log(result, msg)
+                    speedy["log_obj"]._warning_log(result, msg)
             if not currency_mismatch:
                 fcompare = currency.compare_amounts(accounting_bal, bank_bal)
                 accounting_bal_fmt = format_amount(self.env, accounting_bal, currency)
                 if not fcompare:
                     msg = f"Accounting balance = bank balance ({accounting_bal_fmt})"
-                    self._api_import_info_log(result, msg)
+                    speedy["log_obj"]._info_log(result, msg)
                 else:
                     bank_bal_fmt = format_amount(self.env, bank_bal, currency)
                     diff_fmt = format_amount(
@@ -667,7 +624,7 @@ class AccountJournal(models.Model):
                         f"Accounting balance ({accounting_bal_fmt}) is different "
                         f"from bank balance ({bank_bal_fmt}). Difference: {diff_fmt}"
                     )
-                    self._api_import_warning_log(result, msg)
+                    speedy["log_obj"]._warning_log(result, msg)
 
     def _api_import_get_accounting_balance(self, speedy):
         self.ensure_one()
@@ -697,9 +654,18 @@ class AccountJournal(models.Model):
                 )
             )
         speedy = import_api._prepare_speedy()
-        account_ident2vals = import_api._update_connector_and_get_balance(speedy)
+        result = {"logs": []}
+        all_logs = speedy["log_obj"]
+        account_ident2vals = import_api._update_connector_and_get_balance(
+            result, speedy
+        )
+        log = speedy["log_obj"]._create_log("other", result, speedy)
+        if log:
+            all_logs |= log
         log = self._api_import_bank_statement_lines(account_ident2vals, speedy)
-        action = log._prepare_notification_action()
+        if log:
+            all_logs |= log
+        action = all_logs._prepare_notification_action()
         return action
 
     def _api_import_timestamp_iso8601_to_datetime_aware(
@@ -744,18 +710,3 @@ class AccountJournal(models.Model):
         timestamp_dt_our_tz = timestamp_dt.astimezone(speedy["tz"])
         date_dt = timestamp_dt_our_tz.date()
         return date_dt
-
-    @api.model
-    def _api_import_info_log(self, result, msg):
-        logger.info(msg)
-        result["logs"].append(("info", msg))
-
-    @api.model
-    def _api_import_warning_log(self, result, msg):
-        logger.warning(msg)
-        result["logs"].append(("warning", msg))
-
-    @api.model
-    def _api_import_error_log(self, result, msg):
-        logger.error(msg)
-        result["logs"].append(("error", msg))

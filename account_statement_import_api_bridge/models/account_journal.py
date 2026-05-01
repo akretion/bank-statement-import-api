@@ -77,7 +77,7 @@ class AccountJournal(models.Model):
             "to_delete": trans["deleted"],
         }
         if trans["future"]:
-            self._api_import_info_log(
+            speedy["log_obj"]._info_log(
                 result,
                 f"Skipped transaction dated {pivot['date']} "
                 f"amount {pivot['amount']} label '{pivot['payment_ref']}' "

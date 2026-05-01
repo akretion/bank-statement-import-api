@@ -104,7 +104,6 @@ class AccountStatementImportApi(models.Model):
 
     def _bridge_get_new_token(self, result, speedy):
         self.ensure_one()
-        ajo = self.env["account.journal"]
         headers_token = speedy["bridge_headers_no_token"]
         user_uuid = self.sudo().user_identifier
         post_json = {"user_uuid": user_uuid}
@@ -116,7 +115,7 @@ class AccountStatementImportApi(models.Model):
             json=post_json,
         )
         if not token_dict.get("access_token"):
-            ajo._api_import_error_log(result, "Could not get a token.")
+            speedy["log_obj"]._error_log(result, "Could not get a token.")
             return None
         token = token_dict["access_token"]
         logger.debug(
@@ -224,24 +223,23 @@ class AccountStatementImportApi(models.Model):
 
     @api.model
     def _bridge_get(self, api_name, headers, result, speedy, params=None):
-        ajo = self.env["account.journal"]
         url = f"{speedy['bridge_base_url']}/{BRIDGE_API_VERSION}/{api_name}"
         try:
             res = requests.get(url, headers=headers, params=params, timeout=TIMEOUT)
         except Exception as e:
-            ajo._api_import_error_log(
+            speedy["log_obj"]._error_log(
                 result, f"HTTP GET API call on {url} with params={params} failed: {e}"
             )
             return None
         logger.debug("Headers of the answer from Bridge: %s", res.headers)
         if res.status_code != 200:
-            ajo._api_import_error_log(
+            speedy["log_obj"]._error_log(
                 result,
                 f"HTTP GET API call on {url} with params={params} returned an "
                 f"HTTP error code {res.status_code}.",
             )
             return None
-        ajo._api_import_info_log(
+        speedy["log_obj"]._info_log(
             result, f"Successful HTTP GET API call on {url} with params={params}"
         )
         res_dict = res.json()
@@ -249,7 +247,6 @@ class AccountStatementImportApi(models.Model):
 
     @api.model
     def _bridge_get_all_pages(self, api_name, headers, result, speedy, params=None):
-        ajo = self.env["account.journal"]
         if params is None:
             params = {}
         if not params.get("limit"):
@@ -266,18 +263,18 @@ class AccountStatementImportApi(models.Model):
             try:
                 res_next_page = requests.get(url, headers=headers, timeout=TIMEOUT)
             except Exception as e:
-                ajo._api_import_error_log(
+                speedy["log_obj"]._error_log(
                     result, f"API call on {url} failed (page {page}): {e}"
                 )
                 return None
             if res_next_page.status_code != 200:
-                ajo._api_import_error_log(
+                speedy["log_obj"]._error_log(
                     result,
                     f"API call on {url} returned an "
                     f"HTTP error code {res_next_page.status_code} (page {page}).",
                 )
                 return None
-            ajo._api_import_info_log(
+            speedy["log_obj"]._info_log(
                 result, f"Successful API call on {url} (page {page})"
             )
             res_next_page_dict = res_next_page.json()
@@ -287,12 +284,11 @@ class AccountStatementImportApi(models.Model):
 
     @api.model
     def _bridge_post(self, api_name, headers, result, speedy, json=None):
-        ajo = self.env["account.journal"]
         url = f"{speedy['bridge_base_url']}/{BRIDGE_API_VERSION}/{api_name}"
         try:
             res = requests.post(url, headers=headers, json=json, timeout=TIMEOUT)
         except Exception as e:
-            ajo._api_import_error_log(
+            speedy["log_obj"]._error_log(
                 result, f"HTTP POST API call on {url} with json={json} failed: {e}"
             )
             return {}
@@ -302,14 +298,14 @@ class AccountStatementImportApi(models.Model):
                 error_msg = res.json()["errors"][0]["message"]
             except Exception:
                 error_msg = res.text
-            ajo._api_import_error_log(
+            speedy["log_obj"]._error_log(
                 result,
                 f"HTTP POST API call on {url} with json={json} returned an "
                 f"HTTP error code {res.status_code} with this error "
                 f"message: '{error_msg}'.",
             )
             return {}
-        ajo._api_import_info_log(
+        speedy["log_obj"]._info_log(
             result, f"Successful HTTP POST API call on {url} with json={json}"
         )
         res_dict = res.json()
@@ -317,12 +313,11 @@ class AccountStatementImportApi(models.Model):
 
     @api.model
     def _bridge_del(self, api_name, headers, result, speedy):
-        ajo = self.env["account.journal"]
         url = f"{speedy['bridge_base_url']}/{BRIDGE_API_VERSION}/{api_name}"
         try:
             res = requests.delete(url, headers=headers, timeout=TIMEOUT)
         except Exception as e:
-            ajo._api_import_error_log(
+            speedy["log_obj"]._error_log(
                 result, f"HTTP DELETE API call on {url} failed: {e}"
             )
             return False
@@ -332,14 +327,14 @@ class AccountStatementImportApi(models.Model):
                 error_msg = res.json()["errors"][0]["message"]
             except Exception:
                 error_msg = res.text
-            ajo._api_import_error_log(
+            speedy["log_obj"]._error_log(
                 result,
                 f"HTTP DELETE API call on {url} returned an "
                 f"HTTP error code {res.status_code} with this error "
                 f"message: '{error_msg}'.",
             )
             return False
-        ajo._api_import_info_log(result, f"Successful HTTP DELETE API call on {url}")
+        speedy["log_obj"]._info_log(result, f"Successful HTTP DELETE API call on {url}")
         return True
 
     def _bridge_add_account_get_url(self, result, speedy):

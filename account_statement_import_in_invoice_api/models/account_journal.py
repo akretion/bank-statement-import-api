@@ -121,7 +121,7 @@ class AccountJournal(models.Model):
                 card = self.env["account.bank.statement.card"].create(
                     self._api_import_prepare_card(pivot_line, speedy)
                 )
-                self._api_import_info_log(
+                speedy["log_obj"]._info_log(
                     result, f"New card created with code '{card_code}' (ID {card.id})"
                 )
                 speedy["card_code2id"][card_code] = card.id
@@ -133,7 +133,7 @@ class AccountJournal(models.Model):
                     expcateg_code
                 ]
             else:
-                self._api_import_warning_log(
+                speedy["log_obj"]._warning_log(
                     result,
                     f"Expense category code '{expcateg_code}' doesn't exist "
                     f"for service {speedy['service']}",
@@ -150,7 +150,7 @@ class AccountJournal(models.Model):
             bs_analytic_account_ids = []
             for bs_ana_acc_ident in bs_analytic_account_idents:
                 if bs_ana_acc_ident not in bs_ana_account_ident2vals:
-                    self._api_import_warning_log(
+                    speedy["log_obj"]._warning_log(
                         result,
                         f"Bank statement analytic account identifier "
                         f"'{bs_ana_acc_ident}' doesn't exist in Odoo. "
@@ -167,7 +167,7 @@ class AccountJournal(models.Model):
                     bs_ana_acc_dname = bs_ana_account_ident2vals[bs_ana_acc_ident][
                         "display_name"
                     ]
-                    self._api_import_warning_log(
+                    speedy["log_obj"]._warning_log(
                         result,
                         f"Bank statement analytic account '{bs_ana_acc_dname}' is not "
                         f"mapped to an Odoo analytic account",
@@ -219,7 +219,7 @@ class AccountJournal(models.Model):
                 attachments_to_get = pivot_line["attachments"]
             for attachment_pivot in attachments_to_get:
                 attach_raw = self._api_import_get_attachment_from_url(
-                    attachment_pivot["url"], result
+                    attachment_pivot["url"], result, speedy
                 )
                 if (
                     attach_raw
@@ -254,19 +254,19 @@ class AccountJournal(models.Model):
         )
         return lvals
 
-    def _api_import_get_attachment_from_url(self, url, result):
+    def _api_import_get_attachment_from_url(self, url, result, speedy):
         if not url:
             return None
         try:
             res = requests.get(url, verify=True, timeout=TIMEOUT)
         except Exception as e:
-            self._api_import_error_log(
+            speedy["log_obj"]._error_log(
                 result, f"API call to get attachment from {url} failed: {e}"
             )
             return None
         if res.status_code != 200:
             # let's see error_logs
-            self._api_import_error_log(
+            speedy["log_obj"]._error_log(
                 result,
                 f"API call to get attachment from {url} returned an HTTP error code "
                 f"{res.status_code}.",
@@ -285,7 +285,7 @@ class AccountJournal(models.Model):
         st_line = self.env["account.bank.statement.line"].browse(existing_line["id"])
         st_line.write(lvals)
         result["updated_line_count"] += 1
-        self._api_import_info_log(
+        speedy["log_obj"]._info_log(
             result,
             f"Updated existing unreconciled line ID {existing_line['id']} "
             f"dated {existing_line['date']} amount {existing_line['amount']} "
@@ -305,7 +305,7 @@ class AccountJournal(models.Model):
                     pivot_line["in_invoice_force_invoice_date"], "%Y-%m-%d"
                 )
             except ValueError:
-                self._api_import_error_log(
+                speedy["log_obj"]._error_log(
                     result,
                     f"Field 'Force Invoice Date' has date "
                     f"'{pivot_line['in_invoice_force_invoice_date']}' "
@@ -324,7 +324,7 @@ class AccountJournal(models.Model):
         for field, field_type in field2type.items():
             if pivot_line.get(field):
                 if not isinstance(pivot_line[field], field_type):
-                    self._api_import_error_log(
+                    speedy["log_obj"]._error_log(
                         result,
                         f"Field {field} has value '{pivot_line[field]}' "
                         f"and type '{type(pivot_line[field])}' whereas the expected "
@@ -344,7 +344,7 @@ class AccountJournal(models.Model):
             )
             < 0
         ):
-            self._api_import_warning_log(
+            speedy["log_obj"]._warning_log(
                 result,
                 f"Got a negative VAT rate "
                 f"({pivot_line['in_invoice_vat_rate']}) on pivot line {pivot_line}: "
