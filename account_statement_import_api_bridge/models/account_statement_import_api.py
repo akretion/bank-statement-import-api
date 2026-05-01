@@ -395,7 +395,7 @@ class AccountStatementImportApi(models.Model):
         url = res_json.get("url")
         return url
 
-    def _bridge_renew_auth_get_url(self, connector, company, result, speedy):
+    def _bridge_renew_auth_get_url(self, connector, result, speedy):
         return self._bridge_manage_accounts_get_url(
             connector, result, speedy, force_reauthentication=True
         )
