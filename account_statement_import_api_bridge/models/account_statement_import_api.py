@@ -214,7 +214,8 @@ class AccountStatementImportApi(models.Model):
                 provider_dict = self._bridge_get(
                     f"providers/{provider_id}", headers, result, speedy
                 )
-                providers_id2name[provider_id] = provider_dict.get("name")
+                if provider_dict:
+                    providers_id2name[provider_id] = provider_dict.get("name")
             for vals in account_ident2vals.values():
                 if vals["provider_id"] and vals["provider_id"] in providers_id2name:
                     provider_id = vals.pop("provider_id")
