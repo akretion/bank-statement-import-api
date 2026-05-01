@@ -29,6 +29,7 @@ class AccountStatementImportApiLog(models.Model):
             ("statement_line", "Bank Statement Line Update"),
             ("other", "Get Balances and Update Connectors"),
             ("delete_connector", "Delete Connector"),
+            ("update_api_accounts", "Get/Update API Accounts"),
         ],
         readonly=True,
     )
