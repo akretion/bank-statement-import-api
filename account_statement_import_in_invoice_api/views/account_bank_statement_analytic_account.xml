@@ -77,7 +77,7 @@
                     domain="[('analytic_account_id', '=', False)]"
                 />
                         <filter
-                    string="Fuly Configured"
+                    string="Fully Configured"
                     name="analytic_account"
                     domain="[('analytic_account_id', '!=', False)]"
                 />

@@ -6,10 +6,11 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-07 18:26+0000\n"
-"PO-Revision-Date: 2026-04-07 18:26+0000\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2026-05-01 22:36+0000\n"
+"PO-Revision-Date: 2026-05-01 22:37+0000\n"
+"Last-Translator: Alexis de Lattre <alexis.delattre@akretion.com>\n"
 "Language-Team: \n"
+"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -125,7 +126,7 @@ msgstr "Catégorie"
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__code
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__code
 msgid "Code"
-msgstr ""
+msgstr "Code"
 
 #. module: account_statement_import_in_invoice
 #: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_expense_categ_form
@@ -224,12 +225,17 @@ msgstr "Forcer le fournisseur (facultatif)"
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card_account__id
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__id
 msgid "ID"
-msgstr ""
+msgstr "ID"
+
+#. module: account_statement_import_in_invoice
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_currency_id
+msgid "Invoice Currency"
+msgstr "Devise de la facture"
 
 #. module: account_statement_import_in_invoice
 #: model:ir.model,name:account_statement_import_in_invoice.model_account_journal
 msgid "Journal"
-msgstr ""
+msgstr "Journal"
 
 #. module: account_statement_import_in_invoice
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_card__name
@@ -287,9 +293,17 @@ msgid ""
 "Otherwise, Odoo will use the misc partner configured on the accounting "
 "configuration page."
 msgstr ""
-"Partenaire divers utilisé lorsque la ligne relevé de compte est liée à cette"
-" carte. Sinon, Odoo utilisera le partenaire divers configuré sur la page de "
+"Partenaire divers utilisé lorsque la ligne relevé de compte est liée à cette "
+"carte. Sinon, Odoo utilisera le partenaire divers configuré sur la page de "
 "configuration de la comptabilité."
+
+#. module: account_statement_import_in_invoice
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
+#, python-format
+msgid "Missing invoice currency. This should never happen."
+msgstr ""
+"Devise de la facture manquante. Cela ne devrait jamais se produire."
 
 #. module: account_statement_import_in_invoice
 #: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.bank_statement_line_reconcile_view
@@ -310,8 +324,7 @@ msgid ""
 "configuration page of company '%s'."
 msgstr ""
 "Pas de partenaire sur la ligne relevé de compte et pas de partenaire divers "
-"configuré sur la page de configuration de la comptabilité de la société "
-"'%s'."
+"configuré sur la page de configuration de la comptabilité de la société '%s'."
 
 #. module: account_statement_import_in_invoice
 #. odoo-python
@@ -365,7 +378,7 @@ msgstr "Reçu(s)"
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_expense_categ__service
 #: model_terms:ir.ui.view,arch_db:account_statement_import_in_invoice.account_bank_statement_expense_categ_search
 msgid "Service"
-msgstr ""
+msgstr "Service"
 
 #. module: account_statement_import_in_invoice
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_show_button
@@ -375,12 +388,12 @@ msgstr "Afficher le bouton pour créer une facture fournisseur"
 #. module: account_statement_import_in_invoice
 #: model:ir.model.fields,field_description:account_statement_import_in_invoice.field_account_bank_statement_line__in_invoice_tax_ids
 msgid "Taxes"
-msgstr ""
+msgstr "Taxes"
 
 #. module: account_statement_import_in_invoice
 #: model:ir.model.fields.selection,name:account_statement_import_in_invoice.selection__account_bank_statement_expense_categ__service__test
 msgid "Test"
-msgstr ""
+msgstr "Test"
 
 #. module: account_statement_import_in_invoice
 #. odoo-python
@@ -475,8 +488,8 @@ msgid ""
 "model=account.bank.statement.line data-oe-"
 "id=%(st_line_id)s>%(st_line_name)s</a>"
 msgstr ""
-"Facture fournisseur créée à partir de la ligne du relevé de compte <a href=#"
-" data-oe-model=account.bank.statement.line data-oe-"
+"Facture fournisseur créée à partir de la ligne du relevé de compte <a href=# "
+"data-oe-model=account.bank.statement.line data-oe-"
 "id=%(st_line_id)s>%(st_line_name)s</a>"
 
 #. module: account_statement_import_in_invoice
@@ -495,8 +508,8 @@ msgstr ""
 #: code:addons/account_statement_import_in_invoice/models/account_bank_statement_line.py:0
 #, python-format
 msgid ""
-"Wrong total amount. Transaction total amount: %(trans_total)s. Vendor "
-"bill/refund total amount: %(invoice_total)s. This should never happen."
+"Wrong total amount. Transaction total amount: %(trans_total)s. Vendor bill/"
+"refund total amount: %(invoice_total)s. This should never happen."
 msgstr ""
 "Montant total erroné. Montant total de la transaction : %(trans_total)s. "
 "Montant total de la facture/avoir fournisseur : %(invoice_total)s. Cela ne "

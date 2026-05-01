@@ -6,11 +6,10 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-07 16:47+0000\n"
-"PO-Revision-Date: 2026-04-07 16:48+0000\n"
-"Last-Translator: Alexis de Lattre <alexis.delattre@akretion.com>\n"
+"POT-Creation-Date: 2026-05-01 22:35+0000\n"
+"PO-Revision-Date: 2026-05-01 22:35+0000\n"
+"Last-Translator: \n"
 "Language-Team: \n"
-"Language: fr\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: \n"
@@ -22,21 +21,22 @@ msgstr ""
 #, python-format
 msgid ""
 "<p>Go to the web interface of your <a href=\"https://qonto.com/\">Qonto</a> "
-"account. On the left panel, click on <strong>Integrations and Partnerships</"
-"strong> and then click on <strong>API Keys</strong>:</p><ul><li>Copy the "
-"<strong>Identifier</strong> to the field <em>Login or Client ID</em></"
-"li><li>Copy the <strong>Secret Key</strong> to the field <em>Password or "
-"Client Secret</em></li></ul><p>Then, click on the button <em>Test API</em> "
-"to test that Odoo is able to query the Qonto API.</p>"
+"account. On the left panel, click on <strong>Integrations and "
+"Partnerships</strong> and then click on <strong>API "
+"Keys</strong>:</p><ul><li>Copy the <strong>Identifier</strong> to the field "
+"<em>Login or Client ID</em></li><li>Copy the <strong>Secret Key</strong> to "
+"the field <em>Password or Client Secret</em></li></ul><p>Then, click on the "
+"button <em>Test API</em> to test that Odoo is able to query the Qonto "
+"API.</p>"
 msgstr ""
-"<p>Accédez à l'interface web de votre compte <a href=\"https://qonto.com/"
-"\">Qonto</a>. Dans le panneau de gauche, cliquez sur <strong>Intégrations et "
-"avantages</strong>, puis sur <strong>Clé API</strong>:</p><ul><li>Copiez "
-"l'<strong>identifiant</strong> dans le champ <em>Login ou ID client</em></"
-"li><li>Copiez la <strong>clé secrète</strong> dans le champ <em>Mot de passe "
-"ou Secret du client</em></li></ul><p>Ensuite, cliquez sur le bouton "
-"<em>Tester l'API</em> pour tester qu'Odoo est capable d'interroger l'API de "
-"Qonto.</p>"
+"<p>Accédez à l'interface web de votre compte <a "
+"href=\"https://qonto.com/\">Qonto</a>. Dans le panneau de gauche, cliquez "
+"sur <strong>Intégrations et avantages</strong>, puis sur <strong>Clé "
+"API</strong>:</p><ul><li>Copiez l'<strong>identifiant</strong> dans le champ"
+" <em>Login ou ID client</em></li><li>Copiez la <strong>clé secrète</strong> "
+"dans le champ <em>Mot de passe ou Secret du client</em></li></ul><p>Ensuite,"
+" cliquez sur le bouton <em>Tester l'API</em> pour tester qu'Odoo est capable"
+" d'interroger l'API de Qonto.</p>"
 
 #. module: account_statement_import_api_qonto
 #: model:ir.model,name:account_statement_import_api_qonto.model_account_bank_statement_expense_categ
@@ -56,7 +56,7 @@ msgstr "Honoraires"
 #. module: account_statement_import_api_qonto
 #: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.finance_expense_categ
 msgid "Finance"
-msgstr "Finances"
+msgstr ""
 
 #. module: account_statement_import_api_qonto
 #: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.food_and_grocery_expense_categ
@@ -91,7 +91,7 @@ msgstr "Assurance"
 #. module: account_statement_import_api_qonto
 #: model:ir.model,name:account_statement_import_api_qonto.model_account_journal
 msgid "Journal"
-msgstr "Journal"
+msgstr ""
 
 #. module: account_statement_import_api_qonto
 #: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.legal_and_accounting_expense_categ
@@ -111,7 +111,7 @@ msgstr "Fabrication"
 #. module: account_statement_import_api_qonto
 #: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.marketing_expense_categ
 msgid "Marketing"
-msgstr "Marketing"
+msgstr ""
 
 #. module: account_statement_import_api_qonto
 #: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.office_rental_expense_categ
@@ -141,7 +141,7 @@ msgstr "Autre service"
 #. module: account_statement_import_api_qonto
 #: model:ir.model.fields.selection,name:account_statement_import_api_qonto.selection__account_bank_statement_expense_categ__service__qonto
 msgid "Qonto"
-msgstr "Qonto"
+msgstr ""
 
 #. module: account_statement_import_api_qonto
 #: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.qonto_fee_expense_categ
@@ -168,7 +168,7 @@ msgstr "Salaire"
 #: model:ir.model.fields,field_description:account_statement_import_api_qonto.field_account_bank_statement_expense_categ__service
 #: model:ir.model.fields,field_description:account_statement_import_api_qonto.field_account_statement_import_api__service
 msgid "Service"
-msgstr "Service"
+msgstr ""
 
 #. module: account_statement_import_api_qonto
 #: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.subscription_expense_categ
@@ -178,12 +178,12 @@ msgstr "Abonnement"
 #. module: account_statement_import_api_qonto
 #: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.tax_expense_categ
 msgid "Tax"
-msgstr "Taxe"
+msgstr "Impôts & taxes"
 
 #. module: account_statement_import_api_qonto
 #: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.transport_expense_categ
 msgid "Transport"
-msgstr "Transport"
+msgstr ""
 
 #. module: account_statement_import_api_qonto
 #: model:account.bank.statement.expense.categ,name:account_statement_import_api_qonto.utility_expense_categ
