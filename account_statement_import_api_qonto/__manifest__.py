@@ -13,7 +13,6 @@
     "website": "https://github.com/akretion/bank-statement-import-api",
     "depends": ["account_statement_import_in_invoice_api"],
     "data": [
-        "views/account_statement_import_api.xml",
         "data/ir_cron.xml",
         "data/account_bank_statement_expense_categ.xml",
     ],
