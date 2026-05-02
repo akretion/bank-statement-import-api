@@ -116,8 +116,12 @@
                 </div>
                 <group name="main">
                 <group name="main-left">
-                    <field name="service" readonly="api_account_ids"/>
-                    <field name="company_id" groups="base.group_multi_company" readonly="api_account_ids"/>
+                    <field name="service" readonly="api_account_ids" />
+                    <field
+                                name="company_id"
+                                groups="base.group_multi_company"
+                                readonly="api_account_ids"
+                            />
                     <field name="company_id" invisible="1" />
                     <field name="show_manage_accounts_wizard" invisible="1" />
                     <field name="is_aggregator" invisible="1" />
