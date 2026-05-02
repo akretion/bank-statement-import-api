@@ -20,6 +20,7 @@ class AccountStatementImportApiDeleteUser(models.TransientModel):
         required=True,
         string="Bank Statement Import API",
     )
+    confirm = fields.Boolean(string="Do you confirm?")
 
     @api.model
     def default_get(self, fields_list):
@@ -31,6 +32,10 @@ class AccountStatementImportApiDeleteUser(models.TransientModel):
 
     def run(self):
         self.ensure_one()
+        if not self.confirm:
+            raise UserError(
+                _("You must confirm the deletion of the user or cancel the operation.")
+            )
         import_api = self.statement_import_api_id
         # first, we try to delete API bank accounts
         logger.info("Deleting API bank account IDs %s", import_api.api_account_ids.ids)
