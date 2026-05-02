@@ -134,6 +134,12 @@
                 />
                                 <separator />
                                 <filter
+                    string="Date"
+                    name="create_date"
+                    date="create_date"
+                />
+                                <separator />
+                                <filter
                     name="type_statement_line"
                     string="Bank Statement Lines Update"
                     domain="[('type', '=', 'statement_line')]"
@@ -143,6 +149,17 @@
                     string="Get Balances and Update Connectors"
                     domain="[('type', '=', 'other')]"
                 />
+                                <filter
+                    name="type_update_api_accounts"
+                    string="Get/Update API Accounts"
+                    domain="[('type', '=', 'update_api_accounts')]"
+                />
+                                <filter
+                    name="type_delete_connector"
+                    string="Delete Connector"
+                    domain="[('type', '=', 'delete_connector')]"
+                />
+
                                 <group name="groupby">
                                         <filter
                         name="type_groupby"
