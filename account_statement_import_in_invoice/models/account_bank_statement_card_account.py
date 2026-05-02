@@ -25,7 +25,7 @@ class AccountBankStatementCardAccount(models.Model):
     )
     account_id = fields.Many2one(
         "account.account",
-        domain="[('company_id', '=', company_id), ('deprecated', '=', False)]",
+        domain="[('company_ids', 'in', company_id), ('deprecated', '=', False)]",
         check_company=True,
         required=True,
     )

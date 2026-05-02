@@ -232,7 +232,7 @@ class AccountStatementImportApi(models.Model):
                 "views": False,
                 "view_id": False,
                 "res_id": crons.id,
-                "view_mode": "form,tree,calendar",
+                "view_mode": "form,list,calendar",
             }
         )
         return action

@@ -16,9 +16,11 @@ class AccountJournal(models.Model):
     )
 
     def _compute_bank_statement_card_count(self):
-        rg_res = self.env["account.bank.statement.card"].read_group(
-            [("journal_id", "in", self.ids)], ["journal_id"], ["journal_id"]
+        rg_res = self.env["account.bank.statement.card"]._read_group(
+            [("journal_id", "in", self.ids)],
+            groupby=["journal_id"],
+            aggregates=["__count"],
         )
-        mapped_data = {x["journal_id"][0]: x["journal_id_count"] for x in rg_res}
+        mapped_data = {journal.id: card_count for (journal, card_count) in rg_res}
         for journal in self:
             journal.bank_statement_card_count = mapped_data.get(journal.id, 0)

@@ -16,7 +16,7 @@
                 <field name="statement_import_api_last_success" position="after">
                     <field
                     name="powens_preferred_date"
-                    attrs="{'invisible': [('statement_import_api_service', '!=', 'powens')]}"
+                    invisible="statement_import_api_service != 'powens'"
                 />
             </field>
         </field>

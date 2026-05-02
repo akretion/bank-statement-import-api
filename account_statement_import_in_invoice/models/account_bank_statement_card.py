@@ -34,12 +34,9 @@ class AccountBankStatementCard(models.Model):
     )
 
     @api.depends("name", "code")
-    def name_get(self):
-        res = []
+    def _compute_display_name(self):
         for card in self:
-            dname = card.name or card.code
-            res.append((card.id, dname))
-        return res
+            card.display_name = card.name or card.code
 
     _sql_constraints = [
         (

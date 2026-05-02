@@ -15,7 +15,7 @@
                         name="web_ribbon"
                         title="Archived"
                         bg_color="bg-danger"
-                        attrs="{'invisible': [('active', '=', True)]}"
+                        invisible="active"
                     />
                                 <div class="oe_title">
                     <label for="name" />
@@ -46,7 +46,7 @@
         <record id="account_bank_statement_analytic_account_list" model="ir.ui.view">
                 <field name="model">account.bank.statement.analytic.account</field>
                 <field name="arch" type="xml">
-                        <tree decoration-warning="not analytic_account_id">
+                        <list decoration-warning="not analytic_account_id">
                                 <field name="name" decoration-bf="1" />
                                     <field name="parent_name" />
                                     <field name="statement_import_api_id" />
@@ -57,7 +57,7 @@
                     name="company_id"
                     groups="base.group_multi_company"
                 />
-                    </tree>
+                    </list>
                 </field>
         </record>
 
@@ -115,7 +115,7 @@
     >
                 <field name="name">Bank Statement Analytic Account</field>
                 <field name="res_model">account.bank.statement.analytic.account</field>
-                <field name="view_mode">tree,form</field>
+                <field name="view_mode">list,form</field>
     </record>
 
     <menuitem

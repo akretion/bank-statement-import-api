@@ -12,7 +12,6 @@
     <field name="user_id" ref="base.user_root" />
     <field name="interval_number">1</field>
     <field name="interval_type">days</field>
-    <field name="numbercall">-1</field> <!-- remove in v18 -->
     <field
             name="model_id"
             ref="account_statement_import_api.model_account_statement_import_api"

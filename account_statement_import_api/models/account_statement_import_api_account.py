@@ -2,7 +2,7 @@
 # @author: Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import _, fields, models
+from odoo import _, api, fields, models
 
 
 class AccountStatementImportApiAccount(models.Model):
@@ -42,8 +42,8 @@ class AccountStatementImportApiAccount(models.Model):
         "account.journal", "statement_import_api_account_id", string="Journals"
     )
 
-    def name_get(self):
-        res = []
+    @api.depends("name", "bank_name", "account_number", "currency_id", "active")
+    def _compute_display_name(self):
         inactive = _("inactive")
         for rec in self:
             name = rec.name
@@ -57,5 +57,4 @@ class AccountStatementImportApiAccount(models.Model):
                 name = f"{name} ({rec.currency_id.name})"
             if not rec.active:
                 name = f"[⚠ {inactive}] {name}"
-            res.append((rec.id, name))
-        return res
+            rec.display_name = name

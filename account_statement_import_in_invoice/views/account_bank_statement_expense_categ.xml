@@ -15,7 +15,7 @@
                         name="web_ribbon"
                         title="Archived"
                         bg_color="bg-danger"
-                        attrs="{'invisible': [('active', '=', True)]}"
+                        invisible="active"
                     />
                                 <div class="oe_title">
                     <label for="name" />
@@ -38,14 +38,14 @@
                             nolabel="1"
                             colspan="2"
                         >
-                                            <tree editable="bottom">
+                                            <list editable="bottom">
                                                     <field
                                     name="company_id"
-                                    invisible="1"
+                                    column_invisible="1"
                                 />
                                                     <field name="card_id" />
                                                     <field name="account_id" />
-                                            </tree>
+                                            </list>
                                     </field>
                             </group>
                     </sheet>
@@ -56,12 +56,12 @@
         <record id="account_bank_statement_expense_categ_list" model="ir.ui.view">
                 <field name="model">account.bank.statement.expense.categ</field>
                 <field name="arch" type="xml">
-                        <tree>
+                        <list>
                                 <field name="name" decoration-bf="1" />
                                     <field name="service" />
                                     <field name="code" />
                                     <field name="account_id" />
-                    </tree>
+                    </list>
                 </field>
         </record>
 
@@ -97,7 +97,7 @@
     >
                 <field name="name">Bank Statement Expense Categories</field>
                 <field name="res_model">account.bank.statement.expense.categ</field>
-                <field name="view_mode">tree,form</field>
+                <field name="view_mode">list,form</field>
         </record>
 
         <menuitem

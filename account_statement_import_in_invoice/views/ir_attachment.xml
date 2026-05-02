@@ -13,7 +13,7 @@
                                   <field name="mimetype" position="after">
                                           <field
                     name="bank_statement_import_identifier"
-                    attrs="{'invisible': [('bank_statement_import_identifier', '=', False)]}"
+                    invisible="not bank_statement_import_identifier"
                     groups="base.group_no_one"
                 />
                                   </field>

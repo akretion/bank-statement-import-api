@@ -14,7 +14,7 @@
                     type="object"
                     string="Get/Update Bank Statement Analytic Accounts"
                     groups="account.group_account_manager"
-                    attrs="{'invisible': [('show_analytic_button', '!=', True)]}"
+                    invisible="not show_analytic_button"
                 />
             </button>
             <xpath expr="//div[hasclass('oe_button_box')]" position="inside">
@@ -23,7 +23,7 @@
                     name="action_view_analytic_account"
                     type="object"
                     groups="analytic.group_analytic_accounting"
-                    attrs="{'invisible': [('show_analytic_button', '!=', True)]}"
+                    invisible="not show_analytic_button"
                     icon="fa-tags"
                 >
                     <field
@@ -37,7 +37,7 @@
                     name="action_view_categ_expense"
                     type="object"
                     icon="fa-folder-open"
-                    attrs="{'invisible': [('bank_statement_expense_categ_count', '=', 0)]}"
+                    invisible="not bank_statement_expense_categ_count"
                 >
                     <field
                         string="Expense Categories"

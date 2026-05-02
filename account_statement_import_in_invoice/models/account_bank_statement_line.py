@@ -31,7 +31,7 @@ class AccountBankStatementLine(models.Model):
         precompute=True,
         string="Expense Account",
         check_company=True,
-        domain="[('company_id', '=', company_id), ('deprecated', '=', False)]",
+        domain="[('company_ids', 'in', company_id), ('deprecated', '=', False)]",
     )
     in_invoice_analytic_distribution = fields.Json(
         string="Analytic",
@@ -230,7 +230,7 @@ class AccountBankStatementLine(models.Model):
             {
                 "views": False,
                 "view_id": False,
-                "view_mode": "form,tree",
+                "view_mode": "form,list",
                 "res_id": inv.id,
                 "domain": [("move_type", "in", ("in_invoice", "in_refund"))],
             }

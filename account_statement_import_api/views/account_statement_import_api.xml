@@ -16,7 +16,7 @@
                         type="action"
                         string="Create User"
                         class="btn-primary"
-                        attrs="{'invisible': ['|', ('user_identifier', '!=', False), ('user_identifier_required', '=', False)]}"
+                        invisible="user_identifier or not user_identifier_required"
                         groups="account.group_account_manager"
                     />
                     <button
@@ -25,7 +25,7 @@
                         string="Run Now"
                         class="btn-primary"
                         groups="account.group_account_manager"
-                        attrs="{'invisible': [('journal_ids', '=', [])]}"
+                        invisible="not journal_ids"
                     />
                     <button
                         name="test_api"
@@ -38,7 +38,7 @@
                         name="%(account_statement_import_api_generate_url_action)d"
                         type="action"
                         string="Add API Bank Accounts"
-                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                        invisible="not is_aggregator"
                         context="{'default_feature': 'add_account'}"
                         groups="account.group_account_manager"
                     />
@@ -47,13 +47,13 @@
                         type="object"
                         string="Get/Update API Bank Accounts"
                         groups="account.group_account_manager"
-                        attrs="{'invisible': [('service', '=', False)]}"
+                        invisible="not service"
                     />
                     <button
                         name="%(account_statement_import_api_generate_url_action)d"
                         type="action"
                         string="Manage API Bank Accounts"
-                        attrs="{'invisible': [('show_manage_accounts_wizard', '=', False)]}"
+                        invisible="not show_manage_accounts_wizard"
                         context="{'default_feature': 'manage_accounts'}"
                         groups="account.group_account_manager"
                     />
@@ -62,14 +62,14 @@
                         type="action"
                         string="Delete Connector"
                         groups="account.group_account_manager"
-                        attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                        invisible="not is_aggregator"
                     />
                     <button
                         name="%(account_statement_import_api_delete_user_action)d"
                         type="action"
                         string="Delete User"
                         groups="account.group_account_manager"
-                        attrs="{'invisible': ['|', ('user_identifier', '=', False), ('user_identifier_required', '=', False)]}"
+                        invisible="not user_identifier or not user_identifier_required"
                     />
                     <button
                         name="open_cron"
@@ -85,7 +85,7 @@
                             class="oe_stat_button"
                             type="action"
                             name="%(account_bank_journal_action)d"
-                            context="{'search_default_statement_import_api_id': active_id, 'default_type': 'bank'}"
+                            context="{'search_default_statement_import_api_id': id, 'default_type': 'bank'}"
                             icon="fa-newspaper-o"
                             string="Bank Journals"
                         />
@@ -93,7 +93,7 @@
                             class="oe_stat_button"
                             type="action"
                             name="%(account_statement_import_api.account_statement_import_api_log_action)d"
-                            context="{'search_default_statement_import_api_id': active_id}"
+                            context="{'search_default_statement_import_api_id': id}"
                             icon="fa-bars"
                             string="Logs"
                         />
@@ -101,10 +101,10 @@
                             class="oe_stat_button"
                             type="action"
                             name="%(account_statement_import_api.account_statement_import_api_connector_status_action)d"
-                            context="{'search_default_statement_import_api_id': active_id}"
+                            context="{'search_default_statement_import_api_id': id}"
                             icon="fa-history"
                             string="Sync Status History"
-                            attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                            invisible="not is_aggregator"
                         />
 
                 </div>
@@ -126,19 +126,21 @@
                 <group name="main-right">
                     <field
                                 name="login"
-                                attrs="{'invisible': [('show_login', '=', False)], 'required': [('show_login', '=', True)]}"
+                                invisible="not show_login"
+                                required="show_login"
                             />
                     <field
                                 name="password"
                                 password="1"
-                                attrs="{'invisible': [('show_password', '=', False)], 'required': [('show_password', '=', True)]}"
+                                invisible="not show_password"
+                                required="show_password"
                             />
                     <field name="show_login" invisible="1" />
                     <field name="show_password" invisible="1" />
                     <field name="tz" />
                     <field
                                 name="user_identifier"
-                                attrs="{'invisible': [('user_identifier_required', '=', False)]}"
+                                invisible="not user_identifier_required"
                             />
                     <field name="user_identifier_required" invisible="1" />
                 </group>
@@ -147,11 +149,7 @@
                 <field name="instructions" nolabel="1" colspan="2" />
         </group>
         <notebook>
-        <page
-                            name="connectors"
-                            string="Bank Connectors"
-                            attrs="{'invisible': [('is_aggregator', '=', False)]}"
-                        >
+        <page name="connectors" string="Bank Connectors" invisible="not is_aggregator">
                 <group name="connectors-main">
                         <field name="connector_ids" nolabel="1" colspan="2" />
                 </group>
@@ -162,7 +160,7 @@
                                     name="active_api_account_ids"
                                     nolabel="1"
                                     colspan="2"
-                                    context="{'tree_view_ref': 'account_statement_import_api.account_statement_import_api_account_parent_list'}"
+                                    context="{'list_view_ref': 'account_statement_import_api.account_statement_import_api_account_parent_list'}"
                                 />
                 </group>
                 <group name="inactive_api_accounts" string="Inactive API accounts">
@@ -170,7 +168,7 @@
                                     name="inactive_api_account_ids"
                                     nolabel="1"
                                     colspan="2"
-                                    context="{'tree_view_ref': 'account_statement_import_api.account_statement_import_api_account_parent_list'}"
+                                    context="{'list_view_ref': 'account_statement_import_api.account_statement_import_api_account_parent_list'}"
                                 />
                 </group>
         </page>
@@ -181,12 +179,12 @@
                                 colspan="2"
                                 widget="many2many"
                             >
-                        <tree>
+                        <list>
                         <field name="display_name" />
                         <field name="statement_import_api_account_id" />
                         <field name="statement_import_api_start_date" />
                         <field name="statement_import_api_last_success" />
-                </tree>
+                </list>
                 </field>
         </page>
                 <page name="logs" string="Logs">
@@ -201,7 +199,7 @@
     <record id="account_statement_import_api_tree" model="ir.ui.view">
         <field name="model">account.statement.import.api</field>
         <field name="arch" type="xml">
-            <tree>
+            <list>
                 <field name="name" decoration-bf="1" />
                 <field name="service" />
                 <field name="journal_ids" widget="many2many_tags" />
@@ -211,7 +209,7 @@
                     groups="base.group_multi_company"
                     optional="show"
                 />
-            </tree>
+            </list>
         </field>
     </record>
 
@@ -230,7 +228,7 @@
     <record id="account_statement_import_api_action" model="ir.actions.act_window">
         <field name="name">Bank Statement Import API</field>
         <field name="res_model">account.statement.import.api</field>
-        <field name="view_mode">tree,form</field>
+        <field name="view_mode">list,form</field>
         <!-- 'active_test': False to display inactive API bank accounts -->
         <field
             name="context"

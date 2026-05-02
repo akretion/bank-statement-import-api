@@ -56,7 +56,7 @@
                         style="text-align: right"
                         t-if="record.in_invoice_expense_description.raw_value or record.in_invoice_card_id.value"
                     >
-                        <div t-if="record.in_invoice_tax_ids.raw_value.length > 0">
+                        <div t-if="record.in_invoice_tax_ids.raw_value.length &gt; 0">
                         <field
                                 name="in_invoice_tax_ids"
                                 widget="many2many_tags"
@@ -69,7 +69,7 @@
                                                 <div><span
                                 style="font-weight: bold"
                             >VAT</span> <field name="in_invoice_vat_amount" /></div>
-                        <div t-if="record.attachment_ids.raw_value.length > 0">📷 <t
+                        <div t-if="record.attachment_ids.raw_value.length &gt; 0">📷 <t
                                 t-esc="record.attachment_ids.raw_value.length"
                             /></div>
                         <div
@@ -127,7 +127,7 @@
                     />
                                                   <field
                         name="in_invoice_receipt_lost"
-                        attrs="{'invisible': [('attachment_ids', '!=', [])]}"
+                        invisible="attachment_ids"
                     />
                                                   <field
                         name="attachment_ids"
@@ -156,37 +156,38 @@
                                                           <field
                                 name="in_invoice_id"
                                 string="Created Vendor Bill"
-                                attrs="{'invisible': [('in_invoice_id', '=', False)]}"
+                                invisible="not in_invoice_id"
                             />
                                                   <field
                                 name="in_invoice_expense_categ_id"
-                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                readonly="is_reconciled or in_invoice_id"
                             />
                                                   <field name="in_invoice_card_id" />
                                                   <field
                                 name="in_invoice_account_id"
-                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                readonly="is_reconciled or in_invoice_id"
                             />
                                                     <field
                                 name="in_invoice_analytic_distribution"
                                 widget="analytic_distribution"
                                 groups="analytic.group_analytic_accounting"
                                 options="{'account_field': 'in_invoice_account_id'}"
-                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                readonly="is_reconciled or in_invoice_id"
                             />
                                                   <field
                                 name="in_invoice_expense_description"
-                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                readonly="is_reconciled or in_invoice_id"
                             />
                                                   <field
                                 name="attachment_ids"
                                 widget="many2many_binary"
                                 string="Receipt(s)"
-                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                readonly="is_reconciled or in_invoice_id"
                             />
                                                   <field
                                 name="in_invoice_receipt_lost"
-                                attrs="{'invisible': [('attachment_ids', '!=', [])], 'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                invisible="attachment_ids"
+                                readonly="is_reconciled or in_invoice_id"
                             />
                                             </group>
                                             <group name="in_invoice_right">
@@ -194,34 +195,34 @@
                                                   <div name="in_invoice_vat_rate">
                                                           <field
                                     name="in_invoice_vat_rate"
-                                    attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                    readonly="is_reconciled or in_invoice_id"
                                     class="oe_inline"
                                 /> %
                                                   </div>
                                                   <field
                                 name="in_invoice_tax_ids"
                                 widget="many2many_tags"
-                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                readonly="is_reconciled or in_invoice_id"
                             />
                                                   <field
                                 name="in_invoice_vat_amount"
-                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                readonly="is_reconciled or in_invoice_id"
                             />
 
                                                   <field
                                 name="in_invoice_ref"
-                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                readonly="is_reconciled or in_invoice_id"
                             />
                 <field name="in_invoice_currency_id" invisible="1" />
                                                   <field
                                 name="in_invoice_force_invoice_date"
-                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                readonly="is_reconciled or in_invoice_id"
                             />
 
                                                   <field
                                 name="partner_id"
                                 string="Force Vendor (optional)"
-                                attrs="{'readonly': ['|', ('is_reconciled', '=', True), ('in_invoice_id', '!=', False)]}"
+                                readonly="is_reconciled or in_invoice_id"
                             />
 
                                                   <field
@@ -250,7 +251,7 @@
                     type="object"
                     colspan="2"
                     class="btn btn-secondary"
-                    attrs="{'invisible': [('in_invoice_show_button', '=', False)]}"
+                    invisible="not in_invoice_show_button"
                 />
                                         <button
                     name="in_invoice_create_draft_button"
@@ -258,7 +259,7 @@
                     type="object"
                     colspan="2"
                     class="btn btn-secondary"
-                    attrs="{'invisible': [('in_invoice_show_button', '=', False)]}"
+                    invisible="not in_invoice_show_button"
                 />
                                         <button
                     name="in_invoice_create_disabled"
@@ -266,7 +267,7 @@
                     type="object"
                     colspan="2"
                     class="btn btn-secondary disabled"
-                    attrs="{'invisible': [('in_invoice_show_button', '=', True)]}"
+                    invisible="in_invoice_show_button"
                 />
                                   </button>
         </field>

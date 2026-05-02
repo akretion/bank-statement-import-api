@@ -4,7 +4,7 @@
 
 {
     "name": "Account Statement Import In Invoice",
-    "version": "16.0.1.0.0",
+    "version": "18.0.1.0.0",
     "category": "Accounting",
     "license": "AGPL-3",
     "summary": "Enrich bank statement lines to allow the creation of vendor bills",

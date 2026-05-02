@@ -4,7 +4,7 @@
 
 {
     "name": "Account Statement Import API Qonto",
-    "version": "16.0.1.0.0",
+    "version": "18.0.1.0.0",
     "category": "Accounting",
     "license": "AGPL-3",
     "summary": "Use the Qonto API to download bank statement lines",

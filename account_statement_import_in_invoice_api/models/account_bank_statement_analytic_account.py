@@ -2,7 +2,7 @@
 # @author: Benoit Guillot <benoit.guillot@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import fields, models
+from odoo import api, fields, models
 
 
 class AccountBankStatementAnalyticAccount(models.Model):
@@ -43,11 +43,10 @@ class AccountBankStatementAnalyticAccount(models.Model):
         )
     ]
 
-    def name_get(self):
-        res = []
+    @api.depends("name", "parent_name")
+    def _compute_display_name(self):
         for rec in self:
             name = rec.name
             if rec.parent_name:
                 name = f"[{rec.parent_name}] {name}"
-            res.append((rec.id, name))
-        return res
+            rec.display_name = name

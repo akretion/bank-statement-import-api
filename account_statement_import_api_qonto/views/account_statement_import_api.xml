@@ -18,9 +18,7 @@
                 groups="base.group_multi_company"
                 position="attributes"
             >
-                <attribute
-                    name="attrs"
-                >{'required': [('service', '=', 'qonto')]}</attribute>
+                <attribute name="required">service == 'qonto'</attribute>
             </field>
         </field>
     </record>

@@ -43,23 +43,22 @@ class AccountStatementImportApi(models.Model):
             record.show_analytic_button = show_analytic_button
 
     def _compute_bank_statement_analytic_account_count(self):
-        rg_res = self.env["account.bank.statement.analytic.account"].read_group(
+        rg_res = self.env["account.bank.statement.analytic.account"]._read_group(
             [("statement_import_api_id", "in", self.ids)],
-            ["statement_import_api_id"],
-            ["statement_import_api_id"],
+            groupby=["statement_import_api_id"],
+            aggregates=["__count"],
         )
         mapped_data = {
-            x["statement_import_api_id"][0]: x["statement_import_api_id_count"]
-            for x in rg_res
+            import_api.id: ana_acc_count for (import_api, ana_acc_count) in rg_res
         }
         for rec in self:
             rec.bank_statement_analytic_account_count = mapped_data.get(rec.id, 0)
 
     def _compute_bank_statement_expense_categ_count(self):
-        rg_res = self.env["account.bank.statement.expense.categ"].read_group(
-            [("service", "!=", False)], ["service"], ["service"]
+        rg_res = self.env["account.bank.statement.expense.categ"]._read_group(
+            [("service", "!=", False)], groupby=["service"], aggregates=["__count"]
         )
-        service2count = {x["service"]: x["service_count"] for x in rg_res}
+        service2count = {service: service_count for (service, service_count) in rg_res}
         for rec in self:
             rec.bank_statement_expense_categ_count = service2count.get(rec.service, 0)
 

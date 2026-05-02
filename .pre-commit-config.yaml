@@ -53,7 +53,7 @@ repos:
       - id: oca-gen-addon-readme
         args:
           - --addons-dir=.
-          - --branch=16.0
+          - --branch=18.0
           - --org-name=akretion
           - --repo-name=bank-statement-import-api
           - --if-source-changed

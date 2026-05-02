@@ -2,7 +2,7 @@
 # @author: Alexis de Lattre <alexis.delattre@akretion.com>
 # License AGPL-3.0 or later (https://www.gnu.org/licenses/agpl).
 
-from odoo import _, api, fields, models
+from odoo import api, fields, models
 from odoo.exceptions import ValidationError
 from odoo.tools.misc import format_date
 
@@ -18,14 +18,14 @@ class AccountBankStatementLine(models.Model):
         for line in self:
             if line.in_invoice_start_date and not line.in_invoice_end_date:
                 raise ValidationError(
-                    _(
+                    self.env._(
                         "Missing End Date on bank statement line '%s'.",
                         line.display_name,
                     )
                 )
             if line.in_invoice_end_date and not line.in_invoice_start_date:
                 raise ValidationError(
-                    _(
+                    self.env._(
                         "Missing Start Date on bank statement line '%s'.",
                         line.display_name,
                     )
@@ -36,7 +36,7 @@ class AccountBankStatementLine(models.Model):
                 and line.in_invoice_start_date > line.in_invoice_end_date
             ):
                 raise ValidationError(
-                    _(
+                    self.env._(
                         "Start Date (%(start)s) should be before or be the same as "
                         "End Date (%(end)s) on bank statement line '%(line)s'.",
                         line=line.display_name,

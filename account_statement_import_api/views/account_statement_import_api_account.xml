@@ -15,7 +15,7 @@
                         name="web_ribbon"
                         title="Archived"
                         bg_color="bg-danger"
-                        attrs="{'invisible': [('active', '=', True)]}"
+                        invisible="active"
                     />
                                 <group name="main">
                                         <field
@@ -28,11 +28,11 @@
                                         <field name="currency_id" />
                                         <field
                             name="connector_id"
-                            attrs="{'invisible': [('is_aggregator', '=', False)]}"
+                            invisible="not is_aggregator"
                         />
                                         <field
                             name="account_type"
-                            attrs="{'invisible': [('account_type', '=', False)]}"
+                            invisible="not account_type"
                         />
 
                                         <field name="identifier" />
@@ -53,10 +53,10 @@
             <field name="model">account.statement.import.api.account</field>
             <field name="priority">100</field>
                 <field name="arch" type="xml">
-                        <tree create="0" decoration-muted="not active">
+                        <list create="0" decoration-muted="not active">
                             <field
                     name="statement_import_api_id"
-                    invisible="not context.get('account_statement_import_api_account_main_view')"
+                    column_invisible="not context.get('account_statement_import_api_account_main_view')"
                 />
                             <field name="name" />
                             <field name="account_number" />
@@ -64,11 +64,11 @@
                             <field name="currency_id" optional="show" />
                             <field
                     name="connector_id"
-                    attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
+                    column_invisible="not parent.is_aggregator"
                 />
                             <field
                     name="account_type"
-                    attrs="{'invisible': [('account_type', '=', False)]}"
+                    invisible="not account_type"
                     optional="show"
                 />
 
@@ -79,25 +79,21 @@
                     groups="base.group_multi_company"
                 />
                             <field name="active" invisible="1" />
-                        </tree>
+                        </list>
                 </field>
         </record>
 
         <record id="account_statement_import_api_account_list" model="ir.ui.view">
                 <field name="model">account.statement.import.api.account</field>
                 <field name="arch" type="xml">
-                        <tree create="0" decoration-muted="not active">
+                        <list create="0" decoration-muted="not active">
                             <field name="statement_import_api_id" />
                             <field name="name" />
                             <field name="account_number" />
                             <field name="bank_name" />
                             <field name="currency_id" optional="show" />
                             <field name="connector_id" />
-                            <field
-                    name="account_type"
-                    attrs="{'invisible': [('account_type', '=', False)]}"
-                    optional="show"
-                />
+                            <field name="account_type" optional="show" />
 
                             <field name="identifier" optional="hide" />
                             <field
@@ -106,7 +102,7 @@
                     groups="base.group_multi_company"
                 />
                             <field name="active" optional="show" />
-                        </tree>
+                        </list>
                 </field>
         </record>
 
@@ -143,7 +139,7 @@
     >
                 <field name="name">Statement Import API Accounts</field>
                 <field name="res_model">account.statement.import.api.account</field>
-                <field name="view_mode">tree,form</field>
+                <field name="view_mode">list,form</field>
                 <field
             name="context"
         >{'account_statement_import_api_account_main_view': True}</field>

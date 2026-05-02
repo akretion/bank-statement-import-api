@@ -17,21 +17,21 @@
             <separator
                     name="statement_import_api"
                     string="Bank Statement Import by API"
-                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                    invisible="bank_statements_source != 'api'"
                     colspan="2"
                 />
             <label
                     for="statement_import_api_id"
-                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                    invisible="bank_statements_source != 'api'"
                 />
             <div
                     name="statement_import_api_id"
-                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                    invisible="bank_statements_source != 'api'"
                     class="o_row"
                 >
                     <field
                         name="statement_import_api_id"
-                        attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                        invisible="bank_statements_source != 'api'"
                         context="{'active_test': False}"
                         options="{'no_create': True, 'no_create_edit': True}"
                     />
@@ -42,25 +42,26 @@
                         help="Download bank statement lines via the API"
                         class="btn-link mb-1 px-0"
                         icon="fa-refresh"
-                        attrs="{'invisible': [('statement_import_api_account_id', '=', False)]}"
+                        invisible="not statement_import_api_account_id"
                     />
             </div>
             <field
                     name="statement_import_api_account_id"
-                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'required': [('statement_import_api_id', '!=', False)]}"
+                    invisible="bank_statements_source != 'api'"
+                    required="statement_import_api_id"
                     options="{'no_create': True, 'no_create_edit': True}"
                 />
             <field
                     name="statement_import_api_connector_id"
-                    attrs="{'invisible': [('statement_import_api_connector_id', '=', False)]}"
+                    invisible="not statement_import_api_connector_id"
                 />
             <label
                     for="statement_import_api_connector_auth_expiry_date"
-                    attrs="{'invisible': [('statement_import_api_connector_auth_expiry_date', '=', False)]}"
+                    invisible="not statement_import_api_connector_auth_expiry_date"
                 />
             <div
                     name="statement_import_api_connector_auth_expiry_date"
-                    attrs="{'invisible': [('statement_import_api_connector_auth_expiry_date', '=', False)]}"
+                    invisible="not statement_import_api_connector_auth_expiry_date"
                     class="o_row"
                 >
             <field
@@ -85,11 +86,13 @@
                 />
                     <field
                     name="statement_import_api_start_date"
-                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')], 'readonly': [('statement_import_api_last_success', '!=', False)], 'required': [('statement_import_api_account_id', '=', 'api'), ('statement_import_api_last_success', '=', False)]}"
+                    invisible="bank_statements_source != 'api'"
+                    readonly="statement_import_api_last_success"
+                    required="statement_import_api_account_id == 'api' and not statement_import_api_last_success"
                 />
                     <field
                     name="statement_import_api_last_success"
-                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                    invisible="bank_statements_source != 'api'"
                 />
                     <field name="statement_import_api_service" invisible="1" />
             </xpath>
@@ -100,8 +103,8 @@
                     name="%(account_statement_import_api_log_action)d"
                     icon="fa-list-ul"
                     string="Import Logs"
-                    context="{'search_default_journal_id': active_id}"
-                    attrs="{'invisible': [('bank_statements_source', '!=', 'api')]}"
+                    context="{'search_default_journal_id': id}"
+                    invisible="bank_statements_source != 'api'"
                 />
             </div>
         </field>
@@ -115,7 +118,7 @@
                 <field
                     name="statement_import_api_id"
                     optional="hide"
-                    attrs="{'invisible': [('type', '!=', 'bank')]}"
+                    invisible="type != 'bank'"
                 />
             </field>
         </field>
@@ -128,7 +131,7 @@
             ref="account.account_journal_dashboard_kanban_view"
         />
             <field name="arch" type="xml">
-                    <field name="show_on_dashboard" position="after">
+                    <field name="id" position="after">
                             <field name="statement_import_api_id" />
                             <field name="statement_import_api_connector_id" />
                             <field name="statement_import_api_account_id" />
@@ -140,27 +143,37 @@
                 />
                     </field>
                     <xpath
-                expr="//t[@t-name='JournalManage']//div[hasclass('o_kanban_manage_reconciliation')]//a[@name='open_action_with_context']/.."
+                expr="//t[@t-name='menu']//div[@id='bank_and_cash_container']//div[@name='kanban_manage_new']"
                 position="after"
             >
-                        <div t-if="record.statement_import_api_account_id.raw_value">
+                                            <div
+                    class="col-4"
+                    groups="account.group_account_basic"
+                    name="kanban_manage_operations"
+                    t-if="record.statement_import_api_id.raw_value"
+                >
+                            <h5 class="o_kanban_card_manage_title">
+                                <span role="separator">Operations</span>
+                            </h5>
+                        <div t-if="record.statement_import_api_id.raw_value">
                             <a
-                        role="menuitem"
-                        type="object"
-                        name="api_import_bank_statement_lines_button"
-                    >Re-sync Now</a>
-                        </div>
+                            role="menuitem"
+                            type="object"
+                            name="api_import_bank_statement_lines_button"
+                        >Re-sync Now</a>
+                    </div>
+                    </div>
                 </xpath>
                 <xpath
-                expr="//t[@t-name='JournalManage']//div[hasclass('o_kanban_manage_view')]//a[@name='open_action_with_context']/.."
-                position="after"
+                expr="//t[@t-name='menu']//a[@name='open_payments_action']/.."
+                position="before"
             >
                         <div t-if="record.statement_import_api_account_id.raw_value">
                             <a
                         role="menuitem"
                         type="action"
                         name="%(account_statement_import_api_log_action)d"
-                        context="{'search_default_journal_id': active_id}"
+                        context="{'search_default_journal_id': id}"
                     >Statement Import Logs</a>
                         </div>
                 </xpath>
@@ -229,7 +242,7 @@
 <record id="account_bank_journal_action" model="ir.actions.act_window">
             <field name="name">Bank Journals</field>
             <field name="res_model">account.journal</field>
-            <field name="view_mode">tree,form</field>
+            <field name="view_mode">list,form</field>
             <field name="domain">[('type', '=', 'bank')]</field>
     </record>
 

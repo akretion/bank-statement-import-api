@@ -16,15 +16,15 @@
             <field name="login" position="before">
                 <field
                     name="powens_hostname"
-                    attrs="{'invisible': [('service', '!=', 'powens')], 'required': [('service', '=', 'powens')]}"
+                    invisible="service != 'powens'" required="service == 'powens'"
                 />
                 <field
                     name="powens_redirect_url"
-                    attrs="{'invisible': [('service', '!=', 'powens')], 'required': [('service', '=', 'powens')]}"
+                    invisible="service != 'powens'" required="service == 'powens'"
                 />
                 <field
                     name="powens_token"
-                    attrs="{'invisible': [('service', '!=', 'powens')]}"
+                    invisible="service != 'powens'"
                 />
             </field>
         </field>

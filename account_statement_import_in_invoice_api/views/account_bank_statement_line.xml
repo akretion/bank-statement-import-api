@@ -34,7 +34,7 @@
                 <div
                     class="alert alert-warning"
                     role="alert"
-                    attrs="{'invisible': [('warn_message', '=', False)]}"
+                    invisible="not warn_message"
                 >
                     <field name="warn_message" />
                 </div>

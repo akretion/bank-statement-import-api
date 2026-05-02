@@ -22,7 +22,8 @@
                                                   <field name="feature" />
                                                   <field
                         name="connector_id"
-                        attrs="{'invisible': [('feature', 'not in', ('manage_accounts', 'renew_auth'))], 'required': [('connector_required', '=', True)]}"
+                        invisible="feature not in ('manage_accounts', 'renew_auth')"
+                        required="connector_required"
                     />
                                                   <field name="state" invisible="1" />
                                                   <field
@@ -30,17 +31,17 @@
                         invisible="1"
                     />
                                           </group>
-                                          <group name="url" states="url">
+                                          <group name="url" invisible="state != 'url'">
                                                   <div
                         colspan="2"
-                        attrs="{'invisible': [('feature', '!=', 'add_account')]}"
+                        invisible="feature != 'add_account'"
                     >
                                                         <p
                         >Click on the URL below and follow the instructions to add one or several new API bank accounts.<br
                             />Once finished, come back here and click on the <strong
                             >Close</strong> button below.</p>
     </div>
-    <div colspan="2" attrs="{'invisible': [('feature', '!=', 'manage_accounts')]}">
+    <div colspan="2" invisible="feature != 'manage_accounts'">
             <p>
                     Click on the URL below and follow the instructions to manage the API bank accounts.<br
                             />Once finished, come back here and click on the <strong
@@ -54,20 +55,20 @@
                         type="object"
                         string="Start"
                         class="btn-primary"
-                        states="start"
+                        invisible="state != 'start'"
                     />
                                                   <button
                         name="finish"
                         type="object"
                         string="Close"
                         class="btn-primary"
-                        states="url"
+                        invisible="state != 'url'"
                     />
                                                   <button
                         special="cancel"
                         string="Cancel"
                         class="btn-default"
-                        states="start"
+                        invisible="state != 'start'"
                     />
                                           </footer>
                                   </form>

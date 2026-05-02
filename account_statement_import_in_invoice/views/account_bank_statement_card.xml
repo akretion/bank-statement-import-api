@@ -15,7 +15,7 @@
                         name="web_ribbon"
                         title="Archived"
                         bg_color="bg-danger"
-                        attrs="{'invisible': [('active', '=', True)]}"
+                        invisible="active"
                     />
                                 <div class="oe_title">
                     <label for="name" />
@@ -45,7 +45,7 @@
         <record id="account_bank_statement_card_list" model="ir.ui.view">
                 <field name="model">account.bank.statement.card</field>
                 <field name="arch" type="xml">
-                        <tree>
+                        <list>
                                     <field name="code" />
                                 <field name="name" decoration-bf="1" />
                                     <field name="journal_id" />
@@ -55,7 +55,7 @@
                     groups="base.group_multi_company"
                 />
                         <field name="misc_partner_id" optional="show" />
-                    </tree>
+                    </list>
                 </field>
         </record>
 
@@ -89,7 +89,7 @@
         <record id="account_bank_statement_card_action" model="ir.actions.act_window">
                 <field name="name">Bank Cards</field>
                 <field name="res_model">account.bank.statement.card</field>
-                <field name="view_mode">tree,form</field>
+                <field name="view_mode">list,form</field>
         </record>
 
         <menuitem

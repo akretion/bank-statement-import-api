@@ -27,7 +27,7 @@
                                 <div
                     class="alert alert-warning"
                     role="alert"
-                    attrs="{'invisible': ['|', ('sync_status', '=', 'ok'), ('sync_status_message', '=', False)]}"
+                    invisible="sync_status == 'ok' or not sync_status_message"
                 >
                   <field name="sync_status_message" />
                         </div>
@@ -54,7 +54,7 @@
                     />
                                         <field
                         name="sync_status_message"
-                        attrs="{'invisible': [('sync_status', '!=', 'ok')]}"
+                        invisible="sync_status != 'ok'"
                     />
                                         <field
                         name="auth_expiry_date"
@@ -100,10 +100,10 @@
     <record id="account_statement_import_api_connector_list" model="ir.ui.view">
                 <field name="model">account.statement.import.api.connector</field>
                 <field name="arch" type="xml">
-                        <tree create="0">
+                        <list create="0">
                             <field
                     name="statement_import_api_id"
-                    invisible="not context.get('account_statement_import_api_connector_main_view')"
+                    column_invisible="not context.get('account_statement_import_api_connector_main_view')"
                 />
                             <field name="name" />
                             <field name="identifier" optional="hide" />
@@ -136,7 +136,7 @@
                     groups="base.group_multi_company"
                     optional="hide"
                 />
-                        </tree>
+                        </list>
                 </field>
         </record>
 
@@ -160,7 +160,7 @@
     >
                 <field name="name">Statement Import API Connector</field>
                 <field name="res_model">account.statement.import.api.connector</field>
-                <field name="view_mode">tree,form</field>
+                <field name="view_mode">list,form</field>
                 <field
             name="context"
         >{'account_statement_import_api_connector_main_view': True}</field>

@@ -23,7 +23,7 @@ class AccountBankStatementExpenseCateg(models.Model):
         "account.account",
         string="Account",
         company_dependent=True,
-        domain="[('company_id', '=', current_company_id), ('deprecated', '=', False)]",
+        domain="[('deprecated', '=', False)]",
     )
     active = fields.Boolean(default=True)
     card_account_ids = fields.One2many(

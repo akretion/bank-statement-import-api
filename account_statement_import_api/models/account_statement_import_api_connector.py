@@ -105,8 +105,8 @@ class AccountStatementImportApiConnector(models.Model):
                     warn_type = "warning"
             connector.auth_expiry_warn_type = warn_type
 
-    def name_get(self):
-        res = []
+    @api.depends("name", "auth_expiry_date", "sync_status")
+    def _compute_display_name(self):
         status2label = dict(
             self.fields_get("sync_status", "selection")["sync_status"]["selection"]
         )
@@ -126,8 +126,7 @@ class AccountStatementImportApiConnector(models.Model):
                     expire_str = _("⚠ Expire in %d days", delay)
                 if expire_str:
                     dname = " ".join([dname, expire_str])
-            res.append((rec.id, dname))
-        return res
+            rec.display_name = dname
 
     @api.model_create_multi
     def create(self, vals_list):
