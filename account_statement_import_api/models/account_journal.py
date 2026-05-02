@@ -639,16 +639,15 @@ class AccountJournal(models.Model):
         self.ensure_one()
         bal = None
         if self.default_account_id:
-            rg_res = self.env["account.move.line"].read_group(
+            rg_res = self.env["account.move.line"]._read_group(
                 [
                     ("account_id", "=", self.default_account_id.id),
                     ("company_id", "=", self.company_id.id),
                     ("parent_state", "=", "posted"),
                 ],
-                ["balance"],
-                [],
+                aggregates=["balance:sum"],
             )
-            bal = rg_res and rg_res[0]["balance"] or 0
+            bal = rg_res and rg_res[0][0] or 0
         return bal
 
     def api_import_bank_statement_lines_button(self):

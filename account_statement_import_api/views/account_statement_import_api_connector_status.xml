@@ -41,7 +41,7 @@
             name="model"
         >account.statement.import.api.connector.status</field>
                 <field name="arch" type="xml">
-                        <tree
+                        <list
                 decoration-danger="sync_status == 'ko'"
                 decoration-warning="sync_status == 'warning'"
             >
@@ -65,7 +65,7 @@
                     decoration-danger="sync_status == 'ko'"
                 />
                                         <field name="sync_status_message" />
-                        </tree>
+                        </list>
                 </field>
         </record>
 
@@ -132,7 +132,7 @@
                 <field
             name="res_model"
         >account.statement.import.api.connector.status</field>
-                <field name="view_mode">tree,form</field>
+                <field name="view_mode">list,form</field>
                 <field name="context">{"api_connector_status_main_view": True}</field>
         </record>
 

@@ -16,7 +16,7 @@
             <field name="service" position="after">
                 <field
                     name="bridge_external_user_identifier"
-                    attrs="{'invisible': [('service', '!=', 'bridge')]}"
+                    invisible="service != 'bridge'"
                 />
             </field>
         </field>

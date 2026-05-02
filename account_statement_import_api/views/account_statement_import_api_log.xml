@@ -22,7 +22,7 @@
                         />
                                             <field
                             name="journal_id"
-                            attrs="{'invisible': [('journal_id', '=', False)]}"
+                            invisible="not journal_id"
                         />
                                         <field
                             name="status"
@@ -36,11 +36,11 @@
                                     <group name="main-right">
                                         <field
                             name="new_line_count"
-                            attrs="{'invisible': [('type', '!=', 'statement_line')]}"
+                            invisible="type != 'statement_line'"
                         />
                                         <field
                             name="updated_line_count"
-                            attrs="{'invisible': [('type', '!=', 'statement_line')]}"
+                            invisible="type != 'statement_line'"
                         />
                                         <field
                             name="create_uid"
@@ -65,11 +65,11 @@
     <record id="account_statement_import_api_log_list" model="ir.ui.view">
                 <field name="model">account.statement.import.api.log</field>
                 <field name="arch" type="xml">
-                        <tree decoration-danger="status == 'failure'">
+                        <list decoration-danger="status == 'failure'">
                                 <field name="create_date" string="Date" />
                                 <field
                     name="statement_import_api_id"
-                    invisible="not context.get('api_log_main_view')"
+                    column_invisible="not context.get('api_log_main_view')"
                 />
                                 <field
                     name="type"
@@ -90,14 +90,14 @@
                     optional="show"
                     string="New Lines"
                     sum="1"
-                    attrs="{'invisible': [('type', '!=', 'statement_line')]}"
+                    invisible="type != 'statement_line'"
                 />
                                 <field
                     name="updated_line_count"
                     optional="show"
                     string="Updated Lines"
                     sum="1"
-                    attrs="{'invisible': [('type', '!=', 'statement_line')]}"
+                    invisible="type != 'statement_line'"
                 />
                                 <field
                     name="create_uid"
@@ -106,7 +106,7 @@
                     widget="many2one_avatar_user"
                 />
 
-                        </tree>
+                        </list>
                 </field>
         </record>
 
@@ -175,7 +175,7 @@
     >
                 <field name="name">Bank Statement Import API Logs</field>
                 <field name="res_model">account.statement.import.api.log</field>
-                <field name="view_mode">tree,form</field>
+                <field name="view_mode">list,form</field>
                 <field name="context">{'api_log_main_view': True}</field>
         </record>
 </odoo>
