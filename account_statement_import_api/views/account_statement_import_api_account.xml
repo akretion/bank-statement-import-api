@@ -68,7 +68,6 @@
                 />
                             <field
                     name="account_type"
-                    attrs="{'invisible': [('account_type', '=', False)]}"
                     optional="show"
                 />
 
@@ -95,7 +94,6 @@
                             <field name="connector_id" />
                             <field
                     name="account_type"
-                    attrs="{'invisible': [('account_type', '=', False)]}"
                     optional="show"
                 />
 
