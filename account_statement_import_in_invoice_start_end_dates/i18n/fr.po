@@ -1,0 +1,54 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* account_statement_import_in_invoice_start_end_dates
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 18.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-03-06 13:49+0000\n"
+"PO-Revision-Date: 2026-03-06 13:49+0000\n"
+"Last-Translator: Alexis de Lattre <alexis.delattre@akretion.com>\n"
+"Language-Team: \n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: \n"
+
+#. module: account_statement_import_in_invoice_start_end_dates
+#: model:ir.model,name:account_statement_import_in_invoice_start_end_dates.model_account_bank_statement_line
+msgid "Bank Statement Line"
+msgstr "Ligne de relevé de compte"
+
+#. module: account_statement_import_in_invoice_start_end_dates
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_start_end_dates.field_account_bank_statement_line__in_invoice_end_date
+msgid "End Date"
+msgstr "Date de fin"
+
+#. module: account_statement_import_in_invoice_start_end_dates
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_start_end_dates/models/account_bank_statement_line.py:0
+msgid "Missing End Date on bank statement line '%s'."
+msgstr "Date de fin manquante sur la ligne du relevé de compte '%s'."
+
+#. module: account_statement_import_in_invoice_start_end_dates
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_start_end_dates/models/account_bank_statement_line.py:0
+msgid "Missing Start Date on bank statement line '%s'."
+msgstr "Date de début manquante sur la ligne du relevé de compte '%s'."
+
+#. module: account_statement_import_in_invoice_start_end_dates
+#: model:ir.model.fields,field_description:account_statement_import_in_invoice_start_end_dates.field_account_bank_statement_line__in_invoice_start_date
+msgid "Start Date"
+msgstr "Date de début"
+
+#. module: account_statement_import_in_invoice_start_end_dates
+#. odoo-python
+#: code:addons/account_statement_import_in_invoice_start_end_dates/models/account_bank_statement_line.py:0
+msgid ""
+"Start Date (%(start)s) should be before or be the same as End Date (%(end)s) "
+"on bank statement line '%(line)s'."
+msgstr ""
+"La date de début (%(start)s) doit précéder ou être identique à la date de "
+"fin (%(end)s) sur la ligne du relevé de compte \"%(line)s\"."
