@@ -47,11 +47,11 @@
             >
                             <field
                     name="statement_import_api_id"
-                    invisible="not context.get('api_connector_status_main_view')"
+                    column_invisible="not context.get('api_connector_status_main_view')"
                 />
                                         <field
                     name="connector_id"
-                    invisible="not context.get('api_connector_status_main_view')"
+                    column_invisible="not context.get('api_connector_status_main_view')"
                 />
                                         <field
                     name="create_date"

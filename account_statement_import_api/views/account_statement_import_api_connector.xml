@@ -129,7 +129,7 @@
                     string="Extend Authorization"
                     icon="fa-refresh"
                 />
-                            <field name="auth_expiry_warn_type" invisible="1" />
+                            <field name="auth_expiry_warn_type" column_invisible="1" />
                             <field name="last_sync_datetime" optional="hide" />
                             <field
                     name="company_id"
