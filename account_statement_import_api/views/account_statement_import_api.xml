@@ -116,9 +116,10 @@
                 </div>
                 <group name="main">
                 <group name="main-left">
-                    <field name="service" />
-                    <field name="company_id" groups="base.group_multi_company" />
+                    <field name="service" attrs="{'readonly': [('api_account_ids', '!=', [])]}"/>
+                    <field name="company_id" groups="base.group_multi_company" attrs="{'readonly': [('api_account_ids', '!=', [])]}"/>
                     <field name="company_id" invisible="1" />
+                    <field name="api_account_ids" invisible="1" />
                     <field name="show_manage_accounts_wizard" invisible="1" />
                     <field name="is_aggregator" invisible="1" />
                     <field name="last_success" />
