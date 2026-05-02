@@ -38,7 +38,7 @@
                         name="%(account_statement_import_api_generate_url_action)d"
                         type="action"
                         string="Add API Bank Accounts"
-                        invisible="not is_aggregator"
+                        invisible="not is_aggregator or (user_identifier_required and not user_identifier)"
                         context="{'default_feature': 'add_account'}"
                         groups="account.group_account_manager"
                     />
@@ -47,13 +47,13 @@
                         type="object"
                         string="Get/Update API Bank Accounts"
                         groups="account.group_account_manager"
-                        invisible="not service"
+                        invisible="not service or (user_identifier_required and not user_identifier)"
                     />
                     <button
                         name="%(account_statement_import_api_generate_url_action)d"
                         type="action"
                         string="Manage API Bank Accounts"
-                        invisible="not show_manage_accounts_wizard"
+                        invisible="not show_manage_accounts_wizard or (user_identifier_required and not user_identifier)"
                         context="{'default_feature': 'manage_accounts'}"
                         groups="account.group_account_manager"
                     />
@@ -62,7 +62,7 @@
                         type="action"
                         string="Delete Connector"
                         groups="account.group_account_manager"
-                        invisible="not is_aggregator"
+                        invisible="not is_aggregator or not connector_ids"
                     />
                     <button
                         name="%(account_statement_import_api_delete_user_action)d"
@@ -116,8 +116,8 @@
                 </div>
                 <group name="main">
                 <group name="main-left">
-                    <field name="service" />
-                    <field name="company_id" groups="base.group_multi_company" />
+                    <field name="service" readonly="api_account_ids"/>
+                    <field name="company_id" groups="base.group_multi_company" readonly="api_account_ids"/>
                     <field name="company_id" invisible="1" />
                     <field name="show_manage_accounts_wizard" invisible="1" />
                     <field name="is_aggregator" invisible="1" />
