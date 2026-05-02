@@ -182,7 +182,7 @@
                                 widget="many2many"
                             >
                         <tree>
-                        <field name="display_name" />
+                        <field name="display_name" string="Name" />
                         <field name="statement_import_api_account_id" />
                         <field name="statement_import_api_start_date" />
                         <field name="statement_import_api_last_success" />

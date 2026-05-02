@@ -15,20 +15,22 @@
         >account.statement.import.api.delete.user</field>
                           <field name="arch" type="xml">
                                   <form>
+                                          <div id="help">
+                                                  <p><strong
+                            >If you confirm, Odoo will delete all the API bank accounts and connectors of this bank statement import API and you will not be able to call the API of this provider any more.</strong></p>
+                                          </div>
                                           <group name="main">
+
                                                   <field
                         name="statement_import_api_id"
                     />
+                                                  <field name="confirm" />
                                           </group>
-                                          <div id="help">
-                                                  <p><strong
-                        >If you confirm, Odoo will delete all the API bank accounts and connectors of this bank statement import API and you will not be able to call the API of this provider any more.</strong></p>
-                                          </div>
                                           <footer>
                                                   <button
                         name="run"
                         type="object"
-                        string="Confirm Deletion"
+                        string="Delete User"
                         class="btn-primary"
                     />
                                                   <button
