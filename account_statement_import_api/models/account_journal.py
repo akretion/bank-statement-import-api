@@ -344,6 +344,10 @@ class AccountJournal(models.Model):
 
     def _api_import_bank_statement_lines(self, account_ident2vals, speedy):
         self.ensure_one()
+        # safeguard to avoid multi-company inconsistency in case an other module for
+        # company_id from the current  company somehow. (currently the case of
+        # brand_account module for example)
+        self = self.with_company(self.company_id)
         logger.info("Start bank statement import API of journal %s", self.display_name)
         # raise for cases that should never happen because that are python constrains on it
         if (
