@@ -21,6 +21,8 @@ if sys.version_info < (3, 11):
 
 logger = logging.getLogger(__name__)
 
+UNIQUE_IMPORT_ID_REVERSE_SUFFIX = "-REVERSE"
+
 
 class AccountJournal(models.Model):
     _inherit = "account.journal"
@@ -444,16 +446,75 @@ class AccountJournal(models.Model):
                     )
                     if pivot_line.get("to_delete"):
                         if existing_line["is_reconciled"]:
-                            speedy["log_obj"]._error_log(
-                                result,
-                                f"Existing reconciled line ID "
-                                f"{existing_line['id']} dated {existing_line['date']} "
-                                f"amount {existing_line_amount_fmt} "
-                                f"label '{existing_line['payment_ref']}' is "
-                                "marked as 'to_delete', but odoo can't delete it "
-                                "because it is already reconciled. You must handle "
-                                "it manually.",
+                            # search if it has already been reversed
+                            pivot_line_rev = dict(pivot_line)
+                            pivot_line_rev["amount"] *= -1
+                            prefix = _("[REVERSE]")
+                            suffix = _(
+                                "(reversed because marked as 'to delete' but "
+                                "was already reconciled)"
                             )
+                            pivot_line_rev[
+                                "payment_ref"
+                            ] = f"{prefix} {pivot_line_rev['payment_ref']} {suffix}"
+                            pivot_line_rev[
+                                "unique_import_id"
+                            ] += UNIQUE_IMPORT_ID_REVERSE_SUFFIX
+                            if pivot_line_rev.get("foreign_currency_amount"):
+                                pivot_line_rev["foreign_currency_amount"] *= -1
+                            self._statement_line_import_update_unique_import_id(
+                                pivot_line_rev,
+                                self.bank_account_id.sanitized_acc_number,
+                            )
+                            already_reversed = self.env[
+                                "account.bank.statement.line"
+                            ].search_count(
+                                [
+                                    ("journal_id", "=", self.id),
+                                    (
+                                        "unique_import_id",
+                                        "=",
+                                        pivot_line_rev["unique_import_id"],
+                                    ),
+                                ],
+                            )
+                            if already_reversed:
+                                speedy["log_obj"]._info_log(
+                                    result,
+                                    f"Existing reconciled line ID "
+                                    f"{existing_line['id']} dated {existing_line['date']} "
+                                    f"amount {existing_line_amount_fmt} "
+                                    f"label '{existing_line['payment_ref']}' "
+                                    "is marked as 'to_delete', but it "
+                                    "has already been reconciled and has already "
+                                    "been reversed -> skipping",
+                                )
+                            else:
+                                rev_vals = self._api_import_prepare_bank_statement_line(
+                                    pivot_line_rev, result, speedy
+                                )
+                                self._statement_line_import_update_hook(
+                                    rev_vals, speedy["update_hook_speeddict"]
+                                )
+                                new_line_vals.append(rev_vals)
+
+                                amount_fmt = format_amount(
+                                    self.env,
+                                    rev_vals["amount"],
+                                    speedy["journal_currency"],
+                                )
+                                speedy["log_obj"]._warning_log(
+                                    result,
+                                    f"Existing reconciled line ID "
+                                    f"{existing_line['id']} dated {existing_line['date']} "
+                                    f"amount {existing_line_amount_fmt} "
+                                    f"label '{existing_line['payment_ref']}' "
+                                    "is marked as 'to_delete', but it "
+                                    "has already been reconciled -> creating a new "
+                                    f"reverse line amount {amount_fmt} "
+                                    f"label '{rev_vals['payment_ref']}' "
+                                    f"unique_import_id '{rev_vals['unique_import_id']}'.",
+                                )
                         else:
                             speedy["log_obj"]._warning_log(
                                 result,
