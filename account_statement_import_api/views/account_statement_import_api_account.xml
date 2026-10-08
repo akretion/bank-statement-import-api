@@ -66,10 +66,7 @@
                     name="connector_id"
                     attrs="{'column_invisible': [('parent.is_aggregator', '=', False)]}"
                 />
-                            <field
-                    name="account_type"
-                    optional="show"
-                />
+                            <field name="account_type" optional="show" />
 
                             <field name="identifier" optional="hide" />
                             <field
@@ -92,10 +89,7 @@
                             <field name="bank_name" />
                             <field name="currency_id" optional="show" />
                             <field name="connector_id" />
-                            <field
-                    name="account_type"
-                    optional="show"
-                />
+                            <field name="account_type" optional="show" />
 
                             <field name="identifier" optional="hide" />
                             <field

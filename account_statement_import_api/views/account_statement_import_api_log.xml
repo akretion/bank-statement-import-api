@@ -148,7 +148,7 @@
                     name="type_other"
                     string="Get Balances and Update Connectors"
                     domain="[('type', '=', 'other')]"
-                                        />
+                />
                                         <filter
                     name="type_update_api_accounts"
                     string="Get/Update API Accounts"

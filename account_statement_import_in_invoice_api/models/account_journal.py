@@ -227,6 +227,9 @@ class AccountJournal(models.Model):
                     and attachment_pivot["filename"]
                 ):
                     attach_vals = {
+                        # I set 'type' explicity to avoid a bad value that would come
+                        # from the context
+                        "type": "binary",
                         "res_model": "account.move",
                         "raw": attach_raw,
                         "name": attachment_pivot["filename"],
