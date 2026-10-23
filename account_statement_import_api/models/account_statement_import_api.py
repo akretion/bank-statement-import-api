@@ -239,7 +239,7 @@ class AccountStatementImportApi(models.Model):
 
     @api.model
     def cron_run(self, service):
-        logger.info("Start Bank Statement API cron for service {service}")
+        logger.info(f"Start Bank Statement API cron for service {service}")
         import_apis = self.search([("service", "=", service)])
         for import_api in import_apis:
             import_api.run_import()
