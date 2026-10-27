@@ -91,6 +91,30 @@ class AccountJournal(models.Model):
     statement_import_api_connector_auth_expiry_warn_type = fields.Selection(
         related="statement_import_api_account_id.connector_id.auth_expiry_warn_type",
     )
+    statement_import_api_balance_status = fields.Selection(
+        [
+            ("equal", "Equal"),
+            ("diff", "Difference"),
+        ],
+        readonly=True,
+        string="Balance Status",
+        help="Comparaison between the bank balance from the accounting and the bank balance from the API.",
+    )
+    statement_import_api_balance = fields.Monetary(
+        readonly=True,
+        string="Balance reported by Bank API",
+        currency_field="statement_import_api_currency_id",
+    )
+    # statement_import_api_balance_str cannot be a stored field, because it depends on the lang
+    statement_import_api_balance_str = fields.Char(
+        compute="_compute_statement_import_api_balance_str",
+        string="API Bank Balance as string",
+    )
+    # when we'll have a native field that replaces statement_import_api_currency_id
+    # we'll drop that field
+    statement_import_api_currency_id = fields.Many2one(
+        "res.currency", compute="_compute_statement_import_api_currency_id", store=True
+    )
 
     _sql_constraints = [
         (
@@ -110,6 +134,24 @@ class AccountJournal(models.Model):
         for journal in self:
             if journal.type != "bank" or journal.bank_statements_source != "api":
                 journal.statement_import_api_id = False
+
+    @api.depends("currency_id", "company_id", "type")
+    def _compute_statement_import_api_currency_id(self):
+        for journal in self:
+            currency = False
+            if journal.type == "bank":
+                currency = journal.currency_id or journal.company_id.currency_id
+            journal.statement_import_api_currency_id = currency and currency.id or False
+
+    @api.depends("statement_import_api_balance")
+    def _compute_statement_import_api_balance_str(self):
+        for journal in self:
+            balance_str = False
+            if journal.type == "bank" and journal.statement_import_api_currency_id:
+                balance_str = journal.statement_import_api_currency_id.format(
+                    journal.statement_import_api_balance
+                )
+            journal.statement_import_api_balance_str = balance_str
 
     @api.depends("statement_import_api_id")
     def _compute_statement_import_api_account_id(self):
@@ -394,6 +436,7 @@ class AccountJournal(models.Model):
         method(result, speedy)
 
         new_line_vals = []
+        wvals = {}
         if result["lines"] and not any(
             [log_type == "error" for log_type, msg in result["logs"]]
         ):
@@ -417,7 +460,7 @@ class AccountJournal(models.Model):
                         last_success_dt = pivot_line["last_update_dt"]
 
             self._api_import_set_existing_lines(search_unique_import_ids, speedy)
-            self.write({"statement_import_api_last_success": last_success_dt})
+            wvals["statement_import_api_last_success"] = last_success_dt
             existing_lines = speedy["existing_lines"]
             for pivot_line in result["lines"]:
                 check_res = self._api_import_check_update_pivot_line(
@@ -587,10 +630,13 @@ class AccountJournal(models.Model):
             result["new_line_count"],
             result["updated_line_count"],
         )
-        self._api_import_check_balance(account_ident2vals, result, speedy)
+        bal_wvals = self._api_import_check_balance(account_ident2vals, result, speedy)
+        wvals.update(bal_wvals)
         log = speedy["log_obj"]._create_log(
             "statement_line", result, speedy, journal_id=self.id
         )
+        if wvals:
+            self.sudo().write(wvals)
         logger.info("End of bank statement import API of journal %s", self.display_name)
         return log
 
@@ -653,6 +699,10 @@ class AccountJournal(models.Model):
     def _api_import_check_balance(self, account_ident2vals, result, speedy):
         accounting_bal = self._api_import_get_accounting_balance(speedy)
         account_ident = self.statement_import_api_account_id.identifier
+        wvals = {
+            "statement_import_api_balance": False,
+            "statement_import_api_balance_status": False,
+        }
         if accounting_bal is None:
             msg = (
                 f"Field 'default_account_id' is not set on journal {self.display_name}"
@@ -680,11 +730,13 @@ class AccountJournal(models.Model):
                     )
                     speedy["log_obj"]._warning_log(result, msg)
             if not currency_mismatch:
+                wvals["statement_import_api_balance"] = bank_bal
                 fcompare = currency.compare_amounts(accounting_bal, bank_bal)
                 accounting_bal_fmt = format_amount(self.env, accounting_bal, currency)
                 if not fcompare:
                     msg = f"Accounting balance = bank balance ({accounting_bal_fmt})"
                     speedy["log_obj"]._info_log(result, msg)
+                    wvals["statement_import_api_balance_status"] = "equal"
                 else:
                     bank_bal_fmt = format_amount(self.env, bank_bal, currency)
                     diff_fmt = format_amount(
@@ -695,6 +747,8 @@ class AccountJournal(models.Model):
                         f"from bank balance ({bank_bal_fmt}). Difference: {diff_fmt}"
                     )
                     speedy["log_obj"]._warning_log(result, msg)
+                    wvals["statement_import_api_balance_status"] = "diff"
+        return wvals
 
     def _api_import_get_accounting_balance(self, speedy):
         self.ensure_one()
