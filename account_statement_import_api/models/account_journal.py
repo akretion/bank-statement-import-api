@@ -91,30 +91,31 @@ class AccountJournal(models.Model):
     statement_import_api_connector_auth_expiry_warn_type = fields.Selection(
         related="statement_import_api_account_id.connector_id.auth_expiry_warn_type",
     )
+    statement_import_api_balance = fields.Monetary(
+        readonly=True,
+        string="Balance reported by API",
+        currency_field="bank_currency_id",
+    )
+    # statement_import_api_balance_str cannot be a stored field, because it depends on the lang
+    statement_import_api_balance_str = fields.Char(
+        compute="_compute_statement_import_api_balance_fields",
+        string="API Bank Balance as string",
+    )
+    # statement_import_api_balance_status cannot be a stored field because
+    # we want real-time update if we manually delete a bank statement line for example
     statement_import_api_balance_status = fields.Selection(
         [
             ("equal", "Equal"),
             ("diff", "Difference"),
         ],
-        readonly=True,
+        compute="_compute_statement_import_api_balance_fields",
         string="Balance Status",
         help="Comparaison between the bank balance from the accounting and the bank balance from the API.",
     )
-    statement_import_api_balance = fields.Monetary(
-        readonly=True,
-        string="Balance reported by Bank API",
-        currency_field="statement_import_api_currency_id",
-    )
-    # statement_import_api_balance_str cannot be a stored field, because it depends on the lang
-    statement_import_api_balance_str = fields.Char(
-        compute="_compute_statement_import_api_balance_str",
-        string="API Bank Balance as string",
-    )
-    # when we'll have a native field that replaces statement_import_api_currency_id
-    # we'll drop that field
-    statement_import_api_currency_id = fields.Many2one(
-        "res.currency", compute="_compute_statement_import_api_currency_id", store=True
-    )
+    # reminder of fields provided by account_bank_journal_balance
+    # bank_currency_id (M2O: journal.currency_id or journal.company_id.currency_id)
+    # bank_default_account_balance (float)
+    # bank_default_account_balance_str (char)
 
     _sql_constraints = [
         (
@@ -135,23 +136,21 @@ class AccountJournal(models.Model):
             if journal.type != "bank" or journal.bank_statements_source != "api":
                 journal.statement_import_api_id = False
 
-    @api.depends("currency_id", "company_id", "type")
-    def _compute_statement_import_api_currency_id(self):
-        for journal in self:
-            currency = False
-            if journal.type == "bank":
-                currency = journal.currency_id or journal.company_id.currency_id
-            journal.statement_import_api_currency_id = currency and currency.id or False
-
     @api.depends("statement_import_api_balance")
-    def _compute_statement_import_api_balance_str(self):
+    def _compute_statement_import_api_balance_fields(self):
         for journal in self:
             balance_str = False
-            if journal.type == "bank" and journal.statement_import_api_currency_id:
-                balance_str = journal.statement_import_api_currency_id.format(
-                    journal.statement_import_api_balance
+            balance_status = False
+            currency = journal.bank_currency_id
+            if journal.type == "bank" and currency:
+                balance_str = currency.format(journal.statement_import_api_balance)
+                compare = currency.compare_amounts(
+                    journal.statement_import_api_balance,
+                    journal.bank_default_account_balance,
                 )
+                balance_status = compare and "diff" or "equal"
             journal.statement_import_api_balance_str = balance_str
+            journal.statement_import_api_balance_status = balance_status
 
     @api.depends("statement_import_api_id")
     def _compute_statement_import_api_account_id(self):
@@ -697,11 +696,10 @@ class AccountJournal(models.Model):
         return True
 
     def _api_import_check_balance(self, account_ident2vals, result, speedy):
-        accounting_bal = self._api_import_get_accounting_balance(speedy)
+        accounting_bal = self.bank_default_account_balance
         account_ident = self.statement_import_api_account_id.identifier
         wvals = {
             "statement_import_api_balance": False,
-            "statement_import_api_balance_status": False,
         }
         if accounting_bal is None:
             msg = (
@@ -736,7 +734,6 @@ class AccountJournal(models.Model):
                 if not fcompare:
                     msg = f"Accounting balance = bank balance ({accounting_bal_fmt})"
                     speedy["log_obj"]._info_log(result, msg)
-                    wvals["statement_import_api_balance_status"] = "equal"
                 else:
                     bank_bal_fmt = format_amount(self.env, bank_bal, currency)
                     diff_fmt = format_amount(
@@ -747,24 +744,7 @@ class AccountJournal(models.Model):
                         f"from bank balance ({bank_bal_fmt}). Difference: {diff_fmt}"
                     )
                     speedy["log_obj"]._warning_log(result, msg)
-                    wvals["statement_import_api_balance_status"] = "diff"
         return wvals
-
-    def _api_import_get_accounting_balance(self, speedy):
-        self.ensure_one()
-        bal = None
-        if self.default_account_id:
-            rg_res = self.env["account.move.line"].read_group(
-                [
-                    ("account_id", "=", self.default_account_id.id),
-                    ("company_id", "=", self.company_id.id),
-                    ("parent_state", "=", "posted"),
-                ],
-                ["balance"],
-                [],
-            )
-            bal = rg_res and rg_res[0]["balance"] or 0
-        return bal
 
     def api_import_bank_statement_lines_button(self):
         self.ensure_one()
