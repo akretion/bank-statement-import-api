@@ -11,7 +11,10 @@
     "author": "Akretion",
     "maintainers": ["alexis-via"],
     "website": "https://github.com/akretion/bank-statement-import-api",
-    "depends": ["account_statement_import_base"],
+    "depends": [
+        "account_statement_import_base",  # from OCA/bank-statement-import
+        "account_bank_journal_balance",  # from github.com/akretion/odoo-usability
+    ],
     "data": [
         "security/ir.model.access.csv",
         "security/ir_rule.xml",
