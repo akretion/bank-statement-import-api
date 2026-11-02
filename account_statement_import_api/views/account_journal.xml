@@ -94,7 +94,18 @@
                     name="statement_import_api_last_success"
                     invisible="bank_statements_source != 'api'"
                 />
-                    <field name="statement_import_api_service" invisible="1" />
+                    <field
+                    name="statement_import_api_balance"
+                    invisible="not statement_import_api_balance_status"
+                />
+		<field
+                    name="statement_import_api_balance_status"
+                    widget="badge"
+                    decoration-success="statement_import_api_balance_status == 'equal'"
+                    decoration-warning="statement_import_api_balance_status == 'diff'"
+                />
+		    <field name="statement_import_api_service" invisible="1" />
+                    <field name="bank_currency_id" invisible="1" />
             </xpath>
             <div name="button_box" position="inside">
                 <button
@@ -141,6 +152,8 @@
                             <field
                     name="statement_import_api_connector_auth_expiry_warn_type"
                 />
+	                    <field name="statement_import_api_balance_status" />
+                            <field name="statement_import_api_balance_str" />
                     </field>
                     <xpath
                 expr="//t[@t-name='menu']//div[@id='bank_and_cash_container']//div[@name='kanban_manage_new']"
@@ -178,6 +191,32 @@
                         </div>
                 </xpath>
                 <xpath expr="//div[@name='latest_statement']/.." position="after">
+                        <div
+                    class="row"
+                    name="statement_import_api_balance_status"
+                    t-if="record.statement_import_api_id.raw_value and (record.statement_import_api_balance_status.raw_value == 'diff' || record.statement_import_api_balance_status.raw_value == 'equal') and record.statement_import_api_balance_str.raw_value"
+                >
+                                    <div class="col overflow-hidden text-start">
+                                        <span
+                            title="Bank Account Balance Status"
+                        >Balance reported by API</span>
+                                    </div>
+                                    <div class="col-auto text-end">
+                                            <field
+                            t-if="record.statement_import_api_balance_status.raw_value == 'diff'"
+                            name="statement_import_api_balance_str"
+                            widget="badge"
+                            decoration-warning="1"
+                        />
+                                            <field
+                            t-if="record.statement_import_api_balance_status.raw_value == 'equal'"
+                            name="statement_import_api_balance_status"
+                            widget="badge"
+                            decoration-success="1"
+                        />
+                                    </div>
+                            </div>
+
                         <div
                     class="row"
                     name="statement_import_api_connector_sync_status"
