@@ -182,7 +182,7 @@
                         <div
                     class="row"
                     name="statement_import_api_balance_status"
-                    t-if="(record.statement_import_api_balance_status.raw_value == 'diff' || record.statement_import_api_balance_status.raw_value == 'equal') and record.statement_import_api_balance_str.raw_value"
+                    t-if="record.statement_import_api_id.raw_value and (record.statement_import_api_balance_status.raw_value == 'diff' || record.statement_import_api_balance_status.raw_value == 'equal') and record.statement_import_api_balance_str.raw_value"
                 >
                                     <div class="col overflow-hidden text-start">
                                         <span
