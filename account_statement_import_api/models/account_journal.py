@@ -485,30 +485,19 @@ class AccountJournal(models.Model):
                         self.env, existing_line["amount"], speedy["journal_currency"]
                     )
                     if pivot_line.get("to_delete"):
-                        if existing_line["is_reconciled"]:
-                            speedy["log_obj"]._error_log(
-                                result,
-                                f"Existing reconciled line ID "
-                                f"{existing_line['id']} dated {existing_line['date']} "
-                                f"amount {existing_line_amount_fmt} "
-                                f"label '{existing_line['payment_ref']}' is "
-                                "marked as 'to_delete', but odoo can't delete it "
-                                "because it is already reconciled. You must handle "
-                                "it manually.",
-                            )
-                        else:
-                            speedy["log_obj"]._warning_log(
-                                result,
-                                f"Deleted existing unreconciled line ID "
-                                f"{existing_line['id']} dated {existing_line['date']} "
-                                f"amount {existing_line_amount_fmt} "
-                                f"label '{existing_line['payment_ref']}' because "
-                                "it is marked as 'to_delete'",
-                            )
-                            bank_statement_line = self.env[
-                                "account.bank.statement.line"
-                            ].browse(existing_line["id"])
-                            bank_statement_line.unlink()
+                        reconcile_status = existing_line["is_reconciled"] and 'reconciled' or 'unreconciled'
+                        speedy["log_obj"]._warning_log(
+                            result,
+                            f"Deleted existing {reconcile_status} line ID "
+                            f"{existing_line['id']} dated {existing_line['date']} "
+                            f"amount {existing_line_amount_fmt} "
+                            f"label '{existing_line['payment_ref']}' because "
+                            "it is marked as 'to_delete'",
+                        )
+                        bank_statement_line = self.env[
+                            "account.bank.statement.line"
+                        ].browse(existing_line["id"])
+                        bank_statement_line.unlink()
                         continue
                     if existing_line["is_reconciled"]:
                         speedy["log_obj"]._info_log(
@@ -557,9 +546,7 @@ class AccountJournal(models.Model):
                         f"Created new line dated {lvals['date']} "
                         f"amount {amount_fmt} label '{lvals['payment_ref']}'",
                     )
-            if new_line_vals and not any(
-                [log_type == "error" for log_type, msg in result["logs"]]
-            ):
+            if new_line_vals:
                 self.env["account.bank.statement.line"].create(new_line_vals)
 
         result["new_line_count"] = len(new_line_vals)
