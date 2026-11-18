@@ -255,6 +255,7 @@ class AccountStatementImportApi(models.Model):
         currency_code2id = {x["name"]: x["id"] for x in currencies_read}
         speedy = {
             "statement_import_api_id": self.id,
+            "company_id": self.company_id.id,
             "currency_code2id": currency_code2id,
             "tz": self.tz and pytz.timezone(self.tz) or pytz.utc,
             "service": self.service,
