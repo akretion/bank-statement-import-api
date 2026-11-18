@@ -348,6 +348,7 @@ class AccountJournal(models.Model):
             lvals = {}
         else:
             lvals = {
+                "company_id": speedy["company_id"],
                 "unique_import_id": line_pivot["unique_import_id"],
                 "journal_id": self.id,
                 "date": line_pivot["date"],
@@ -485,7 +486,11 @@ class AccountJournal(models.Model):
                         self.env, existing_line["amount"], speedy["journal_currency"]
                     )
                     if pivot_line.get("to_delete"):
-                        reconcile_status = existing_line["is_reconciled"] and 'reconciled' or 'unreconciled'
+                        reconcile_status = (
+                            existing_line["is_reconciled"]
+                            and "reconciled"
+                            or "unreconciled"
+                        )
                         speedy["log_obj"]._warning_log(
                             result,
                             f"Deleted existing {reconcile_status} line ID "
