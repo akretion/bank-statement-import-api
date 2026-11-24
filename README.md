@@ -16,6 +16,14 @@ New generation modules for Bank Statement Import by API
 <!-- prettier-ignore-start -->
 
 [//]: # (addons)
+
+Available addons
+----------------
+addon | version | maintainers | summary
+--- | --- | --- | ---
+[account_statement_import_api](account_statement_import_api/) | 17.0.3.0.0 | <a href='https://github.com/alexis-via'><img src='https://github.com/alexis-via.png' width='32' height='32' style='border-radius:50%;' alt='alexis-via'/></a> | Base module to download bank statement via an API
+[account_statement_import_api_bridge](account_statement_import_api_bridge/) | 17.0.2.0.0 | <a href='https://github.com/alexis-via'><img src='https://github.com/alexis-via.png' width='32' height='32' style='border-radius:50%;' alt='alexis-via'/></a> | Use BridgeAPI.io to download bank statement lines
+
 [//]: # (end addons)
 
 <!-- prettier-ignore-end -->
