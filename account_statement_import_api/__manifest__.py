@@ -4,7 +4,7 @@
 
 {
     "name": "Account Statement Import API",
-    "version": "18.0.3.0.0",
+    "version": "17.0.3.0.0",
     "category": "Accounting",
     "license": "AGPL-3",
     "summary": "Base module to download bank statement via an API",
