@@ -1,0 +1,12 @@
+[project]
+name = "odoo-addons-akretion-bank-statement-import-api"
+version = "17.0.20261124.0"
+dependencies = [
+    "odoo-addon-account_statement_import_api>=17.0dev,<17.1dev",
+    "odoo-addon-account_statement_import_api_bridge>=17.0dev,<17.1dev",
+]
+classifiers=[
+    "Programming Language :: Python",
+    "Framework :: Odoo",
+    "Framework :: Odoo :: 17.0",
+]
